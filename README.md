@@ -1,2 +1,2 @@
-# Fly-the-world
+# FlyTheWorld
 Fly the world, Wirtschaftsymulation für Flugsimulatoren
