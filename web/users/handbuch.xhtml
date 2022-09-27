@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Handbuecher_dlg_header}</title>
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Handbuecher_dlg_header}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_Handbuch">
+
+            <p:panelGrid columns="8" style="height: 100%;">
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="#{sprache.Handbuecher_Pilotenhandbuch}" href="https://drive.google.com/open?id=0B3RGufMJTtW9U1R4T05QUFRkcW8" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pdf.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="#{sprache.Handbuecher_Pilotenhandbuch}"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="#{sprache.Handbuecher_Fluggesellschaft}" href="https://drive.google.com/file/d/1acEsKDkyq8PqpwllgCbdQcBXpGEzNrnS/view" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pdf.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="#{sprache.Handbuecher_Fluggesellschaft}"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="#{sprache.Handbuecher_Pilot_Englisch}" href="https://drive.google.com/file/d/1ASgt-3DK0yRz18cQyktC4Pyi-WQrhf3A/view" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pdf.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="#{sprache.Handbuecher_Pilot_Englisch}"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="#{sprache.Handbuecher_Airline_Englisch}" href="https://drive.google.com/file/d/1QOU8HBoGNccMI4qGPrDJXSTaz1KWxUvL/view" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pdf.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="#{sprache.Handbuecher_Airline_Englisch}"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="#{sprache.Handbuecher_TutorialErsterFlug}" href="https://drive.google.com/open?id=1yNwz8fiEc3dtSKF_9W8cjEZbU19LRB5N" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pdf.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="#{sprache.Handbuecher_TutorialErsterFlug}"/>
+              </p:panelGrid>
+              
+              <p:panelGrid columns="1" style="height: 100%;">
+                <p:link title="FTW - WiKi" href="https://openair-alliance.eu/ftw/doc/doku.php?id=start" target="_blank">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wikilogo.png" width="128"/>
+                </p:link>
+                <h:outputText escape="false" value="FTW - WIKI"/>
+              </p:panelGrid>
+
+
+
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:layoutUnit>
+        
+      </p:layout>
+      
+    </h:body>
+
+  </f:view>
+</html>
+

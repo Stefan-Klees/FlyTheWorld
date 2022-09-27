@@ -1,0 +1,283 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW #{sprache.Fluggesellschaften_Manager_header}</title>
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Fluggesellschaften_Manager_header} - #{managerBean.fluggesellschaftName}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_manager">
+
+            #{managerBean.onRefresh()}
+
+            <p:toolbar id="tlb_manager">
+              <p:toolbarGroup id="tbg_manager" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Manager_btn_zurueck}" action="#{airlineBean.onBack()}" icon="fa fa-arrow-left"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Manager_btn_ManagerEinstellen}"  oncomplete="PF('wdg_managerEinstellen').show()" icon="fa fa-plus" disabled="#{not managerBean.allowManagerEinstellen}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Manager_btn_ManagerEinstellungenBearbeiten}" oncomplete="PF('wdg_Edit').show()" update="frm_Edit" icon="fa fa-pencil" rendered="#{not empty managerBean.selectedManager}" 
+                                 disabled="#{not managerBean.allowManagerBearbeiten}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Manager_btn_ManagerLoeschen}" action="#{managerBean.onDeleteManager()}" icon="fa fa-trash" update="frm_manager" rendered="#{not empty managerBean.selectedManager}" 
+                                 disabled="#{not managerBean.allowManagerLoeschen}">
+                  <p:confirm header="#{sprache.Fluggesellschaften_Manager_msg_loeschen}" message="#{sprache.Fluggesellschaften_Manager_msg_loeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:dataTable id="managerTable"
+                         var="managerItems"
+                         value="#{managerBean.manager}"
+                         rowKey="#{managerItems.idfluggesellschaftmanager}"
+                         selection="#{managerBean.selectedManager}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false" selectionMode="single"
+                         emptyMessage="#{sprache.Fluggesellschaften_Manager_tbl_managerTable_emptyMessage}">
+
+              <p:ajax listener="#{managerBean.onRowSelect}" event="rowSelect" update="frm_manager"/>
+              <p:ajax listener="#{managerBean.onRowUnselect}" event="rowUnselect" update="frm_manager"/>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Name}" width="80">
+                <h:outputText value="#{managerItems.benutzerName}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_bezeichnung}" width="250">
+                <h:outputText value="#{managerItems.bezeichnung}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Geschaeftsfuehrer}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.geschaeftsfuehrer}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.geschaeftsfuehrer}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Bank}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowBank}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowBank}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_FBO}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowFBO}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowFBO}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Flugzeuge}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowFlugzeuge}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowFlugzeuge}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Piloten}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowPiloten}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowPiloten}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Manager}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowManager}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowManager}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Manager_tbl_Routen}" width="80" style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{managerItems.allowRouten}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not managerItems.allowRouten}"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+          </h:form>
+
+
+
+          <p:dialog id="dlg_Edit" widgetVar="wdg_Edit" header="#{sprache.Fluggesellschaften_Manager_dlg_edit_header}" width="650" height="650" position="top">
+
+            <h:form id="frm_Edit" >
+              <p:toolbar id="tlb_Edit">
+                <p:toolbarGroup id="tbg_Edit" align="left">
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Manager_dlg_edit_btn_speichern}" action="#{managerBean.onEditManager()}" icon="fa fa-save" update="frm_manager"/>
+                  <p:commandButton type="button" title="#{sprache.Fluggesellschaften_Manager_dlg_edit_btn_exit}" icon="fa fa-close" onclick="PF('wdg_Edit').hide()" />
+                </p:toolbarGroup>
+              </p:toolbar>
+
+
+              <p:panelGrid columns="2" >
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FTWBenutzername}"/>
+                <h:outputLabel value="#{managerBean.selectedManager.benutzerName}"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_Bezeichnung}"/>
+                <h:inputText value="#{managerBean.selectedManager.bezeichnung}" size="60" maxlength="250"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_Geschaeftsfuehrer}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.geschaeftsfuehrer}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" 
+                                       onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:80px" >
+                  <p:ajax event="change" listener="#{managerBean.onChangeGeschaeftsfuehrer()}"   update="frm_Edit"/>
+                </p:selectBooleanButton>
+
+              </p:panelGrid> 
+
+              <p:panelGrid columns="2" >
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_Fluggessellschaftbearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFluggesellschaftBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FluggessellschaftLoeschen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFluggesellschaftLoeschen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_BankmodulAufrufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowBank}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_BankBuchhaltung}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowBankBuchhaltung}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_BankUeberweisungen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowBankTransfer}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FlugzeugmodulAufrufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFlugzeuge}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FlugzeugeBearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFlugzeugeBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FlugzeugeKaufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFlugzeugeKaufen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FlugzeugeVerkaufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFlugzeugeVerkaufen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FlugzeugeTransferieren}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFlugzeugeTransfer}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_ManagermodulAufrufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowManager}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_ManagerBearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowManagerBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_ManagerEinstellen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowManagerEinstellen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_ManagerEntlassen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowManagerLoeschen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_PilotenmodulAufrufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowPiloten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_PilotenEinstellen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowPilotenEinstellen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_PilotenEntlassen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowPilotenEntlassen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_PilotenBearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowPilotenBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_RoutenmodulAufrufen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowRouten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_RoutenErstellen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowRoutenErstellen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_RoutenBearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowRoutenBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_RoutenLoeschen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowRoutenLoeschen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FBO}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFBO}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FBONeu}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFBOHinzufuegen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FBOBearbeiten}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFBOBearbeiten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FBOLoeschen}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFBOLoeschen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_edit_lbl_FBOTankstelle}"/>
+                <p:selectBooleanButton value="#{managerBean.selectedManager.allowFBOTankstelleVerwalten}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+                
+              </p:panelGrid>
+
+            </h:form>
+
+          </p:dialog>
+
+
+          <p:dialog id="dlg_managerEinstellen" widgetVar="wdg_managerEinstellen" header="#{sprache.Fluggesellschaften_Manager_dlg_ManagerEinstellen_header}" width="400" position="top" >
+            <h:form id="frm_managerEinstellen">
+              <p:toolbar id="tlb_managerEinstellen">
+                <p:toolbarGroup id="tbg_managerEinstellen" align="left">
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Manager_dlg_ManagerEinstellen_btn_anlegen}" action="#{managerBean.onCreateManager()}" oncomplete="PF('wdg_managerEinstellen').hide()" icon="fa fa-save" update="frm_manager"/>
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Manager_dlg_ManagerEinstellen_btn_exit}" onclick="PF('wdg_managerEinstellen').hide()" icon="fa fa-close"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Manager_dlg_ManagerEinstellen_lbl_FTWBenutzername}"/>
+                <h:inputText value="#{managerBean.frmFTWBenutzername}"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+      </p:layout>
+    </h:body>
+
+  </f:view>
+
+</html>
+

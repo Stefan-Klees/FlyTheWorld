@@ -1,0 +1,196 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Jobangebote_title}</title>
+      <h:outputStylesheet library="css" name="job.css" />
+    </h:head>
+
+    <h:body id="Body" >
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+
+        <p:layoutUnit id="layCenter" position="center" closable="false" styleClass="job" >
+
+          <f:facet name="header">
+            <h:form id="frm_toolbar">
+              <p:toolbar id="tlb_jobAnsicht">
+                <p:toolbarGroup id="tbg_jobAnsicht" align="left">
+                  <p:panelGrid columns="8" style="padding: 1px">
+
+                    <p:commandButton value="#{sprache.Jobangebote_btn_JobAnnehmen}"  update="frm_jobs frm_toolbar frm_JobUebernehmen" oncomplete="PF('wdg_JobUebernehmen').show();"
+                                     disabled="#{not fgJobBean.selectedUserJob.nochfrei}" rendered="#{not empty fgJobBean.selectedUserJob}">
+                    </p:commandButton>
+
+                  </p:panelGrid>
+                </p:toolbarGroup>
+
+                <p:toolbarGroup id="tbg_jobAnsicht_right" align="right">
+                  <p:panelGrid columns="8">
+
+                    <h:outputLabel value="#{sprache.Jobangebote_lbl_Fluggesellschaft}" style="vertical-align: middle"/>
+                    <p:selectOneMenu id="sel_fluggesellschaft" value="#{fgJobBean.jobFluggesellschaften}" style="width: 150px;vertical-align: middle" filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Jobangebote_cbo_alle}"  itemValue="-1" noSelectionOption="true" />
+                      <f:selectItems value="#{fgJobBean.fluggesellschaftenInJobs}" var="fg" itemValue="#{fg[1]}" itemLabel="#{fg[2]}" />
+                      <p:ajax event="change" update="frm_jobs" listener="#{fgJobBean.onRefresh()}"/>
+                    </p:selectOneMenu>
+
+
+                    <h:outputLabel value="#{sprache.Jobangebote_lbl_Flugzeug}" style="vertical-align: middle"/>
+                    <p:selectOneMenu id="sel_flugzeuge" value="#{fgJobBean.jobFlugzeuge}" style="width: 150px;vertical-align: middle" filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Jobangebote_cbo_alle}"  itemValue="" noSelectionOption="true" />
+                      <f:selectItems value="#{fgJobBean.flugzeugeInJobs}" var="fav" itemValue="#{fav[2]}" itemLabel="#{fav[2]}" />
+                      <p:ajax event="change" update="frm_jobs" listener="#{fgJobBean.onRefresh()}"/>
+                    </p:selectOneMenu>
+
+                    <p:commandButton icon="fa fa-refresh" title="#{sprache.btn_aktualisieren}" action="#{fgJobBean.onRefresh()}" update="frm_jobs frm_toolbar frm_JobUebernehmen" style="vertical-align: middle"/>
+
+                  </p:panelGrid>
+
+                </p:toolbarGroup>
+
+
+              </p:toolbar>
+            </h:form>
+          </f:facet>
+
+
+          <h:form id="frm_jobs" styleClass="job">
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="jobTable" var="jobs" value="#{fgJobBean.publicJobs}" 
+                         rowKey="#{jobs.idjobs}"
+                         selection="#{fgJobBean.selectedUserJob}"
+                         selectionMode="single"
+                         style="width: 100%"
+                         styleClass="job"
+                         emptyMessage="Bitte Filter benutzen">
+
+              <p:ajax listener="#{fgJobBean.onRowSelectUserJob}" event="rowSelect" update="jobTable frm_toolbar:tlb_jobAnsicht"/>
+              <p:ajax listener="#{fgJobBean.onRowUnselectUserJob}" event="rowUnselect" update="jobTable frm_toolbar:tlb_jobAnsicht"/>
+
+              <p:column>
+
+                <table cellspacing="10">
+                  <tr>
+                    <td align="left" width="250"><h:outputLabel value="#{sprache.Jobangebote_lbl_Ablaufzeit}  " style="font-size: 1.2em;"/>
+                      <h:outputLabel value="#{jobs.ablaufdatum}" style="font-size: 1.2em;">
+                        <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputLabel>
+                      <center>
+                        <h:outputText value="#{sprache.Jobangebote_lbl_KlickHinweis}" style="font-size: 1.5em;" />
+                      </center>
+
+
+                    </td>
+                  </tr>
+                </table>
+
+                <br></br>
+
+                <h:outputLabel escape="false" value="#{jobs.beschreibung}"/>
+
+                <p align="center"><a href="#{jobs.extlink}" target="_blank" style="font-size: 1.2em;">Weitere Infos der Fluggesellschaft</a></p>
+
+                <br></br>
+                <br></br>
+
+              </p:column>              
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_JobUebernehmen" widgetVar="wdg_JobUebernehmen" header="#{sprache.Jobangebote_dlg_JobUebernehmen_header}" 
+                  modal="true" height="600" width="1100" closeOnEscape="true" appendTo="@(body)">
+          <h:form id="frm_JobUebernehmen">
+
+            <h:outputLabel escape="false" value="#{fgJobBean.selectedUserJob.beschreibung}" />
+
+            <div align="center">
+              <p>
+                <p:commandButton value="#{sprache.Jobangebote_dlg_JobUebernehmen_btn_JobAnnehmen}" action="#{fgJobBean.onUserJobZuweisen()}"
+                                 oncomplete="PF('wdg_JobUebernehmen').close()" update="frm_jobs:jobTable"/>
+                <p:commandButton  value="#{sprache.Jobangebote_dlg_JobUebernehmen_btn_JobAblehnen}" onclick="PF('wdg_JobUebernehmen').close()" oncomplete="location.reload()"/>
+              </p>
+            </div>
+
+          </h:form>
+        </p:dialog>
+
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+
+      </p:layout>
+
+    </h:body>
+
+  </f:view>
+</html>
+

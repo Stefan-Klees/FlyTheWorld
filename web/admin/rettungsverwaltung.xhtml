@@ -1,0 +1,555 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW-Rettungsverwaltung</title>
+
+    <h:outputScript library="js" name="leaflet/leaflet.js" />
+    <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+    <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+    <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+    <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+    <script type="text/javascript">
+
+      function getVars(icao) {
+        var latLong = marker.getLatLng();
+        document.getElementById("frm_daten:frm_AirportEdit:latLong").value = latLong;
+      }
+
+      function setVarsRettungsStationPosition(LatLong) {
+        document.getElementById("frm_StationBearbeiten:hid_Position").value = LatLong;
+      }
+
+      function setVarsUnfallPosition(LatLong) {
+        document.getElementById("frm_EinsaetzeBearbeiten:hid_PositionUnfall").value = LatLong;
+        //alert(LatLong);
+      }
+
+      function setVarsZielPosition(LatLong) {
+        document.getElementById("frm_EinsaetzeBearbeiten:hid_PositionZiel").value = LatLong;
+        //alert(LatLong);
+      }
+
+    </script>
+
+  </h:head>
+
+  <h:body>
+
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+      <ui:include src="/users/menueMeldungen.xhtml"/>
+
+      <ui:fragment rendered="#{loginMB.newMenue}">
+        <ui:include src="/users/menue.xhtml" />
+      </ui:fragment>
+
+
+      <p:layoutUnit position="center" closable="false" >
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+        <h:form id="frm_toolbar">
+          <p:toolbar id="tlb__toolbar">
+            <p:toolbarGroup id="tbg_toolbar" align="left">
+              <p:commandButton title="Rettungsstationen bearbeiten" icon="fa fa-ambulance" type="button" onclick="PF('wdg_rettungsstation').show()" update="frm_rettungsstation" />
+              <p:commandButton title="Favoriten verwalten" icon="fa fa-bookmark" type="button" onclick="PF('wdg_favoriten').show()" update="frm_favoriten" />
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+          </p:confirmDialog>
+
+        </h:form>
+
+      </p:layoutUnit>
+
+      <p:dialog id="dlg_rettungsstation" widgetVar="wdg_rettungsstation" header="Retungsstationen verwalten" closable="false" width="1200" >
+        <h:form id="frm_rettungsstation">
+
+          <p:toolbar id="tlb_rettungsstation">
+
+            <p:toolbarGroup id="tbg_rettungsstation" align="left">
+              <p:commandButton title="Neue Retungsstation" icon="fa fa-plus" action="#{luftrettungBean.onNeueRettungsstation()}" update="frm_StationBearbeiten" 
+                               oncomplete="PF('wdg_StationBearbeiten').show();"/>
+
+              <p:commandButton title="Rettungsstation bearbeiten" icon="fa fa-pencil" action="#{luftrettungBean.onRettungsstationBearbeiten()}" update="frm_StationBearbeiten frm_mapRettungsstation" 
+                               rendered="#{not empty luftrettungBean.selectedStation}" onclick="PF('wdg_StationBearbeiten').show();" oncomplete="drawErrorFix();" />
+
+              <p:commandButton title="Rettungsstation löschen" icon="fa fa-trash" action="#{luftrettungBean.onLoescheRettungsstation()}" update="frm_rettungsstation" rendered="#{not empty luftrettungBean.selectedStation}">
+                <p:confirm header="Rettungsstation wirlich löschen?" message="Rettungsstation löschen" icon="ui-icon-alert" />
+              </p:commandButton>
+
+              <p:commandButton title="Einsatzverwaltung" icon="fa fa-ambulance" update="dlg_EinsaetzeVerwalten" rendered="#{not empty luftrettungBean.selectedStation}"
+                               oncomplete="PF('wdg_EinsaetzeVerwalten').show();"/>
+
+              <p:commandButton title="Schließen" icon="fa fa-close" oncomplete="PF('wdg_rettungsstation').hide()" action="#{luftrettungBean.onRefreh()}" />
+
+            </p:toolbarGroup>
+
+          </p:toolbar>
+
+          <p:dataTable id="tbl_stationen"
+                       widgetVar="wdg_tbl_stationen"
+                       var="stationenList" 
+                       value="#{luftrettungBean.stationenVerwaltung}" 
+                       paginator="true"
+                       paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                       rows="15"
+                       rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60,100,500"
+                       rowKey="#{stationenList.idRettungsstationen}"
+                       selection="#{luftrettungBean.selectedStation}"
+                       selectionMode="single"
+                       scrollable="true"
+                       emptyMessage="Keine Stationen vorhanden"
+                       >
+
+            <p:ajax listener="#{luftrettungBean.onRowSelect}" event="rowSelect" update="frm_rettungsstation" />
+            <p:ajax listener="#{luftrettungBean.onRowUnselect}" event="rowUnselect" update="frm_rettungsstation" />
+
+            <p:column headerText="Name" width="500">
+              <h:outputText value="#{stationenList.nameRettungsstatione}"/>
+            </p:column>
+
+            <p:column headerText="Stadt">
+              <h:outputText value="#{stationenList.stadt}"/>
+            </p:column>
+
+            <p:column headerText="Land">
+              <h:outputText value="#{stationenList.land}"/>
+            </p:column>
+
+            <p:column headerText="Bundesland">
+              <h:outputText value="#{stationenList.bundesland}"/>
+            </p:column>
+
+            <p:column headerText="Scenery" style="text-align: center">
+              <h:outputLink  target="_blank" value="#{stationenList.sceneryURL}" title="Scenery Downloadlink #{stationenList.sceneryURL}" rendered="#{stationenList.sceneryURL ne ''}" >
+                Scenery
+              </h:outputLink>
+              <h:outputText value="N/A" rendered="#{stationenList.sceneryURL eq ''}" />
+            </p:column>
+
+          </p:dataTable>
+
+        </h:form>
+      </p:dialog>
+
+      <p:dialog id="dlg_StationBearbeiten" widgetVar="wdg_StationBearbeiten" header="Rettungsstation bearbeiten" width="900"> 
+        <h:form id="frm_StationBearbeiten">
+          <p:toolbar id="tlb_StationBearbeiten">
+            <p:toolbarGroup id="tbg_StationBearbeiten">
+              <p:commandButton title="Rettungsstation speichern" icon="fa fa-save" action="#{luftrettungBean.onSpeichernRettungsstation()}" update="frm_rettungsstation"/>
+              <p:commandButton title="Koordinaten manuell eingeben" icon="fa fa-globe" onclick="PF('wdg_koordinaten').show();" update="frm_koordinaten"/>
+              <p:commandButton title="Schliessen" icon="fa fa-close" action="#{luftrettungBean.onRefreh()}" oncomplete="PF('wdg_StationBearbeiten').hide();" update="frm_rettungsstation"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <table cellpadding="2" cellspacing="4" border="0" align="left" width="100%" id="tbl_statEditInput">
+            <tr>
+              <td width="20%;"><h:outputText value="Stationsbezeichnung"/>  </td>
+              <td width="80%"><h:inputText value="#{luftrettungBean.selectedStation.nameRettungsstatione}" style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Kürzel/ICAO" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.kuerzel}" style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Stadt" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.stadt}"  style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Land" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.land}"  style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Bundesland" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.bundesland}" style="width: 100%"  /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Flugzeug ID" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.idFlugzeugMietKauf}"  style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Anzahl Spieler" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.maxAnzahlSpieler}"  style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Sprache" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.sprache}"  style="width: 100%"  /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Scenery URL" /></td>
+              <td><h:inputText value="#{luftrettungBean.selectedStation.sceneryURL}" style="width: 100%"  maxlength="250" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Pos. Längengrad" /></td>
+              <td><h:inputText id="txt_laengengrad" value="#{luftrettungBean.frmLaengenGradStation}"  style="width: 100%" /></td>
+            </tr>
+            <tr>
+              <td><h:outputText value="Pos. Breitengrad" /></td>
+              <td><h:inputText id="txt_breitengrad" value="#{luftrettungBean.frmBreitenGradStation}"  style="width: 100%" />
+              </td>
+            </tr>
+          </table>
+
+          <h:inputHidden id="hid_Position" value="#{luftrettungBean.extPosdaten}"/>
+
+        </h:form>
+
+        <h:form id="frm_mapRettungsstation">
+
+          <p:panelGrid columns="1" style="width: 100%">
+
+            <div id="stationsMap" style="width: 100%; height: 300px;">
+
+              <script>
+
+
+                function drawErrorFix() {
+                  mymap.setView(new L.LatLng(#{luftrettungBean.selectedStation.breitengrad}, #{luftrettungBean.selectedStation.laengengrad}), 14);
+                  mymap.invalidateSize(true);
+                }
+
+
+                var heliPort = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [38, 95],
+                  popupAnchor: [0, -10]
+                });
+
+                var mymap = L.map('stationsMap').setView(new L.LatLng(#{luftrettungBean.selectedStation.breitengrad}, #{luftrettungBean.selectedStation.laengengrad}), 14);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'})
+                        .addTo(mymap);
+
+
+                var marker = new L.marker([#{luftrettungBean.selectedStation.breitengrad}, #{luftrettungBean.selectedStation.laengengrad}],
+                        {
+                          draggable: true, icon: heliPort
+                        }).addTo(mymap).bindPopup('#{luftrettungBean.selectedStation.nameRettungsstatione}');
+
+                marker.on("dragend", function (e) {
+                  setVarsRettungsStationPosition(e.target.getLatLng());
+                });
+
+
+
+              </script>
+
+            </div>
+
+          </p:panelGrid>
+        </h:form>
+
+      </p:dialog>
+
+
+      <p:dialog id="dlg_EinsaetzeVerwalten" widgetVar="wdg_EinsaetzeVerwalten" header="Einsätze verwalten für Station: #{luftrettungBean.frmStationsName}" 
+                closable="false" width="70%">
+        <h:form id="frm_EinsaetzeVerwalten">
+
+          <p:toolbar id="tlb_EinsaetzeVerwalten">
+
+            <p:toolbarGroup id="tbg_EinsaetzeVerwalten" align="left">
+
+              <p:commandButton title="Neuer Einsatz" icon="fa fa-plus" action="#{luftrettungBean.onNeuerEinsatz()}" update="frm_EinsaetzeVerwalten frm_EinsaetzeBearbeiten" 
+                               oncomplete="PF('wdg_EinsaetzeBearbeiten').show();"/>
+
+              <p:commandButton title="Einsatz bearbeiten" icon="fa fa-pencil" update="frm_EinsaetzeBearbeiten" rendered="#{not empty luftrettungBean.selectedEinsatz}"
+                               oncomplete="PF('wdg_EinsaetzeBearbeiten').show();"/>
+
+              <p:commandButton title="Einsatz kopieren" icon="fa fa-copy" action="#{luftrettungBean.onKopieEinsatz()}" update="frm_EinsaetzeBearbeiten" rendered="#{not empty luftrettungBean.selectedEinsatz}"
+                               oncomplete="PF('wdg_EinsaetzeBearbeiten').show();"/>
+
+
+              <p:commandButton title="Einsatz löschen" icon="fa fa-trash" action="#{luftrettungBean.onLoescheEinsatz()}" update="frm_EinsaetzeVerwalten" rendered="#{not empty luftrettungBean.selectedEinsatz}">
+                <p:confirm header="Einsatz wirlich löschen?" message="Einsatz löschen" icon="ui-icon-alert" />
+              </p:commandButton>
+
+              <p:commandButton title="Schließen" icon="fa fa-close" oncomplete="PF('wdg_EinsaetzeVerwalten').hide()" action="#{luftrettungBean.onRefreh()}" />              
+            </p:toolbarGroup>
+
+          </p:toolbar>
+
+
+          <p:dataTable id="tbl_Einsaetze"
+                       widgetVar="wdg_Einsaetze"
+                       var="EinsatzList" 
+                       value="#{luftrettungBean.einsaetze}" 
+                       liveScroll="true" 
+                       scrollable="true"
+                       scrollHeight="700"
+                       rows="20"
+                       rowKey="#{EinsatzList.idRettungseinsaetze}"
+                       selection="#{luftrettungBean.selectedEinsatz}"
+                       selectionMode="single"
+                       emptyMessage="Keine Einsätze vorhanden"
+                       >
+
+            <p:ajax listener="#{luftrettungBean.onRowSelectEinsatz}" event="rowSelect" update="frm_EinsaetzeVerwalten" />
+            <p:ajax listener="#{luftrettungBean.onRowUnselectEinsatz}" event="rowUnselect" update="frm_EinsaetzeVerwalten" />
+
+
+
+            <p:column headerText="Bezeichnung" width="150" sortBy="#{EinsatzList.kurzbezeichnung}">
+              <h:outputText value="#{EinsatzList.kurzbezeichnung}"/>
+            </p:column>
+
+            <p:column headerText="Wegpunkt Unfall" width="150" sortBy="#{EinsatzList.bezeichnungunfall}">
+              <h:outputText value="#{EinsatzList.bezeichnungunfall}"/>
+            </p:column>
+
+            <p:column headerText="Wegpunkt Ziel" width="150" sortBy="#{EinsatzList.bezeichnungziel}">
+              <h:outputText value="#{EinsatzList.bezeichnungziel}"/>
+            </p:column>
+
+
+          </p:dataTable>
+
+
+        </h:form>
+      </p:dialog>            
+
+
+      <p:dialog id="dlg_EinsaetzeBearbeiten" widgetVar="wdg_EinsaetzeBearbeiten" header="Einsatz bearbeiten" width="80%" height="600"> 
+        <h:form id="frm_EinsaetzeBearbeiten">
+          <p:toolbar id="tlb_EinsaetzeBearbeiten">
+            <p:toolbarGroup id="tbg_EinsaetzeBearbeiten">
+
+              <p:commandButton title="Einsatz speichern" action="#{luftrettungBean.onSpeichernEinsatz()}"  update="frm_EinsaetzeVerwalten frm_EinsaetzeBearbeiten frm_gmapUnfall"/>
+
+              <p:commandButton title="Orte festlegen" action="#{luftrettungBean.onPositionenFestlegenEinsatzUnfall()}" onclick="PF('wdg_gmapUnfall').show();" 
+                               oncomplete="drawErrorFixUnfall();" update="frm_gmapUnfall"/>
+
+              <p:commandButton title="Schliessen" action="#{luftrettungBean.onRefreh()}" icon="fa fa-close" oncomplete="PF('wdg_EinsaetzeBearbeiten').hide();" update="frm_EinsaetzeVerwalten"/>
+
+            </p:toolbarGroup>
+          </p:toolbar>
+
+
+          <p:panelGrid columns="2" style="width: 100%">
+            <h:outputLabel value="Kurzbezeichnung Einsatz"/>
+            <h:inputText value="#{luftrettungBean.selectedEinsatz.kurzbezeichnung}" style="width: 100%"/>
+
+            <h:outputLabel value="Einsatzmeldung"/>
+            <p:editor id="ed1" value="#{luftrettungBean.selectedEinsatz.einsatzmeldung}" height="350" style="width: 100%" />
+          </p:panelGrid>
+
+
+          <p:panelGrid columns="7" style="width: 100%">
+            <h:outputLabel value="Pos. Längengrad Unfall"/>
+            <h:inputText id="txt_laengengrad_Unfall" value="#{luftrettungBean.selectedEinsatz.laengengradUnfall}" style="width: 100%"/>
+            <h:outputLabel value="Pos. Breitengrad Unfall"/>
+            <h:inputText id="txt_breitengrad_Unfall" value="#{luftrettungBean.selectedEinsatz.breitengradUnfall}" style="width: 100%"/>
+            <h:outputLabel value="Bezeichnung"/>
+            <h:inputText value="#{luftrettungBean.selectedEinsatz.bezeichnungunfall}" style="width: 100%"/>
+            <h:outputLabel value=""/>
+
+            <h:outputLabel value="Pos. Längengrad Ziel"/>
+            <h:inputText id="txt_laengengrad_Ziel" value="#{luftrettungBean.selectedEinsatz.laengengradZiel}" style="width: 100%"/>
+            <h:outputLabel value="Pos. Breitengrad Ziel"/>
+            <h:inputText id="txt_breitengrad_Ziel" value="#{luftrettungBean.selectedEinsatz.breitengradZiel}" style="width: 100%"/>
+            <h:outputLabel  value="Bezeichnung"/>
+            <p:selectOneMenu id="favoriten" value="#{luftrettungBean.frmBezeichnungZiel}" style="width: 90%" filter="true" filterMatchMode="contains" editable="true">
+              <f:selectItems value="#{luftrettungBean.favoriten}" var="fav" itemValue="#{fav.zielbezeichnung}" itemLabel="#{fav.zielbezeichnung}" />
+              <p:ajax event="change" listener="#{luftrettungBean.onChangeFavorit()}" update="txt_breitengrad_Ziel txt_laengengrad_Ziel" />
+            </p:selectOneMenu>
+
+            <p:commandButton id="cmdFav" title="Ziel als Favorit speichern" action="#{luftrettungBean.onSpeichernFavorit()}" icon="fa fa-bookmark" update="favoriten"/>
+
+            <h:outputLabel value="Vergütungsfaktor"/>
+            <h:inputText value="#{luftrettungBean.selectedEinsatz.preisfaktor}" style="width: 100%"/>
+            <h:outputLabel value=""/><h:outputLabel value=""/><h:outputLabel value=""/><h:outputLabel value=""/>
+
+          </p:panelGrid>
+
+
+          <h:inputHidden id="hid_PositionUnfall" value="#{luftrettungBean.extPosdatenUnfall}"/>
+          <h:inputHidden id="hid_PositionZiel" value="#{luftrettungBean.extPosdatenZiel}"/>
+
+        </h:form>
+
+
+      </p:dialog>      
+
+
+
+      <p:dialog id="dlg_gmapUnfall" widgetVar="wdg_gmapUnfall" header="Orte Festlegen" resizable="false" width="900" height="900">
+
+        <h:form id="frm_gmapUnfall">
+
+          <p:panelGrid columns="1" style="width: 100%; height: 100%">
+
+            <div id="unfallMap" style="width: 100%; height: 880px;">
+
+              <script>
+
+
+                function drawErrorFixUnfall() {
+                  unfallMap.setView(new L.LatLng(#{luftrettungBean.frmBreitenGradUnfall}, #{luftrettungBean.frmLaengenGradUnfall}), 10);
+                  unfallMap.invalidateSize(true);
+                }
+
+
+                var heliPort = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+                var ersteHilfeIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/ersteHilfe.png',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+
+
+                var unfallMap = L.map('unfallMap').setView(new L.LatLng(#{luftrettungBean.frmBreitenGradUnfall}, #{luftrettungBean.frmLaengenGradUnfall}), 10);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'})
+                        .addTo(unfallMap);
+
+
+                var marker = new L.marker([#{luftrettungBean.frmBreitenGradUnfall}, #{luftrettungBean.frmLaengenGradUnfall}],
+                        {
+                          draggable: true, icon: ersteHilfeIcon
+                        }).addTo(unfallMap).bindPopup('#{luftrettungBean.selectedEinsatz.kurzbezeichnung}  - Unfallort');
+
+                marker.on("dragend", function (e) {
+                  setVarsUnfallPosition(e.target.getLatLng());
+                });
+
+                var marker = new L.marker([#{luftrettungBean.frmBreitenGradZiel}, #{luftrettungBean.frmLaengenGradZiel}],
+                        {
+                          draggable: true, icon: heliPort
+                        }).addTo(unfallMap).bindPopup('#{luftrettungBean.selectedEinsatz.kurzbezeichnung} - Ziel');
+
+                marker.on("dragend", function (e) {
+                  setVarsZielPosition(e.target.getLatLng());
+                });
+
+
+                var marker = new L.marker([#{luftrettungBean.frmBreitenGradStation}, #{luftrettungBean.frmLaengenGradStation}],
+                        {
+                          icon: heliPort
+                        }).addTo(unfallMap).bindPopup('#{luftrettungBean.selectedStation.nameRettungsstatione} - Start').openPopup();
+
+              </script>
+
+            </div>
+
+
+
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>
+
+
+      <p:dialog id="dlg_favoriten" widgetVar="wdg_favoriten" header="Favoriten verwalten" width="50%" >
+        <h:form id="frm_favoriten">
+
+          <p:toolbar id="tlb_favoriten">
+            <p:toolbarGroup id="tbg_favoriten">
+              <p:commandButton type="button" icon="fa fa-close" onclick="PF('wdg_favoriten').hide();" />
+              <p:commandButton icon="fa fa-refresh" update="tbl_favoriten"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:dataTable id="tbl_favoriten" widgetVar="widg_favoriten" var="favoriten" value="#{luftrettungBean.favoriten}" 
+                       scrollable="true" scrollHeight="400" scrollRows="40" >
+
+            <p:column style="width:32px;text-align: center">
+              <p:commandButton icon="fa fa-trash" title="Favorit löschen" action="#{luftrettungBean.onDeleteFavorit()}" update="tbl_favoriten">
+                <f:setPropertyActionListener value="#{favoriten}" target="#{luftrettungBean.selectedFavorit}" />
+                <p:confirm header="Favorit wirlich löschen?" message="Favorit löschen" icon="ui-icon-alert" />
+              </p:commandButton>
+            </p:column>
+
+            <p:column headerText="Bezeichnung">
+              <h:outputText value="#{favoriten.zielbezeichnung}"/>
+            </p:column>
+
+            <p:column headerText="Laengengrad">
+              <h:outputText value="#{favoriten.laengengrad}"/>
+            </p:column>
+
+            <p:column headerText="Breitengrad">
+              <h:outputText value="#{favoriten.breitengrad}"/>
+            </p:column>
+
+          </p:dataTable>
+
+        </h:form>
+
+      </p:dialog>
+
+      <p:dialog id="dlg_koordinaten" widgetVar="wdg_koordinaten" header="Koordinaten manuell" modal="true">
+        <h:form id="frm_koordinaten">
+          <p:toolbar id="tlb_koordinaten">
+            <p:toolbarGroup id="tbg_koordinaten">
+              <p:commandButton title="Koordinaten speichern" icon="fa fa-save" action="#{luftrettungBean.onSpeichernKoordinatenRettungsstation()}" oncomplete="PF('wdg_koordinaten').hide();" update="frm_StationBearbeiten frm_mapRettungsstation"/>
+              <p:commandButton title="Schließen" icon="fa fa-close" onclick="PF('wdg_koordinaten').hide();"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:panelGrid columns="2" style="width: 100%">
+            <h:outputLabel value="Längengrad"/> <h:inputText value="#{luftrettungBean.frmLaengenGradStation}"/>
+            <h:outputLabel value="Breitengrad"/> <h:inputText value="#{luftrettungBean.frmBreitenGradStation}"/>
+          </p:panelGrid>
+
+        </h:form>
+
+
+      </p:dialog>
+
+
+    </p:layout>
+
+  </h:body>
+
+</html>

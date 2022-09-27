@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW Feinabstimmung</title>
+
+  </h:head>
+
+  #{feinabstimmungBean.daten}"
+
+  <h:body>
+
+
+
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+      <ui:include src="/users/menueMeldungen.xhtml"/>
+
+      <ui:fragment rendered="#{loginMB.newMenue}">
+        <ui:include src="/users/menue.xhtml" />
+      </ui:fragment>
+
+
+      <p:layoutUnit position="center" closable="false" header="Administration - Feinabstimmung">
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+
+        <h:form id="frm_feinabstimmung">
+
+          <p:toolbar id="tlb_feinabstimmung">
+            <p:toolbarGroup id="tbg_feinabstimmung">
+              <p:commandButton value="Speichern" action="#{feinabstimmungBean.onSave()}" update="frm_feinabstimmung" icon="ui-icon-disk" rendered="#{not empty feinabstimmungBean.selectedData }"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:panelGrid columns="2">
+            <f:facet name="header">
+              Ein Titel
+            </f:facet>
+            <h:outputLabel value="FTW Version :"  /><h:inputText value="#{feinabstimmungBean.selectedData.ftwVersion}" size="80" maxlength="250"/>
+            <h:outputLabel value="FTW Jobs - Ablaufzeit in Minuten :"  /><h:inputText value="#{feinabstimmungBean.selectedData.ftwJobsAblauf}" size="5"/>
+            <h:outputLabel value="Routen Jobs - Ablaufzeit in Minuten :"  /><h:inputText value="#{feinabstimmungBean.selectedData.routenJobsAblauf}" size="5" title="Sollte immer einen ganzen Tag ergeben"/>
+            <h:outputLabel value="Linien Jobs - Ablaufzeit in Minuten :"  /><h:inputText value="#{feinabstimmungBean.selectedData.linieJobsAblauf}" size="5"/>
+
+          </p:panelGrid>
+
+          <p:panelGrid columns="16" style="margin-left: 10px;margin-top: 10px">
+            <f:facet name="header">
+              Umkreisbestimmung Längen- und Breitengrade (1 BG = 110 KM - 1 LG = 72 KM)
+            </f:facet>
+
+            <h:outputLabel value="Klassen"/><h:outputLabel value="BG 1"/><h:outputLabel value="BG 2"/><h:outputLabel value="BG 3"/><h:outputLabel value="BG 4"/><h:outputLabel value="BG 5"/><h:outputLabel value="BG 6"/><h:outputLabel value="BG 7"/><h:outputLabel value="BG 8"/><h:outputLabel value="BG 9"/><h:outputLabel value="BG 10"/><h:outputLabel value="BG 11"/><h:outputLabel value="BG 12"/><h:outputLabel value="BG 13"/><h:outputLabel value="BG 14"/><h:outputLabel value="BG 15"/>
+            <h:outputLabel value=""/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass1}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass2}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass3}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass4}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass5}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass6}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass7}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass8}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass9}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass10}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass11}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass12}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass13}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass14}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukBGClass15}" size="5"/>
+
+            <h:outputLabel value=""/><h:outputLabel value="LG 1"/><h:outputLabel value="LG 2"/><h:outputLabel value="LG 3"/><h:outputLabel value="LG 4"/><h:outputLabel value="LG 5"/><h:outputLabel value="LG 6"/><h:outputLabel value="LG 7"/><h:outputLabel value="LG 8"/><h:outputLabel value="LG 9"/><h:outputLabel value="LG 10"/><h:outputLabel value="LG 11"/><h:outputLabel value="LG 12"/><h:outputLabel value="LG 13"/><h:outputLabel value="LG 14"/><h:outputLabel value="LG 15"/>
+            <h:outputLabel value=""/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass1}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass2}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass3}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass4}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass5}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass6}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass7}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass8}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass9}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass10}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass11}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass12}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass13}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass14}" size="5"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.ukLGClass15}" size="5"/>
+
+          </p:panelGrid>
+
+
+          <p:panelGrid columns="8" style="margin-left: 10px;margin-top: 10px">
+            <f:facet name="header">
+              Preise für Pax-Jobs und Cargo-Jobs
+            </f:facet>
+
+            <h:outputLabel value="Jobs"/><h:outputLabel value="P1"/><h:outputLabel value="P2"/><h:outputLabel value="P3"/><h:outputLabel value="P4"/><h:outputLabel value="P5"/><h:outputLabel value="P6"/><h:outputLabel value="P7"/>
+            <h:outputLabel value=""/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP1}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP2}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkp3}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP4}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP5}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP6}" size="7"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkP7}" size="7"/>
+
+            <h:outputLabel value="Cargo"/><h:outputLabel value="C1"/><h:outputLabel value="C2"/><h:outputLabel value="C3"/><h:outputLabel value="C4"/><h:outputLabel value="C5"/><h:outputLabel value="C6"/><h:outputLabel value="C7"/>
+            <h:outputLabel value=""/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC1}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC2}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC3}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC4}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC5}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC6}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+            <h:inputText value="#{feinabstimmungBean.selectedData.pkC7}" size="7" title="Preis für 1 Tonne / 100 Meilen"/>
+
+          </p:panelGrid>
+
+          <p:panelGrid columns="4" style="margin-left: 10px;margin-top: 10px">
+            <f:facet name="header">
+              Systempreise
+            </f:facet>
+
+
+            <h:outputLabel value="Preis AVGAS (kg)"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.preisAVGASkg}" size="7"/>
+            <h:outputLabel value="Preis JETA (kg)"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.preisJETAkg}" size="7"/>
+            <h:outputLabel value="Buchungsgebühr Multiplikator vom Brutto Autragsvolumen"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrPrzBuchungsgebuehr}" size="7"/>
+            <h:outputLabel value="Flughafen Sicherheitsgebühr / Pax"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrSicherheitsgebuehr}" size="7"/>
+            <h:outputLabel value="Bodenpersonal Multiplikator vom Brutto Auftragsvolumen"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrBodenpersonalgebuehr}" size="7"/>
+            <h:outputLabel value="Crewgebühren Stundensatz Höchstwert"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrCrewgebuehren}" size="7"/>
+            <h:outputLabel value="Flugbegleiter Stundensatz Höchstwert"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrFlugbegleiter}" size="7"/>
+            <h:outputLabel value="Landegebühr pro (kg)"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrLandegebuehr}" size="7"/>
+            <h:outputLabel value="Personalkostensatz Fluggesellschaft (vom Gewinn der FG)"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.abrPersonalkostenFluggesellschaft}" size="7" title="der Wert erhöht sich um Faktor 1.5 pro Größe einer FG "/>
+
+            <h:outputLabel value="Max. Gewicht Gepäck"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.basisGewichtGepaeck}" size="7"/>
+            <h:outputLabel value="Preis für Gepäck N/A"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.preisFuerGepaeckkg}" size="7"/>
+            <h:outputLabel value="Max. Gewicht Passagier"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.basisGewichtPassagier}" size="7"/>
+            <h:outputLabel value="Preis für Passagier"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.preisFuerPassagier}" size="7"/>
+            <h:outputLabel value="Preis für Cargo (kg)"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.preisFuerCargokg}" size="7"/>
+
+          </p:panelGrid>
+
+
+          <p:panelGrid columns="4" style="margin-left: 10px;margin-top: 10px">
+            <f:facet name="header">
+              Flguzeugpreise
+            </f:facet>
+
+            <h:outputLabel value="Faktor für Zellenstunden"/> 
+            <h:inputText value="#{feinabstimmungBean.selectedData.faktorFuerZellenstunden}" size="7"/>
+
+          </p:panelGrid>
+          
+          
+        </h:form>        
+
+
+
+
+
+
+
+      </p:layoutUnit>
+    </p:layout>
+
+  </h:body>
+
+
+</html>
+

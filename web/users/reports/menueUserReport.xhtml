@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <h:outputStylesheet library="css" name="default.css" />
+    </h:head>
+
+    <p:layoutUnit position="north" closable="false" header="#{loginMB.ftwVersion}" style="text-align: center">
+
+    </p:layoutUnit>
+
+    <p:layoutUnit position="west" closable="false"  >
+      <h:form id="frm_menue">
+
+        <p:growl id="messages" widgetVar="messages" showDetail="false"  life="10000"  autoUpdate="true" />
+
+        <div align="center">
+          <p:panelGrid columns="3" style="text-align: center; width: 250px;" rendered="#{not empty loginMB.bankSaldo}">
+            <p:commandButton title="#{sprache.mnu_Startseite}" action="/users/index.xhtml?faces-redirect=true" icon="fa fa-home fa-lg"/>
+            <h:outputLabel value="#{sprache.mnu_Kopf_kontostand}"/>
+            <h:outputLabel value="#{loginMB.bankSaldo}" style="float: right">
+              <f:convertNumber pattern="#,##0.00 &euro;" />
+            </h:outputLabel>
+          </p:panelGrid>
+
+
+          <p:menu style="width: 250px;" toggleable="true">
+            <p:submenu label="#{loginMB.username}" >
+              <p:menuitem value="#{sprache.mnu_Einstellungen}" outcome="/users/einstellungen.xhtml" icon="fa fa-gears"/>
+              <p:menuitem value="Mail (#{mailBean.getAnzahlUngeleseneMails()})" outcome="/users/mail.xhtml" icon="fa fa-envelope"/>
+              <p:menuitem value="#{sprache.mnu_Abmelden}"  action="#{loginMB.logout()}" icon="fa fa-sign-out fa-lg"/>  
+              <p:menuitem value="#{sprache.mnu_FTWForum}" url="http://www.ftw-sim.de/forum/app.php/portal" target="_blank" icon="fa fa-info-circle"/>            
+            </p:submenu>
+
+            <p:submenu label="#{sprache.mnu_Logbuecher}" >
+              <p:menuitem value="#{sprache.mnu_Fluglogbuch}" outcome="/users/reports/fluglogbuch.xhtml" icon="fa fa-plane"/>
+
+              <p:menuitem value="#{sprache.mnu_Unternehmensentwicklung}" outcome="/users/reports/unternehmensentwicklung.xhtml" icon="fa fa-building"/>
+            </p:submenu>
+
+            <p:submenu label="#{sprache.mnu_Finanzuebersichten}" >
+              <p:menuitem value="#{sprache.mnu_Kostenstellenauswertung}" outcome="/users/reports/kostenstellenauswertung.xhtml" icon="fa fa-money"/>
+
+            </p:submenu>
+
+            <p:submenu label="#{sprache.mnu_Verbindungen}" >
+              <p:menuitem value="#{sprache.mnu_MeineFluggesellschaften}" outcome="/users/reports/zugehoerigkeitFluggesellschaft.xhtml" icon="fa fa-user"/>
+              <p:menuitem value="#{sprache.mnu_MeineRouten}" outcome="/users/reports/meineRouten.xhtml" icon="fa fa-sitemap"/>
+
+            </p:submenu>
+
+
+
+          </p:menu>  
+        </div>
+      </h:form>
+
+    </p:layoutUnit>
+
+
+    <p:dialog id="dlg_meldung" widgetVar="wdg_meldung" visible="#{loginMB.systemMeldung}" header="Systemmeldung - Achtung" closable="false" modal="true" width="1024" height="768">
+      <h:form id="frm_meldung">
+        <h:outputLabel value="#{loginMB.systemmeldungText}" escape="false"/>
+      </h:form>
+    </p:dialog>
+
+
+    <p:dialog id="dlg_sperrung" widgetVar="wdg_sperrung" visible="#{loginMB.istGesperrt}" header="Systemmeldung - Account gesperrt" closable="false" modal="true" width="640" height="280">
+      <h:form id="frm_sperrungg">
+        <div align="center">
+          <h1>Dein Account ist gesperrt</h1>
+          <p:commandButton value="Logout" action="#{loginMB.logout()}"/>
+        </div>
+      </h:form>
+    </p:dialog>
+  
+  </f:view>
+</html>

@@ -1,0 +1,893 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{sprache.Auftragsbestand_pnl_header_meineAuftraegeBereitZumAbflug}</title>
+      
+      #{assignementBean.onViewMyFlight()}
+      
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Auftragsbestand_pnl_header_meineAuftraegeBereitZumAbflug}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_tools">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.yes}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.no}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:ribbon>
+              <p:tab title="Planung #{sprache.Auftragsbestand_pnl_header_meineAuftraegeBereitZumAbflug}">
+                <p:ribbonGroup style="height: 50px;">
+                  <p:panelGrid id="png_planungAuftrag" columns="12" style="height: 46px;" >
+
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_inDieWartehalleSetzen}"  action="#{assignementBean.onAddToDepartureLonge(2)}" icon="fa fa-cloud" 
+                                     oncomplete="updateTableDiv()" />
+
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_vonMeinenAuftraegenEntfernen}"  rendered="#{assignementBean.viewMyFlight}" 
+                                     action="#{assignementBean.onRemoveFromMyFlight(2)}" icon="fa fa-trash" update ="frm_daten frm_daten1" />
+
+                    <p:commandButton disabled="true" id="cmd41" title="#{sprache.Auftragsplanung_btn_convertFG}" action="#{assignementBean.onStandardWerteFuerConvertSetzen()}" oncomplete="PF('wdg_convert').show();" icon="fa fa-exchange" 
+                                     rendered="#{assignementBean.hatUserEineFluggesellschaft}" update="frm_daten frm_convert"/>
+
+
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_aktualisieren}" action="#{assignementBean.onViewMyFlight()}" icon="fa fa-refresh" update="frm_daten frm_daten1 frm_Summen" />
+
+                    <h:commandLink id="cmd_export">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}"/>
+                      <p:dataExporter type="csv" target="frm_daten:assignement_Table" fileName="Auftragsbestand"  pageOnly="false" />
+                      <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                    </h:commandLink>
+                    
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="Planung #{sprache.Auftragsbestand_pnl_header_wartehalle}">
+                <p:ribbonGroup style="height: 50px;">
+                  <p:panelGrid id="png_planungWartehalle" columns="12" style="height: 46px;" >
+
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_verschiebenInMeineAuftraege}" action="#{assignementBean.onRemoveToReadyForTakeoff(2)}" icon="fa fa-eject" 
+                                     oncomplete="updateTableDiv()" />
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_vonMeinenAuftraegenEntfernen}" action="#{assignementBean.onRemoveFromMyFlightToAssignments(2)}" icon="fa fa-trash" 
+                                     oncomplete="updateTableDiv()" />
+
+                    <p:commandButton title="#{sprache.Auftragsbestand_btn_aktualisieren}" action="#{assignementBean.onViewMyFlight()}" icon="fa fa-refresh" 
+                                     oncomplete="updateTableDiv()" />
+
+                    <p:remoteCommand name="updateTableDiv" update="frm_daten frm_daten1 frm_Summen" />
+
+                    <h:commandLink id="cmd_export1">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}"/>
+                      <p:dataExporter type="csv" target="frm_daten1:HoldArea" fileName="Auftragsbestand-Wartehalle"  pageOnly="false" />
+                      <p:tooltip for="cmd_export1" value="Datenexport CSV"/>
+                    </h:commandLink>
+
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+
+
+              <p:tab title="Extras">
+                <p:ribbonGroup style="height: 50px;">
+                  <p:panelGrid id="png_extras" columns="12" style="height: 46px;" >
+                    <p:commandButton id="cmd10" title="#{sprache.Auftragsbestand_btn_SummenfensterAnzeigen}" action="#{loginMB.onSummenFensterAnzeigen()}"  
+                                     oncomplete="PF('wdg_summen').show()" icon="ui-icon-calculator"/>
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+            </p:ribbon>
+          </h:form>
+
+          <h:form id="frm_daten">
+
+            <p:dataTable id="assignement_Table"
+                         widgetVar="assignement_Table"
+                         var="assignmentItems"
+                         value="#{assignementBean.assignments}"
+                         rowKey="#{assignmentItems.idassignement}"
+                         selection="#{assignementBean.selectedAssignments}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="#{loginMB.tabellenzeilen}"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60,100,150"
+                         scrollable="true"
+                         sortMode="multiple">
+
+              
+              <f:facet name="header">
+                <h2>#{sprache.Auftragsbestand_pnl_header_meineAuftraegeBereitZumAbflug}</h2>
+              </f:facet>
+              
+              
+              <p:ajax event="rowSelectCheckbox" update="frm_Summen" />
+              <p:ajax event="rowUnselectCheckbox" update="frm_Summen"   />
+              <p:ajax event="toggleSelect" update="frm_Summen"   />
+
+
+              <p:ajax listener="#{assignementBean.onRowSelect}" event="rowSelect" update="frm_daten frm_Summen"/>
+              <p:ajax listener="#{assignementBean.onRowUnselect}" event="rowUnselect" update="frm_daten frm_Summen"/>
+
+              <p:column style="width: 32px" exportable="false" sortBy="#{assignmentItems.airlineLogo}">
+                <p:graphicImage id="logo" url="#{assignmentItems.airlineLogo}" height="16">
+                  <p:tooltip for="logo">
+                    <p:graphicImage url="#{assignmentItems.airlineLogo}" />
+                  </p:tooltip>
+                </p:graphicImage>
+              </p:column>
+
+              <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false"/>
+
+              <p:column width="15" exportable="false">
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_status}" style="text-align: center;" >
+                <h:outputText value='#{sprache.Auftragsbestand_tbl_StatusFliegtGerade}' rendered="#{assignmentItems.userlock==1}"/>
+                <h:outputText value='#{sprache.Auftragsbestand_tbl_StatusBereitZumAbflug}' rendered="#{assignmentItems.userlock==0}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_vonIcao}"  style="text-align: center;" >
+                <h:outputText value='#{assignmentItems.fromIcao}' />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_aktuellerStandort}"  style="text-align: center;" sortBy="#{assignmentItems.locationIcao}">
+                <h:outputText value='#{assignmentItems.locationIcao}' />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_nachIcao}"  style="text-align: center;" sortBy="#{assignmentItems.toIcao}" >
+                <h:outputText value='#{assignmentItems.toIcao}' />
+              </p:column>
+
+              <!-- diese Spalte nur für Export -->
+              <p:column headerText="#{sprache.Auftragsplanung_tbl_menge}" width="150" style="text-align: right;" sortBy="#{assignmentItems.ammount}" visible="false" exportable="true">
+                <h:outputText value="#{assignmentItems.ammount}">
+                  <f:convertNumber pattern="0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_menge}" style="text-align: right;" sortBy="#{assignmentItems.ammount}">
+                <h:outputText value="#{assignmentItems.ammount}" rendered="#{assignmentItems.routenArt==2}" >
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value="#{assignmentItems.ammount} #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==1}" />
+                <h:outputText value="#{assignmentItems.ammount}" rendered="#{assignmentItems.routenArt==3}" />
+                <h:outputText value="#{assignmentItems.ammount} BC #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==4}" />
+                <h:outputText value="#{assignmentItems.ammount} #{sprache.kg} Fuel" rendered="#{assignmentItems.routenArt==5}" />
+                <h:outputText value=" *" rendered="#{assignmentItems.gesplittet}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_ladungsArt}" style="text-align: left;" sortBy="#{assignmentItems.routenArt}" width="30">
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==5}"/>                
+                <h:outputText value="TRF"    rendered="#{assignmentItems.routenArt==3}" />
+              </p:column>
+
+              <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gewichtPax}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                </f:facet>
+                <h:outputText value='#{assignmentItems.gewichtPax}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4 }">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+              </p:column>
+
+
+              <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gepaeck}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                </f:facet>
+                <h:outputText value='#{assignmentItems.gepaeck}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4 }">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+              </p:column>
+
+
+              <p:column width="60" style="text-align: right;" sortBy="#{assignmentItems.pay}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                </f:facet>
+                <h:outputText id="payText" value='#{assignmentItems.pay}'>
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+
+                <p:tooltip for="payText" >
+
+                  <p:panelGrid columns="2">
+                    <h:outputLabel value="Per unit: "/>
+                    <h:outputText value='#{assignmentItems.pay / assignmentItems.ammount}' style="float:right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <h:outputLabel value="Per unit/mile: "/>
+                    <h:outputText value='#{(assignmentItems.pay / assignmentItems.ammount) / assignmentItems.distance}' style="float:right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputText>
+                  </p:panelGrid>
+
+                </p:tooltip>
+
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_meilen}" width="50" style="text-align: center;" sortBy="#{assignmentItems.distance}" >
+                <h:outputText value='#{assignmentItems.distance}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_kurs}" width="50" style="text-align: center;" sortBy="#{assignmentItems.direct}">
+                <h:outputText value='#{assignmentItems.direct}'/>
+                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_laeuftAb}" style="text-align: center;" sortBy="#{assignmentItems.expires}">
+                <h:outputText value='#{assignmentItems.expires}'>
+                  <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_bonus1}" style="text-align: center;" sortBy="#{assignmentItems.bonusoeffentlich}">
+                <h:outputText value='#{assignmentItems.bonusoeffentlich}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_bonus2}"  style="text-align: center;" sortBy="#{assignmentItems.bonusclosed}">
+                <h:outputText value='#{assignmentItems.bonusclosed}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_provision}" style="text-align: center;" sortBy="#{assignmentItems.provision}">
+                <h:outputText value='#{assignmentItems.provision}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:rowExpansion>
+                <p:panelGrid columns="2" layout="grid" style="width: 50%">
+
+                  <f:facet name="header">
+                    <p:graphicImage height="128" url="#{assignmentItems.airlineLogo}" />
+                  </f:facet>
+
+                  <h:outputText value="ID :" />
+                  <h:outputText value="#{assignmentItems.idassignement}"/>
+                  <h:outputText value="D.O.C. :" />
+                  <h:outputText value="#{assignmentItems.creation}">
+                    <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+
+                  <h:outputText value="Langstrecke" />
+                  <h:outputText value="#{sprache.ja}" rendered="#{assignmentItems.langstrecke}"/>
+                  <h:outputText value="#{sprache.nein}" rendered="#{not assignmentItems.langstrecke}"/>
+
+                      <h:outputText value="Lizenz: "/>                
+                      <h:outputText value='#{assignmentItems.lizenz}'/>
+                  
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_vonIcao} :" />
+                  <h:outputText value="#{assignmentItems.fromIcao}  #{assignmentItems.fromName} - #{assignmentItems.fromAirportLandCity} "/>
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_nachIcao} :"/>
+                  <h:outputText value="#{assignmentItems.toIcao} #{assignmentItems.toName} - #{assignmentItems.toAirportLandCity}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Fluggesellschaft} : "/>                
+                  <h:outputText value='#{assignmentItems.nameairline}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_FluggesellschaftPraesident}: "/>                
+                  <h:outputText value='#{assignmentItems.ceoAirline}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_name}: "/>
+                  <h:outputText value='#{assignmentItems.flugrouteName}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoute} :"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_Cargo}" rendered="#{assignmentItems.routenArt==2}" />
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_Pax}" rendered="#{assignmentItems.routenArt==1}" />
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_BusinessClass}" rendered="#{assignmentItems.routenArt==4}" />
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_Kommentar} : "/>
+                  <h:outputText value='#{assignmentItems.comment}'/>
+                </p:panelGrid>
+
+                <p:panelGrid columns="1" style="width: 800px">
+                  <h:outputText escape="false" value='#{assignmentItems.commodity}'/>
+                </p:panelGrid>
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>
+
+          <h:form id="frm_daten1">
+
+            <p:dataTable id="HoldArea"
+                         widgetVar="assignmentTableHold"
+                         var="holdItems"
+                         value="#{assignementBean.holdAssignements}"
+                         rowKey="#{holdItems.idassignement}"
+                         selection="#{assignementBean.selectedHoldAssignments}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="10"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500"
+                         lazy="false"
+                         sortMode="multiple"
+                         filteredValue="#{assignementBean.filteredAssignmenst}">
+
+              <p:ajax event="rowSelectCheckbox" update="frm_Summen"/>
+              <p:ajax event="rowUnselectCheckbox" update="frm_Summen"/>
+              <p:ajax event="toggleSelect" update="frm_Summen"/>
+
+              <p:ajax listener="#{assignementBean.onRowSelect}" event="rowSelect" update="frm_daten1"/>
+              <p:ajax listener="#{assignementBean.onRowUnselect}" event="rowUnselect" update="frm_daten1"/>
+
+              <f:facet name="header">
+                <h2>#{sprache.Auftragsbestand_pnl_header_wartehalle}</h2>
+              </f:facet>
+
+              <p:column width="32" exportable="false">
+                <p:graphicImage id="logo1" url="#{holdItems.airlineLogo}" width="32" >
+                  <p:tooltip for="logo1">
+                    <p:graphicImage url="#{holdItems.airlineLogo}" />
+                  </p:tooltip>
+                </p:graphicImage>
+              </p:column>
+
+              <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false"/>
+
+              <p:column width="20" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_status}" style="text-align: center;" >
+                <h:outputText value='#{sprache.Auftragsbestand_tbl_StatusFliegtGerade}' rendered="#{holdItems.userlock==1}"/>
+                <h:outputText value='#{sprache.Auftragsbestand_tbl_StatusBereitZumAbflug}' rendered="#{holdItems.userlock==0}"/>
+                <h:outputText value=' - #{sprache.Auftragsbestand_tbl_InDerWartehalle}' rendered="#{holdItems.active==1}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_vonIcao}"  style="text-align: center;" filterBy="#{holdItems.fromIcao}" sortBy="#{holdItems.fromIcao}" filterStyle="width: 40px;">
+                <h:outputText value='#{holdItems.fromIcao}' />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_aktuellerStandort}"  style="text-align: center;" filterBy="#{holdItems.locationIcao}" sortBy="#{holdItems.locationIcao}" filterStyle="width: 40px;">
+                <h:outputText value='#{holdItems.locationIcao}' />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_nachIcao}" style="text-align: center;" filterBy="#{holdItems.toIcao}" sortBy="#{holdItems.toIcao}" filterStyle="width: 40px;">
+                <h:outputText value='#{holdItems.toIcao}' />
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_menge}" style="text-align: right;" sortBy="#{holdItems.ammount}">
+                <h:outputText value="#{holdItems.ammount}" rendered="#{holdItems.routenArt==2}" >
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value="#{holdItems.ammount} #{holdItems.comment}" rendered="#{holdItems.routenArt==1}" />
+                <h:outputText value="#{holdItems.ammount}" rendered="#{holdItems.routenArt==3}" />
+                <h:outputText value="#{holdItems.ammount} BC #{holdItems.comment}" rendered="#{holdItems.routenArt==4}" />
+                <h:outputText value=" *" rendered="#{holdItems.gesplittet}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_ladungsArt}" style="text-align: left;" sortBy="#{holdItems.routenArt}" width="30">
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{holdItems.routenArt==1}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{holdItems.routenArt==4}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{holdItems.routenArt==2}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{holdItems.routenArt==5}"/>                
+                <h:outputText value="TRF"    rendered="#{holdItems.routenArt==3}" />
+              </p:column>
+
+              <p:column width="50" style="text-align: right" sortBy="#{holdItems.gewichtPax}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                </f:facet>
+                <h:outputText value='#{holdItems.gewichtPax}' rendered="#{holdItems.routenArt == 1 or holdItems.routenArt == 4}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value='-' rendered="#{holdItems.routenArt == 2 or holdItems.routenArt == 3}"/>
+              </p:column>
+
+              <p:column width="50" style="text-align: right" sortBy="#{holdItems.gepaeck}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/gepaeck.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                </f:facet>
+                <h:outputText value='#{holdItems.gepaeck}' rendered="#{holdItems.routenArt == 1 or holdItems.routenArt == 4}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value='-' rendered="#{holdItems.routenArt == 2 or holdItems.routenArt == 3}"/>
+              </p:column>
+
+
+
+              <p:column width="60" style="text-align: right;" sortBy="#{holdItems.pay}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/money.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsbestand_tbl_betrag}"/>
+                </f:facet>
+                <h:outputText id="payText" value='#{holdItems.pay}'>
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+
+                <p:tooltip for="payText" >
+
+                  <p:panelGrid columns="2">
+                    <h:outputLabel value="Per unit: "/>
+                    <h:outputText value='#{holdItems.pay / holdItems.ammount}' style="float:right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <h:outputLabel value="Per unit/mile: "/>
+                    <h:outputText value='#{(holdItems.pay / holdItems.ammount) / holdItems.distance}' style="float:right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputText>
+                  </p:panelGrid>
+
+                </p:tooltip>
+
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_meilen}" style="text-align: center;" width="40">
+                <h:outputText value='#{holdItems.distance}'/>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_kurs}" width="50" style="text-align: center;" sortBy="#{holdItems.direct}">
+                <h:outputText value='#{holdItems.direct}'/>
+                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{holdItems.direct}.png" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_laeuftAb}" style="text-align: center;" sortBy="#{holdItems.expires}">
+                <h:outputText value='#{holdItems.expires}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_bonus1}" style="text-align: center;" >
+                <h:outputText value='#{holdItems.bonusoeffentlich}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_bonus2}" style="text-align: center;" >
+                <h:outputText value='#{holdItems.bonusclosed}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Auftragsbestand_tbl_provision}" style="text-align: center;" sortBy="#{holdItems.provision}">
+                <h:outputText value='#{holdItems.provision}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column> 
+
+              <p:rowExpansion>
+                <p:panelGrid columns="2" style="width: 50%" layout="grid" >
+
+                  <h:outputText value="ID :" />
+                  <h:outputText value="#{holdItems.idassignement}"/>
+                  <h:outputText value="D.O.C. :" />
+                  <h:outputText value="#{holdItems.creation}">
+                    <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+
+                  <h:outputText value="Langstrecke" />
+                  <h:outputText value="#{sprache.ja}" rendered="#{holdItems.langstrecke}"/>
+                  <h:outputText value="#{sprache.nein}" rendered="#{not holdItems.langstrecke}"/>
+
+                      <h:outputText value="Lizenz: "/>                
+                      <h:outputText value='#{assignmentItems.lizenz}'/>
+                  
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_vonIcao} :" />
+                  <h:outputText value="#{holdItems.fromIcao}  #{holdItems.fromName} - #{holdItems.fromAirportLandCity} "/>
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_nachIcao} :"/>
+                  <h:outputText value="#{holdItems.toIcao} #{holdItems.toName} - #{holdItems.toAirportLandCity}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Fluggesellschaft} : "/>                
+                  <h:outputText value='#{holdItems.nameairline}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_FluggesellschaftPraesident}: "/>                
+                  <h:outputText value='#{holdItems.ceoAirline}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_name}: "/>
+                  <h:outputText value='#{holdItems.flugrouteName}'/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoute} :"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_Cargo}" rendered="#{holdItems.routenArt==2}" />
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_Pax}" rendered="#{holdItems.routenArt==1}" />
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_BusinessClass}" rendered="#{holdItems.routenArt==4}" />
+                  <h:outputText value="#{sprache.Auftragsplanung_tbl_Kommentar} : "/>
+                  <h:outputText value='#{holdItems.comment}'/>
+
+                </p:panelGrid>
+                <p:panelGrid columns="1" style="width: 800px">
+                  <h:outputText escape="false" value='#{holdItems.commodity}'/>
+                </p:panelGrid>
+
+              </p:rowExpansion>
+
+            </p:dataTable>
+          </h:form>        
+
+          <p:dialog id="dlg_summen" widgetVar="wdg_summen" header="#{sprache.Auftragsplanung_dlg_summen_header}" visible="#{loginMB.summenFensterAnzeigen}" >
+            <h:form id="frm_Summen" >
+
+              <p:toolbar id="tlb_summen">
+                <p:toolbarGroup id="tbg_summen" align="left">
+                  <p:commandButton title="#{sprache.btn_aktualisieren}" icon="fa fa-refresh" update="frm_Summen" />
+                  <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" action="#{loginMB.onSummenFensterVerbergen()}" oncomplete="PF('wdg_summen').hide();" />
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid id="plg_abflug" columns="4" style="width: 100%">
+                <f:facet name="header">
+                  #{sprache.Auftragsplanung_dlg_summen_lbl_Abflugbereich}
+                </f:facet>
+
+
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Menge}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Wert}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gewicht}"/>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_EconomyPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengePassengersTakeOff}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeEco}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEco}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_BusinessPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeBuisnessPassengersTakeOff}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBC}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBC}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_PassagiereGesamt}"/>
+                <h:outputLabel value="#{assignementBean.mengePassengersTakeOff + assignementBean.mengeBuisnessPassengersTakeOff}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBC+assignementBean.summeEco}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEco + assignementBean.gewichtPassagiereBC}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gepaeck}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.gewichtGepaeck}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Cargo}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.summeCargo}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoTakeOff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gesamtwert}"/>
+                <h:outputLabel value="" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeCargo + assignementBean.summeBC + assignementBean.summeEco}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{assignementBean.mengeCargoTakeOff + assignementBean.gewichtGepaeck + assignementBean.gewichtPassagiereBC + assignementBean.gewichtPassagiereEco}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+              </p:panelGrid>
+
+              <p:panelGrid id="plg_markierte" columns="4" style="width: 100%">
+
+                <f:facet name="header">
+                  #{sprache.Auftragsplanung_dlg_summen_lbl_MarkierteAuftraegeAbflugbereich}
+                </f:facet>
+
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Menge}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Wert}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gewicht}"/>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_EconomyPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeECOSelect}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeEcoSelect}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEcoSelect}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_BusinessPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeBCSelected}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBCSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_PassagiereGesamt}"/>
+                <h:outputLabel value="#{assignementBean.mengeECOSelect + assignementBean.mengeBCSelected}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCSelected+assignementBean.summeEcoSelect}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEcoSelect + assignementBean.gewichtPassagiereBCSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gepaeck}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.gewichtGepaeckSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Cargo}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.summeCargoSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoSelected}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gesamtwert}"/>
+                <h:outputLabel value="" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeCargoSelected + assignementBean.summeBCSelected + assignementBean.summeEcoSelect}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{assignementBean.mengeCargoSelected + assignementBean.gewichtGepaeckSelected + assignementBean.gewichtPassagiereBCSelected + assignementBean.gewichtPassagiereEcoSelect}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+              </p:panelGrid>
+
+              <p:panelGrid id="plg_wartebereich" columns="4" style="width: 100%">
+
+                <f:facet name="header">
+                  #{sprache.Auftragsplanung_dlg_summen_lbl_Wartebereich}
+                </f:facet>
+
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Menge}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Wert}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gewicht}"/>
+
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_EconomyPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeEcoHold}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_BusinessPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeBCHold}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBCHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_PassagiereGesamt}"/>
+                <h:outputLabel value="#{assignementBean.mengeBCHold + assignementBean.mengeEcoHold}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCHold + assignementBean.summeEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBCHold + assignementBean.gewichtPassagiereEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gepaeck}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.gewichtGepaeckHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Cargo}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.summeCargoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gesamtwert}"/>
+                <h:outputLabel value="" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeCargoHold + assignementBean.summeBCHold + assignementBean.summeEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoHold + assignementBean.gewichtGepaeckHold + assignementBean.gewichtPassagiereBCHold + assignementBean.gewichtPassagiereEcoHold}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+              </p:panelGrid>
+
+
+              <p:panelGrid id="plg_filter" columns="4" style="width: 100%">
+
+                <f:facet name="header">
+                  #{sprache.Auftragsplanung_dlg_summen_lbl_WartebereichGefiltert}
+                </f:facet>
+
+                <p:commandButton title="#{sprache.Auftragsbestand_tbl_NeuBerechnen}" update="plg_filter" icon="fa fa-refresh"/>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Menge}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Wert}"/>
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gewicht}"/>
+
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_EconomyPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeEcoFilter}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_BusinessPassagiere}"/>
+                <h:outputLabel value="#{assignementBean.mengeBCFilter}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBCFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_PassagiereGesamt}"/>
+                <h:outputLabel value="#{assignementBean.mengeBCFilter + assignementBean.mengeEcoFilter}" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeBCFilter + assignementBean.summeEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.gewichtPassagiereBCFilter + assignementBean.gewichtPassagiereEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gepaeck}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.gewichtGepaeckFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Cargo}"/>
+                <h:outputLabel value=""/>
+                <h:outputLabel value="#{assignementBean.summeCargoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_summen_lbl_Gesamtwert}"/>
+                <h:outputLabel value="" style="float: right"/>
+                <h:outputLabel value="#{assignementBean.summeCargoFilter + assignementBean.summeBCFilter + assignementBean.summeEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{assignementBean.mengeCargoFilter + assignementBean.gewichtGepaeckFilter + assignementBean.gewichtPassagiereBCFilter + assignementBean.gewichtPassagiereEcoFilter}" style="float: right">
+                  <f:convertNumber pattern="#,##0 (kg)"/>
+                </h:outputLabel>
+
+              </p:panelGrid>
+
+            </h:form>
+          </p:dialog>
+
+          <p:dialog id="dlg_convert" widgetVar="wdg_convert" header="#{sprache.Auftragsplanung_dlg_convert_header}" width="640">
+            <h:form id="frm_convert">
+              <p:toolbar id="tlb_conver">
+                <p:toolbarGroup id="tbg_convert">
+                  <p:commandButton title="#{sprache.Auftragsplanung_dlg_convert_btn_AuftraegeZuweisen}" action="#{assignementBean.onConvertAuftraege()}" icon="fa fa-exchange" 
+                                   oncomplete="PF('wdg_convert').hide();" update="frm_daten" disabled="#{not assignementBean.darfKonvertiern}"/>
+
+                  <p:commandButton title="#{sprache.btn_aktualisieren}" icon="fa fa-refresh" update="frm_convert"/>
+                  <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" oncomplete="PF('wdg_convert').hide();"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="2" style="width: 100%">
+
+                <h:outputLabel value="#{sprache.Auftragsplanung_dlg_convert_lbl_Ziel}"/>
+
+                <p:selectOneMenu id="fg" value="#{assignementBean.fluggesellschaftID}" style="width: 90%" filter="true" filterMatchMode="contains">
+                  <f:selectItems value="#{assignementBean.pilotFluggesellschaften}" var="fgs" itemLabel="#{fgs.name}" itemValue="#{fgs.idFluggesellschaft}"/>
+                  <p:ajax event="change" listener="#{assignementBean.onStandardWerteFuerConvertSetzen()}" update="frm_convert"/>
+                </p:selectOneMenu>
+
+
+                <h:outputText value="#{sprache.Auftragsplanung_dlg_convert_lbl_AuftragIstOeffentlich}" />
+                <p:selectBooleanButton id="id_RouteIsPublic" value="#{assignementBean.auftragIstOeffentlich}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+                <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerPilotDerFluggesellschaft}" />
+                <p:inputText value="#{assignementBean.frmBonusFGPiloten}" />
+                <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerJedenPiloten}" />
+                <p:inputText value="#{assignementBean.frmBonusOeffentlich}" />
+                <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_provision}" />
+                <p:inputText value="#{assignementBean.frmProvision}" />
+
+
+              </p:panelGrid>
+
+            </h:form>
+
+          </p:dialog>
+
+
+        </p:layoutUnit>
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </f:view>
+</html>
+

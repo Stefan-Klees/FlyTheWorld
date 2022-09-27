@@ -1,0 +1,28 @@
+
+
+
+<p:commandLink id="cha" oncomplete="PF('wdg_Story').show();"  action="#{randomJobBean.onAuftragAblehnen()}" update="id_Story frm_Story frm_daten" disabled="#{not randomJobBean.istAllesKlarFuerJob}">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_charterauftrag.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_CharterAuftrag_btn_CharterAuftragAnfordern}" 
+                                  style="vertical-align: bottom;"/>
+                </p:commandLink>
+
+        <p:dialog widgetVar="wdg_Story" id="id_Story" header="#{sprache.Auftragsplanung_CharterAuftrag_dlg_header}" width="780" closable="false" modal="true" >
+          <h:form id="frm_Story">
+            <p:outputLabel id="lbl_geschichte" escape="false" value="#{randomJobBean.geschichte}"  style="width: 640px; height: 400px;"/>
+            <p:toolbar id="tbr3">
+              <f:facet id="fc3" name="right">
+                <p:commandButton value="#{sprache.Auftragsplanung_CharterAuftrag_btn_AuftragAnnehmen}" icon="ui-icon-check" 
+                                 action="#{randomJobBean.onGoldenJobErstellen()}"  onclick="PF('wdg_Story').hide()" disabled="#{not randomJobBean.okButton}"/>
+                <p:commandButton value="#{sprache.Auftragsplanung_CharterAuftrag_btn_AuftragAblehnen}" onclick="PF('wdg_Story').hide()" icon="ui-icon-close"  />
+              </f:facet>
+            </p:toolbar>
+
+          </h:form>
+        </p:dialog>
+
+
+                    <h:outputLabel value="Flugzeug Fixkosten"/>
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.flugzeugFixkosten}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>

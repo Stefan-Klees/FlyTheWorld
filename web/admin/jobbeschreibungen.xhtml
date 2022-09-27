@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - Jobwerwaltung</title>
+
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.moduser}" />
+  <c:if test="${ifAllow==true}" >
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            <p:toolbar>
+              <p:toolbarGroup id="tlb_job" align="left">
+                <p:commandButton value="Neuer Job" action="#{jobBean.onNeuerJob()}" icon="ui-icon-document" update="frm_jobCreate" oncomplete="PF('wdg_NewJob').show()"/>
+                <p:commandButton value="Job bearbeiten" icon="ui-icon-pencil" onclick="PF('wdg_Edit').show()" rendered="#{not empty jobBean.selectedJob}"/>
+                <p:commandButton value="Job löschen" icon="ui-icon-trash" action="#{jobBean.onDelete()}" update="frm_daten" rendered="#{not empty jobBean.selectedJob}">
+                  <p:confirm header="delete Record ?" message="Delete Record(s) ?" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="jobTable"
+                         widgetVar="jobTable"
+                         var="jobItems"
+                         value="#{jobBean.jobs}"
+                         rowKey="#{jobItems.idjobs}"
+                         selection="#{jobBean.selectedJob}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         selectionMode="single"
+                         sortMode="single">
+
+
+              <p:ajax listener="#{jobBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{jobBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+
+              <p:column headerText="ID" width="18">
+                <h:outputText value="#{jobItems.idjobs}"/>
+              </p:column>
+
+              <p:column headerText="Sprache" width="60" sortBy="#{jobItems.sprache}">
+                <h:outputText value="#{jobItems.sprache}"/>
+              </p:column>
+
+              <p:column headerText="Aufgabe" width="60" sortBy="#{jobItems.aufgabe}">
+                <h:outputText value="#{jobItems.aufgabe}"/>
+              </p:column>
+
+              <p:column headerText="Bezeichnung" width="600" sortBy="#{jobItems.bezeichnung}">
+                <h:outputText value="#{jobItems.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="Faktor" width="60" sortBy="#{jobItems.faktor}">
+                <h:outputText value="#{jobItems.faktor}"/>
+              </p:column>
+
+              <p:column headerText="ZZ" width="60" sortBy="#{jobItems.zz}">
+                <h:outputText value="#{jobItems.zz}"/>
+              </p:column>
+
+            </p:dataTable>
+
+            <p:dialog widgetVar="wdg_Edit" id="dlg_Edit" width="860" rendered="#{not empty jobBean.selectedJob}">
+              <h:form id="frm_jobEdit">
+                <p:toolbar id="tbr1">
+                  <f:facet id="fc1" name="left">
+                    <p:commandButton value="Speichern" action="#{jobBean.onEdit()}" ajax="false" icon="ui-icon-disk" onclick="PF('wdg_Edit').hide()" update="frm_daten"/>
+                  </f:facet>
+                </p:toolbar>
+                <p:panelGrid columns="2">
+                  <p:outputLabel value="Aufgabe:" /><p:inputText value="#{jobBean.selectedJob.aufgabe}" />
+                  <p:outputLabel value="Bezeichnung:"/><p:inputText value="#{jobBean.selectedJob.bezeichnung}" />
+                  <p:outputLabel value="Faktor:"/><p:inputText value="#{jobBean.selectedJob.faktor}" />
+                  <p:outputLabel value="Zufall:"/><p:inputText value="#{jobBean.selectedJob.zz}" />
+                  <p:outputLabel value= "Sprache:" /><p:inputText value="#{jobBean.selectedJob.sprache}" />
+                </p:panelGrid>
+              </h:form>
+            </p:dialog>
+
+
+
+          </h:form>
+
+        </p:layoutUnit>
+      </p:layout>
+
+
+      <p:dialog widgetVar="wdg_NewJob" id="dlg_NewNews" width="860" header="Neuen Job Anlegen" closable="true">
+        <h:form id="frm_jobCreate">
+          <p:toolbar id="tbr2">
+            <f:facet id="fc2" name="left">
+              <p:commandButton value="Speichern" action="#{jobBean.onCreate()}" ajax="false" icon="ui-icon-disk" oncomplete="PF('wdg_NewJob').hide();" update=":frm_daten"/>
+            </f:facet>
+          </p:toolbar>
+          <p:panelGrid columns="2">
+            <p:outputLabel value="Aufgabe:" /><p:inputText value="#{jobBean.frmAufgabe}" />
+            <p:outputLabel value="Bezeichnung:"/><p:inputText value="#{jobBean.frmBezeichnung}" />
+            <p:outputLabel value="Faktor:"/><p:inputText value="#{jobBean.frmfaktor}" />
+            <p:outputLabel value="Zufall:"/><p:inputText value="#{jobBean.frmZufall}" />
+            <p:outputLabel value= "Sprache:" /><p:inputText value="#{jobBean.frmSprache}" />
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>
+
+    </h:body>
+  </c:if>  
+</html>
+

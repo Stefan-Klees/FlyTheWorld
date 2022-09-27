@@ -1,0 +1,1871 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>      
+
+
+      <title>FTW-#{sprache.Hangar_pnl_hangar}</title>
+
+    </h:head>
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_toolbarFlugzeuge">
+
+            <p:ribbon>
+
+              <p:tab title="Verwaltung">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid id="png_verwaltung" columns="20" style="height: 46px;" >
+
+                    <p:commandButton title="#{sprache.Hangar_btn_flugzeugKaufen}" oncomplete="PF('wdg_FlugzeugKauf').show();" icon="fa fa-shopping-cart" update="frm_FlugzeugKauf" 
+                                     disabled="#{not flugzeugeMietKaufBean.isZuVerkaufen}" rendered="#{not empty flugzeugeMietKaufBean.selectedFlugzeug}"/>
+
+                    <p:commandButton title="#{sprache.Hangar_btn_Bankankauf}" oncomplete="PF('wdg_FlugzeugVerkauf').show();" icon="fa fa-money" update="frm_FlugzeugVerkauf" 
+                                     rendered="#{flugzeugeMietKaufBean.isBenutzerEigentuemer}" disabled="false" />
+
+
+                    <p:commandButton title="#{sprache.Hangar_btn_ServiceHangarAufrufen}" action="#{flugzeugeMietKaufBean.onRepair()}" icon="fa fa-wrench" oncomplete="PF('wdg_FlugzeugReparatur').show()" 
+                                     update="frm_FlugzeugReparatur" disabled="#{not flugzeugeMietKaufBean.isBenutzerBesitzer}" />
+
+
+                    <p:commandButton title="#{sprache.Hangar_btn_flugzeugMieten}" action="#{flugzeugeMietKaufBean.onMieten()}" icon="fa fa-share" 
+                                     update="frm_daten frm_toolbarFlugzeuge frm_menue:lbl_banksaldo" disabled="#{not flugzeugeMietKaufBean.flugzeugMietbar}"/>
+
+                    <p:commandButton title="#{sprache.Hangar_btn_flugzeugZurueckgeben}" action="#{flugzeugeMietKaufBean.onRueckgabe()}" icon="fa fa-reply" 
+                                     update="frm_daten frm_toolbarFlugzeuge frm_menue:lbl_banksaldo" disabled="#{empty flugzeugeMietKaufBean.selectedFlugzeug}"/>                
+
+                    <p:commandButton title="#{sprache.Hangar_btn_meineGemietetenFlugzeuge}" action="#{flugzeugeMietKaufBean.onZeigeGemietete()}" icon="fa fa-share-alt-square" update="frm_daten frm_toolbarFlugzeuge"/>
+
+                    <p:commandButton title="#{sprache.Hangar_btn_flugzeugUeberfuehrung}" oncomplete="PF('wdg_AircraftTransferToAirport').show()"  icon="fa fa-exchange" 
+                                     disabled="#{not flugzeugeMietKaufBean.isBenutzerBesitzer}"/>
+
+                    <p:commandButton title="#{sprache.Hangar_btn_meineFlugzeuge}" action="#{flugzeugeMietKaufBean.onZeigeGekaufte()}" icon="fa fa-plane" update="frm_daten frm_toolbarFlugzeuge"/>                
+
+                    <p:commandButton title="#{sprache.Hangar_btn_flugzeugeinstellungen}"  icon="fa fa-wrench" oncomplete="PF('wdg_edit').show();" action="#{flugzeugeMietKaufBean.onEditFlugzeug()}" 
+                                     update="frm_edit" disabled="#{not flugzeugeMietKaufBean.isBenutzerBesitzer}"/>
+
+                    <p:commandButton title="#{sprache.Hangar_btn_RegistrierungAendern}"  icon="fa fa-eye" oncomplete="PF('wdg_registrierung').show();" action="#{flugzeugeMietKaufBean.onEditFlugzeug()}" 
+                                     update="frm_registrierung" disabled="#{not flugzeugeMietKaufBean.isBenutzerBesitzer}"/>
+
+                    <p:commandLink title="#{sprache.Hangar_btn_Konfiguration}" onclick="PF('wdg_Sitzkonfig').show();" update="frm_Siztkonfig" disabled="#{not flugzeugeMietKaufBean.isBenutzerMieter}">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/max-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_btn_Konfiguration}" style="vertical-align: bottom;"/>
+                    </p:commandLink>
+
+
+                    <p:commandButton title="#{sprache.Hangar_btn_Flugzeuglog}"  icon="fa fa-book" onclick="PF('wdg_Flugzeuglog').show();" update="frm_Flugzeuglog" disabled="#{empty flugzeugeMietKaufBean.selectedFlugzeug}"/>                
+
+                  </p:panelGrid>
+
+
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="Suche">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid id="png_suche" columns="20" style="height: 46px;" >
+
+                    <h:outputLabel value="#{sprache.Hangar_tbl_aktuellerStandort}" style="vertical-align: middle ; padding-right: 5px"/> 
+                    <h:inputText value="#{flugzeugeMietKaufBean.standortICAO}" size="8" maxlength="6" style="vertical-align: middle">
+                      <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onSucheFlugzeug()}" update="frm_daten frm_toolbarFlugzeuge" />
+                    </h:inputText>
+                    <p:commandButton  title="#{sprache.Hangar_btn_aktualisierenHangar}" action="#{flugzeugeMietKaufBean.onSucheFlugzeug()}" update="frm_daten frm_toolbarFlugzeuge"  
+                                      icon="ui-icon-search" style="vertical-align: middle"/>                 
+
+
+                    <p:selectOneMenu value="#{flugzeugeMietKaufBean.frmFlugzeugArt}" style="width:200px;vertical-align: middle"  filter="true" filterMatchMode="contains">
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_alle}" itemValue="" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_bc}" itemValue="Geschäftsflugzeug" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_Cargo}" itemValue="Cargo" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_Pax}" itemValue="Passagierflugzeug" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_Mil}" itemValue="Military" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_Hub}" itemValue="Hubschrauber" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_Was}" itemValue="Wasserflugzeug" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_amp}" itemValue="Amphibienflugzeug" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Hangar_tlb_cbo_FlugzeugArt_spo}" itemValue="Sportflugzeug" noSelectionOption="true" />
+                      <p:ajax event="change"  listener="#{flugzeugeMietKaufBean.onZeigeFlugzeugeDerArt()}" process="@this" update="frm_daten frm_toolbarFlugzeuge sel_FlugzeugTyp" />
+                    </p:selectOneMenu>
+                    <p:commandButton title="#{sprache.Hangar_btn_aktualisierenHangar}" action="#{flugzeugeMietKaufBean.onZeigeFlugzeugeDerArt()}" update="frm_daten frm_toolbarFlugzeuge sel_FlugzeugTyp"  icon="ui-icon-search" style="vertical-align: middle"/>
+
+
+                    <p:selectOneMenu value="#{flugzeugeMietKaufBean.frmLizenz}" style="width:80px; vertical-align: middle;">
+                      <f:selectItem itemLabel="#{sprache.Hangar_cbo_Lizenz}" itemValue="" noSelectionOption="true" />
+                      <f:selectItem itemValue="PPL-A" itemLabel="PPL-A" />
+                      <f:selectItem itemValue="CPL" itemLabel="CPL" />
+                      <f:selectItem itemValue="MPL" itemLabel="MPL" />
+                      <f:selectItem itemValue="ATPL" itemLabel="ATPL" />
+                      <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onAlleFlugzeugeZeigen}" update="frm_daten" />
+                    </p:selectOneMenu>
+                    <p:commandButton title="#{sprache.Hangar_btn_aktualisierenHangar}" action="#{flugzeugeMietKaufBean.onAlleFlugzeugeZeigen()}" update="frm_daten frm_toolbarFlugzeuge"  icon="ui-icon-search" style="vertical-align: middle"/>
+
+
+                    <p:selectOneMenu id="sel_FlugzeugTyp" value="#{flugzeugeMietKaufBean.frmflugzeugTyp}" style="width:200px; vertical-align: middle;"  filter="true" filterMatchMode="contains"  >
+                      <f:selectItem itemLabel="#{sprache.Hangar_cbo_waehleEinFlugzeugmodellAus}" itemValue="" noSelectionOption="true" />
+                      <f:selectItems value="#{flugzeugeMietKaufBean.flugzeugTypen}" var="modellItems" itemValue="#{modellItems}" itemLabel="#{modellItems}" />
+                      <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onAlleFlugzeugeZeigen}" update="frm_daten:tbl_flugzeuge" />
+                    </p:selectOneMenu>
+                    <p:commandButton title="Zeige alle Flugzeuge vom ausgewählten Type" action="#{flugzeugeMietKaufBean.onAlleFlugzeugeZeigen()}" update="frm_daten frm_toolbarFlugzeuge"  icon="ui-icon-search" style="vertical-align: middle"/>
+
+                    <p:commandButton title="Zeige nur mietbare Flugzeuge vom ausgewählten Type" action="#{flugzeugeMietKaufBean.onZeigeNurMietbareFlugzeuge()}" update="frm_daten frm_toolbarFlugzeuge"  icon="ui-icon-search" style="vertical-align: middle"/>                    
+
+                    <p:selectOneMenu id="fgselect" value="#{flugzeugeMietKaufBean.fluggesellschaftID}" style="width:200px; vertical-align: middle;" filter="true" filterMatchMode="contains">
+                      <f:selectItem itemLabel="#{sprache.Hangar_cbo_WaehleEineFluggesellschaftAusDerListe}"  itemValue="" noSelectionOption="true" />
+                      <f:selectItem itemLabel="FTW-System"  itemValue="-300" noSelectionOption="true" />
+                      <f:selectItems value="#{assignementBean.pilotFluggesellschaften}" var="fg" itemValue="#{fg.idFluggesellschaft}" itemLabel="#{fg.name} - #{fg.besitzerName}" />
+                      <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onChangeFluggesellschaft()}" update="frm_daten frm_toolbarFlugzeuge" />
+                    </p:selectOneMenu>
+                    <p:commandButton title="#{sprache.Hangar_btn_lupeHangar}" disabled="false" icon="ui-icon-search" action="#{flugzeugeMietKaufBean.onChangeFluggesellschaft()}" update="frm_daten frm_toolbarFlugzeuge" style="vertical-align: middle"/>
+
+                  </p:panelGrid>
+
+                </p:ribbonGroup>
+
+              </p:tab>              
+
+              <p:tab title="Extras">
+
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid id="png_extra" columns="20" style="height: 46px;" >
+
+                    <h:commandLink id="cmd_export">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                      <p:dataExporter type="csv" target="frm_daten:tbl_flugzeuge" fileName="Uebersicht_Flugzeuge"  pageOnly="false" />
+                      <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                    </h:commandLink>
+
+
+                    <p:commandButton title="Verfügbare Flugzeuge" onclick="PF('wdg_FlugzeugListe').show()" icon="fa fa-plane"/>
+
+                    <p:commandButton title="#{sprache.Hangar_tlb_btn_FlzSuche}" onclick="PF('wdg_FlugzeugSuchen').show();" icon="fa fa-search" update="frm_FlugzeugSuchen" />                    
+
+                    <p:commandButton title="Flugzeug aus der Luft holen (entsperren)" onclick="PF('wdg_FlugzeugAusDerLuftHolen').show();" icon="fa fa-close"
+                                     action="#{flugzeugeMietKaufBean.onFlugzeugeMietKaufInDerLuft()}" update="frm_FlugzeugAusDerLuftHolen" rendered="#{loginMB.moduser}" />
+
+                  </p:panelGrid>
+
+                </p:ribbonGroup>
+
+              </p:tab>
+
+            </p:ribbon>
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+          </h:form>
+
+          <br></br>
+
+          <h:form id="frm_daten">
+
+            <p:dataTable id="tbl_flugzeuge" widgetVar="tbl_flugzeuge" var="flugzeugItems" value="#{flugzeugeMietKaufBean.flugzeugeMietKauf}"
+                         rowKey="#{flugzeugItems.idMietKauf}" 
+                         selection="#{flugzeugeMietKaufBean.selectedFlugzeug}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         selectionMode="single"
+                         sortMode="multiple"
+                         emptyMessage="#{sprache.Hangar_Tabelle_emptyMessage}">
+
+              <p:ajax listener="#{flugzeugeMietKaufBean.onRowSelect}" event="rowSelect" update="frm_daten frm_toolbarFlugzeuge"/>
+              <p:ajax listener="#{flugzeugeMietKaufBean.onRowUnselect}" event="rowUnselect" update="frm_daten frm_toolbarFlugzeuge"/>
+
+              <p:column width="20" style="padding: 0px" exportable="false">
+                <p:rowToggler/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_tbl_kennung}" width="80" style="text-align: center;" sortBy="#{flugzeugItems.registrierung}" >
+                <h:outputText value="#{flugzeugItems.registrierung}"/>
+              </p:column>
+
+              <p:column  width="40" style="text-align: center;" sortBy="#{flugzeugItems.aktuellePositionICAO}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_location.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_aktuellerStandort}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.aktuellePositionICAO}"/>
+              </p:column>
+
+              <p:column style="text-align: right;" width="40" sortBy="#{flugzeugItems.heimatICAO}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_home-location.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_heimatflughafenIcao}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.heimatICAO}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_tbl_modell}" width="250" style="text-align: center;" sortBy="#{flugzeugItems.type}">
+                <h:outputText escape="false" value="* L/F * #{flugzeugItems.type} #{configBean.BR} #{flugzeugeMietKaufBean.getUserName(flugzeugItems.leasingAnUserID)}" rendered="#{flugzeugItems.leasingAnUserID gt 0}"/>
+                <h:outputText value="#{flugzeugItems.type}" rendered="#{flugzeugItems.leasingAnUserID eq -1}"/>
+              </p:column>
+
+              <p:column style="text-align: center;" width="100" sortBy="#{flugzeugItems.naechsterTerminCcheck}" exportable="false">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_zustand.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_ZustandDesFlugzeuges}"/>
+                </f:facet>
+                <p:progressBar value="#{flugzeugItems.zustand}" style="width: 100%" labelTemplate="{value} %"/>          
+
+                <h:outputText value="#{flugzeugItems.naechsterTerminCcheck}">
+                  <f:convertDateTime pattern="MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.istGesperrt}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_plain-locked.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_gesperrt}"/>
+                </f:facet>
+                <h:outputText value="#{sprache.ja}" rendered="#{flugzeugItems.istGesperrt}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{ not flugzeugItems.istGesperrt}"/>
+              </p:column>
+
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.istMietbar}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_for-rent.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuMieten}"/>
+                </f:facet>
+                <h:outputText value="#{sprache.ja} *" rendered="#{flugzeugItems.istMietbar and flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
+                <h:outputText value="#{sprache.nein} *" rendered="#{ not flugzeugItems.istMietbar and flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
+
+                <h:outputText value="#{sprache.ja}" rendered="#{flugzeugItems.istMietbar and not flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{ not flugzeugItems.istMietbar and not flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
+
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.istZuVerkaufen}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_to-buy.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuKaufen}"/>
+                </f:facet>
+                <h:outputText value="#{sprache.ja}" rendered="#{flugzeugItems.istZuVerkaufen}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{ not flugzeugItems.istZuVerkaufen}"/>
+              </p:column>
+
+              <p:column width="50" style="text-align: center;" sortBy="#{flugzeugItems.lizenz}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_lizenz.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_Lizenz}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.lizenz}"/>
+              </p:column>
+
+
+              <p:column width="90" style="text-align: center;" sortBy="#{flugzeugItems.verkaufsPreis}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_preisschild.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_kaufpreis}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.verkaufsPreis}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.maxAnzahlZuBelgenderSitze}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_max-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleSitze}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.maxAnzahlZuBelgenderSitze}" style="float: right"/>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.sitzeEconomy}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_eco-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeEconomy}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.sitzeEconomy}" style="float: right"/>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.sitzeBusinessClass}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_bc-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeBusinessClass}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.sitzeBusinessClass}" style="float: right"/>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.besatzung}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cockpit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_cockpitOhnePilot}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.besatzung}" style="float: right"/>
+              </p:column>
+
+
+              <p:column width="80" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_mietzeit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleMietzeit}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugeMietKaufBean.getMietZeitText(flugzeugItems.maxMietzeitMinuten)}" style="float: right"/>
+              </p:column>
+
+              <p:column width="70" style="text-align: center;" sortBy="#{flugzeugItems.mietpreisTrocken}">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_rent-hour.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_mietpreisProStunde}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugItems.mietpreisTrocken}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column width="200" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_owner.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_eigentuemer}"/>
+                </f:facet>
+                <h:outputText escape="false" value="#{flugzeugItems.userName}#{configBean.BR}#{flugzeugItems.fluggesellschaftName} " />
+              </p:column>
+
+              <p:rowExpansion>
+
+                <p:panelGrid columns="1" rendered="#{flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}">
+                  <h1 style="text-align: center">Nur für Jobs der Fluggesellschaft verwendbar, only for airline jobs</h1>
+                </p:panelGrid>
+
+                <p:panelGrid columns="2" layout="grid" style="margin: 2px; float: left">
+                  <f:facet name="header">
+                    #{sprache.Hangar_Details_tbl_header_flugzeugeinstellungen}
+                  </f:facet>
+
+                  <p:column>
+                    <p:panelGrid columns="2" style="margin: 2px; float: left">
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_id}"/><h:outputText value="#{flugzeugItems.idMietKauf}"/>
+                      <h:outputLabel value=""/><h:outputText value="#{flugzeugItems.flugzeugArt} der Klasse: #{flugzeugItems.flugzeugklasse}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_erstflug}"/><h:outputText value="#{flugzeugItems.erstflug}"/>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_baujahr} "/><h:outputText value="#{flugzeugItems.baujahr}"/>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_inProduktion}"/>
+                      <h:outputLabel value="#{sprache.ja}" rendered="#{flugzeugItems.inProduktion}"/>
+                      <h:outputLabel value="#{sprache.nein}" rendered="#{!flugzeugItems.inProduktion}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_tbl_daten_lbl_Langstreckenflugzeug}"/>
+                      <h:outputLabel value="#{sprache.ja}" rendered="#{flugzeugItems.langstreckenflugzeug}"/>
+                      <h:outputLabel value="#{sprache.nein}" rendered="#{!flugzeugItems.langstreckenflugzeug}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_flugzeugIcaoCode} "/><h:outputText value="#{flugzeugItems.icaoFlugzeugcode}"/>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_herstellerStandortIcao}"/><h:outputText value="#{flugzeugItems.herstellerICAO}"/>
+                      <p:outputLabel value="#{sprache.Hangar_Details_tbl_antriebsart}" />
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_antriebsart_Kolbenmotor}" rendered="#{flugzeugItems.antriebsart eq 1}"/>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_antriebsart_TurboProp}" rendered="#{flugzeugItems.antriebsart eq 2}"/>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_antriebsart_Strahltriebwerk}" rendered="#{flugzeugItems.antriebsart eq 3}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_anzahlTriebwerkeMotoren}"/><h:outputText value="#{flugzeugItems.anzahltriebwerke}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_mindestLandebahnlaenge}"/><h:outputText value="#{flugzeugItems.mindestLandebahnLaenge}"/>
+                      <h:outputLabel value="#{sprache.Hangar_tbl_daten_lbl_ReisegeschwindigkeitTAS} "/><h:outputText value="#{flugzeugItems.reisegeschwindigkeitTAS}"/>
+
+                      <h:outputLabel value="Max. Speed (TAS)"/><h:outputText value="#{flugzeugItems.hoechstgeschwindigkeitTAS}"/>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_kaufpreis} "/><h:outputText value="#{flugzeugItems.verkaufsPreis}">
+                        <f:convertNumber pattern="#,##0 &euro;"/>
+                      </h:outputText>
+
+                      <p:outputLabel value="#{sprache.Hangar_Details_tbl_treibstoffart}" />
+                      <p:outputLabel value="AVGAS 100LL" rendered="#{flugzeugItems.treibstoffArt eq 1}" />
+                      <p:outputLabel value="Jet-A" rendered="#{flugzeugItems.treibstoffArt eq 2}" />
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_maximaleTankkapazitaet}"/><p:outputLabel value="#{flugzeugItems.treibstoffkapazitaet}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_tankfuellung}"/><p:outputLabel value="#{flugzeugItems.aktuelleTankfuellung}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_verbrauchProStunde}"/><p:outputLabel value="#{flugzeugItems.verbrauchStunde}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_geflogeneMeilen}"/><p:outputLabel value="#{flugzeugItems.gesamtEntfernung}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_geflogenePassagiere}"/><p:outputLabel value="#{flugzeugItems.gesamtTransportiertePassagiere}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_gesamtCargo}"/><p:outputLabel value="#{flugzeugItems.gesamtTransportiertesCargo}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </p:outputLabel>
+
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_gesamtFluege}"/><p:outputLabel value="#{flugzeugItems.gesamtFluege}" style="text-align: right" >
+                        <f:convertNumber pattern="#,##0"/>
+                      </p:outputLabel>
+
+                    </p:panelGrid>
+
+                    <p:panelGrid columns="1" style="float: left;">
+                      <f:facet name="header">
+                        #{sprache.Hangar_Details_tbl_header_sitzkonfiguration}
+                      </f:facet>
+                      <h:outputLabel value="#{sprache.Hangar_Details_tbl_bezeichnungSitzkonfiguration} : #{flugzeugeMietKaufBean.getSitzKonfigBezeichnung(flugzeugItems.idSitzKonfiguration)}"/>
+
+                      <p:dataTable id="tbl_sitzkonfig" var="skf" value="#{flugzeugeMietKaufBean.sitzKonfiguration}" emptyMessage="#{sprache.Hangar_table_Sitzkonfiguration_emptyMessage}">
+                        <f:facet name="header">
+                          #{sprache.Hangar_Details_tbl_header_verfuegbareSitzkonfigurationen}
+                        </f:facet>
+
+                        <p:column headerText="#{sprache.Hangar_Details_tbl_bezeichnung}" width="300">
+                          <h:outputText value="#{skf.bezeichnung}"/>
+                        </p:column>
+
+                        <p:column width="30" style="text-align: center;">
+                          <f:facet name="header">
+                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cockpit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_anzahlSaftschubsen}"/>
+                          </f:facet>
+
+                          <h:outputText value="#{skf.flugbegleiter}" style="float: right">
+                            <f:convertNumber pattern="#,##0"/>
+                          </h:outputText>
+                        </p:column>
+
+                        <p:column width="30" style="text-align: center;">
+                          <f:facet name="header">
+                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_eco-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeEconomy}"/>
+                          </f:facet>
+                          <h:outputText value="#{skf.sitzeEconomy}" style="float: right">
+                            <f:convertNumber pattern="#,##0"/>
+                          </h:outputText>
+                        </p:column>
+
+                        <p:column width="30" style="text-align: center;">
+                          <f:facet name="header">
+                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_bc-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeBusinessClass}"/>
+                          </f:facet>
+                          <h:outputText value="#{skf.sitzeBusiness}" style="float: right">
+                            <f:convertNumber pattern="#,##0"/>
+                          </h:outputText>
+                        </p:column>
+
+                        <p:column width="80" style="text-align: center;">
+                          <f:facet name="header">
+                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_cargo}" />  
+                          </f:facet>
+                          <h:outputText value="#{skf.cargo}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+                        </p:column>
+
+
+                        <p:column headerText="#{sprache.Hangar_Details_tbl_maximaleNutzlast}" width="80">
+                          <h:outputText value="#{skf.maxPayload}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{sprache.Hangar_Details_tbl_preis}" width="60">
+                          <h:outputText value="#{skf.preis}" style="float: right">
+                            <f:convertNumber pattern="#,##0 &euro;"/>
+                          </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="#{sprache.Hangar_Details_tbl_umbauzeitInMinuten}" width="80">
+                          <h:outputText value="#{skf.umbauzeitMinuten}" style="float: right">
+                            <f:convertNumber pattern="#,##0"/>
+                          </h:outputText>
+
+                        </p:column>
+
+                        <p:column headerText="#{sprache.Hangar_Details_tbl_faktor}" width="40">
+                          <h:outputText value="#{skf.faktor}" style="float: right">
+                            <f:convertNumber pattern="#,##0.00"/>
+                          </h:outputText>
+
+                        </p:column>
+
+
+                      </p:dataTable>
+
+                    </p:panelGrid>                       
+
+                    <p:panelGrid columns="1">
+                      <f:facet name="header">
+                        #{sprache.Hangar_Details_tbl_header_infos}
+                      </f:facet>
+                      <h:outputLabel escape="false" value="#{flugzeugItems.bemerkungen}"/>
+                    </p:panelGrid>
+
+
+                    <p:panelGrid columns="1">
+                      <f:facet name="header">
+                        #{sprache.Hangar_Details_tbl_header_DownloadLinks}
+                      </f:facet>
+                      <p:link href="#{flugzeugItems.fs9FreeDownloadUrl}"  target="_blank" value="FS9 Free Download-Link" rendered="#{ not empty flugzeugItems.fs9FreeDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.fs9PaywareDownloadUrl}"  target="_blank" value="FS9 Payware Download-Link" rendered="#{ not empty flugzeugItems.fs9PaywareDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.fsxFreeDownloadUrl}" target="_blank" value="FSX Free Download-Link" rendered="#{ not empty flugzeugItems.fsxFreeDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.fsxPaywareDownloadUrl}" target="_blank" value="FSX Payware Download-Link" rendered="#{ not empty flugzeugItems.fsxPaywareDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.p3dFreeDownloadUrl}" target="_blank" value="P3D Free Download-Link" rendered="#{ not empty flugzeugItems.p3dFreeDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.p3dPayware3DownloadUrl}" target="_blank" value="P3D Payware Download-Link" rendered="#{ not empty flugzeugItems.p3dPayware3DownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.xplaneFreeDownloadUrl}" target="_blank" value="X-Plane Free Download-Link" rendered="#{ not empty flugzeugItems.xplaneFreeDownloadUrl}"/>
+                      <p:link href="#{flugzeugItems.xplanePaywareDownloadUrl}" target="_blank" value="X-Plane Payware Download-Link" rendered="#{ not empty flugzeugItems.xplanePaywareDownloadUrl}"/>
+                    </p:panelGrid>
+
+
+                  </p:column> 
+
+                  <p:column>
+
+                    <p:accordionPanel activeIndex="-1" onTabShow="drawErrorFixEinsatz();">
+                      <p:tab title="Map" >
+
+                        <div id="HangarMap" style="width: 100%; height: 740px;">
+
+                          <script>
+
+                            function drawErrorFixEinsatz() {
+                              MapHangar.setView(new L.LatLng(#{mapsBean.getFlugzeugStandort(flugzeugItems.aktuellePositionICAO)}), 10);
+                              MapHangar.invalidateSize(true);
+                            }
+
+
+                            var airportIcon = L.icon({
+                              iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                              iconSize: [38, 95],
+                              popupAnchor: [0, -10]
+                            });
+
+
+                            var MapHangar = L.map('HangarMap').setView(new L.LatLng(#{mapsBean.getFlugzeugStandort(flugzeugItems.aktuellePositionICAO)}), 10);
+
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'})
+                                    .addTo(MapHangar);
+
+                            var scale = L.control.scale().addTo(MapHangar);
+
+                            var marker = new L.marker([#{mapsBean.getFlugzeugStandort(flugzeugItems.aktuellePositionICAO)}],
+                                    {
+                                      icon: airportIcon
+                                    }).addTo(MapHangar).bindPopup('#{flugzeugItems.registrierung} - #{flugzeugItems.type}');
+
+
+                          </script>
+
+                        </div>                        
+
+
+                      </p:tab>
+
+
+                    </p:accordionPanel>
+
+
+                    <p:panelGrid columns="1" layout="grid" style="float: start">
+
+                      <div align="center">
+                        <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugItems.idMietKauf)}" width="100%"/>
+                      </div>
+
+                      <p:panelGrid columns="1" rendered="#{flugzeugItems.idUmbauModel gt 0}">
+                        <h3 style="text-align: center">Umbau möglich</h3>
+                      </p:panelGrid>
+
+
+                      <p:panelGrid columns="2">
+                        <f:facet name="header">
+                          #{sprache.Hangar_Details_tbl_header_Sperrinformationen}
+                        </f:facet>
+                        <h:outputLabel value="#{sprache.Hangar_Details_tbl_gesperrtVon}"/> <h:outputLabel value="#{flugzeugeMietKaufBean.getUserName(flugzeugItems.idUserDerFlugzeugGesperrtHat)}"/>
+                        <h:outputLabel value="#{sprache.Hangar_Details_tbl_gesperrtSeit}"/> <h:outputLabel value="#{flugzeugItems.istGesperrtSeit}">
+                          <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="#{sprache.Hangar_Details_tbl_gesperrtBisVoraussichtlich}"/> <h:outputLabel value="#{flugzeugItems.istGesperrtBis}">
+                          <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="#{sprache.Hangar_Details_tbl_flugzeugIstInDerLuft}"/> 
+                        <h:outputLabel value="#{sprache.nein}" rendered="#{not flugzeugItems.istInDerLuft}"/>
+                        <h:outputLabel value="#{sprache.ja}" rendered="#{flugzeugItems.istInDerLuft}"/>
+                      </p:panelGrid>
+
+                      <p:panelGrid columns="2">
+
+                        <p:panelGrid columns="2" >
+                          <f:facet name="header">
+                            #{sprache.Hangar_Details_tbl_header_Gewichte}
+                          </f:facet>
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_cargo}"/><h:outputText value="#{flugzeugItems.cargo}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_nutzlast}"/><h:outputText value="#{flugzeugItems.payload}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_maximalesLandegewicht}"/><h:outputText value="#{flugzeugItems.maxLandegewicht}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_TOW}"/><h:outputText value="#{flugzeugItems.hoechstAbfluggewicht}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                          </h:outputText>
+
+
+                        </p:panelGrid>
+
+                        <p:panelGrid columns="2" >
+                          <f:facet name="header">
+                            #{sprache.Hangar_Details_tbl_Lizenzinformationen}
+                          </f:facet>
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_Lizenz}"/><h:outputText value="#{flugzeugItems.lizenz}" style="float: right"/>
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_Typerating}"/><h:outputText value="#{flugzeugItems.typeRating}" style="float: right"/>
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_TyperatingKosten}"/><h:outputText value="#{flugzeugItems.typeRatingKostenStd}" style="float: right">
+                            <f:convertNumber pattern="#,##0 &euro;"/>
+                          </h:outputText>
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_Aufwand}"/><h:outputText value="#{flugzeugItems.typeRatingMinStd}" style="float: right">
+                            <f:convertNumber pattern="#,##0 #{sprache.h}"/>
+                          </h:outputText>
+                        </p:panelGrid>
+
+
+                        <p:panelGrid columns="2" >
+                          <f:facet name="header">
+                            #{sprache.Hangar_Details_tbl_header_Checks}
+                          </f:facet>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_letzterCheck}"/><h:outputText value="#{flugzeugItems.letzterCheckMinuten/60}" style="float: right" >
+                            <f:convertNumber pattern="#,##0.00 #{sprache.h}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_airframe} : "/><h:outputText value="#{flugzeugItems.gesamtAlterDesFlugzeugsMinuten/60}" style="float: right">
+                            <f:convertNumber pattern="#,##0.00 #{sprache.h}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_tbl_ZustandDesFlugzeuges}"/><h:outputText value="#{flugzeugItems.zustand/100}" style="float: right" >
+                            <f:convertNumber pattern="#,##0.00 %"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_naechsterCcheck}"/><h:outputText value="#{flugzeugItems.naechsterTerminCcheck}" style="float: right" >
+                            <f:convertDateTime pattern="MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_CcheckPreis}"/><h:outputText value="#{flugzeugeMietKaufBean.getCcheckPreis(flugzeugItems.idMietKauf)}" style="float: right" >
+                            <f:convertNumber pattern="#,##0 &euro;"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_MaschinenLaufzeitMinuten}"/><h:outputText value="#{flugzeugItems.maschinenLaufzeitMinuten/60}" style="float: right">
+                            <f:convertNumber pattern="#,##0.00 #{sprache.h}"/>
+                          </h:outputText>
+
+                          <h:outputLabel value="#{sprache.Hangar_Details_tbl_triebwerkspreis}"/><h:outputText value="#{flugzeugItems.triebwerkspreis}" style="float: right" >
+                            <f:convertNumber pattern="#,##0 &euro;"/>
+                          </h:outputText>
+
+                        </p:panelGrid>
+
+
+
+                        <p:panelGrid columns="2" >
+                          <f:facet name="header">
+                            Abmessungen
+                          </f:facet>
+
+                          <h:outputLabel value="#{sprache.Hangar_tbl_daten_lbl_laenge}"/> <h:outputLabel value="#{flugzeugItems.laenge/100}">
+                            <f:convertNumber pattern="#,##0.000 m"/>
+                          </h:outputLabel>
+                          <h:outputLabel value="#{sprache.Hangar_tbl_daten_lbl_breite}"/> <h:outputLabel value="#{flugzeugItems.breite/100}">
+                            <f:convertNumber pattern="#,##0.000 m"/>
+                          </h:outputLabel>
+                          <h:outputLabel value="m²"/> <h:outputLabel value="#{flugzeugItems.breite / 100 * flugzeugItems.laenge / 100}">
+                            <f:convertNumber pattern="#,##0 m&sup2;"/>
+                          </h:outputLabel>
+
+
+                        </p:panelGrid>
+
+                      </p:panelGrid>
+
+                    </p:panelGrid>
+
+                  </p:column>
+
+
+                </p:panelGrid>
+
+
+              </p:rowExpansion>
+
+
+            </p:dataTable>
+
+          </h:form>          
+
+        </p:layoutUnit>
+
+
+        <p:dialog id="dlg_edit" widgetVar="wdg_edit" header="#{sprache.Hangar_Details_tbl_header_flugzeugeinstellungen} #{flugzeugeMietKaufBean.selectedFlugzeug.type}" 
+                  width="900" height="800" position="top" appendTo="@(BODY)" modal="true">
+          <h:form id="frm_edit">
+
+            <div align="center">
+              <h2>#{flugzeugeMietKaufBean.selectedFlugzeug.type}</h2>
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="100%"/>
+              </div>
+            </div>
+
+            <p:toolbar id="tbr_edit" style="padding : 10px">
+              <p:toolbarGroup id="tbg_edit" align="left">
+
+                <p:commandButton title="#{sprache.Hangar_Details_tbl_header_flugzeugeinstellungen} #{sprache.Hangar_dlg_Edit_btn_Speichern}" 
+                                 action="#{flugzeugeMietKaufBean.onSaveFlugzeug()}" oncomplete="PF('wdg_edit').hide();" 
+                                 update="frm_daten frm_toolbarFlugzeuge" icon="fa fa-save" 
+                                 disabled="#{flugzeugeMietKaufBean.verleast}"/>
+
+                <p:commandButton title="#{sprache.Hangar_dlg_Edit_btn_DialogSchliessen}" icon="fa fa-close" oncomplete="PF('wdg_edit').hide();"/>
+
+                <p:commandButton title="#{sprache.Hangar_dlg_Edit_btn_FlugzeugUebertragen}" disabled="#{not flugzeugeMietKaufBean.isBenutzerEigentuemer}" icon="fa fa-exchange" oncomplete="PF('wdg_FlugUebertragen').show();PF('wdg_edit').hide()" update="frm_FlugUebertragen" />
+
+                <p:commandButton title="#{sprache.Kostenstellenauswertung_btn_KostenstellenAnzeigen}" icon="ui-icon-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+
+                <p:commandButton title="#{sprache.Kostenstellenauswertung_btn_aktualisieren}" icon="ui-icon-refresh" update="som_Kostenstelle"/>
+
+                <p:commandButton title="#{sprache.Hangar_dlg_edit_btn_leas}" icon="fa fa-money" onclick="PF('wdg_Flugzeugleasing').show()" disabled="#{not flugzeugeMietKaufBean.isBenutzerEigentuemer}"/>
+                <p:commandButton title="#{sprache.Hangar_dlg_edit_btn_leasBeenden}" icon="fa fa-arrow-up" action="#{flugzeugeMietKaufBean.onLeasingEnd()}"  disabled="#{not flugzeugeMietKaufBean.isBenutzerBesitzer}"
+                                 oncomplete="PF('wdg_edit').hide();" update="frm_daten frm_toolbarFlugzeuge"/>
+
+                <p:commandButton title="Blacklist" oncomplete="PF('wdg_blacklist').show();" icon="fa fa-black-tie" update="frm_blacklist"/>
+
+
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Hangar_tbl_heimatflughafenIcao}"/><p:inputText value="#{flugzeugeMietKaufBean.frmHeimatICAO}" size="10" disabled="#{not flugzeugeMietKaufBean.isBenutzerEigentuemer}"/>
+
+              <h:outputLabel value="#{sprache.Hangar_dlg_Edit_lbl_Fluggesellschaft} : "/>
+              <p:selectOneMenu value="#{flugzeugeMietKaufBean.fgID}"  style="width: 250px" filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="#{sprache.Hangar_dlg_Edit_cbo_WaehleEineFluggesellschaftAusDerListe}"  itemValue="-1" noSelectionOption="true" />
+                <f:selectItems value="#{flugzeugeMietKaufBean.meineFluggesellschaftenFuerManager}" var="fgs" itemValue="#{fgs[0]}" itemLabel="#{fgs[1]}" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.Hangar_dlg_Edit_lbl_Bankkonto}"/>
+              <p:selectOneMenu value="#{flugzeugeMietKaufBean.frmBankKonto}" style="width: 90%" >
+                <f:selectItem itemLabel="#{fboUserObjekteBean.userKonto} - #{fboUserObjekteBean.userName}" itemValue="#{fboUserObjekteBean.userKonto}"/>
+                <f:selectItems var="fgkonto" value="#{flugzeugeMietKaufBean.kontenFluggesellschaft}" itemLabel="#{fgkonto.bankKonto} - #{fgkonto.bankKontoName}" itemValue="#{fgkonto.bankKonto}"/>
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.Hangar_dlg_Edit_lbl_Kostenstelle}"/>
+              <p:selectOneMenu id="som_Kostenstelle" value="#{flugzeugeMietKaufBean.frmKostenStelle}" style="width: 95%" filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="#{sprache.Hangar_dlg_Edit_cbo_WaehleEineKostenstelle}" itemValue="0"/>
+                <f:selectItems var="kst" value="#{flugzeugeMietKaufBean.kostenstellen}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.Hangar_tbl_zuMieten}"/><p:selectBooleanButton value="#{flugzeugeMietKaufBean.frmMietbar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+              <h:outputLabel value="#{sprache.Hangar_tbl_zuKaufen}"/><p:selectBooleanButton value="#{flugzeugeMietKaufBean.frmKaufbar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" disabled="#{not flugzeugeMietKaufBean.isBenutzerEigentuemer}"/>
+              <h:outputLabel value="#{sprache.Hangar_tbl_maximaleMietzeit}"/><p:inputText value="#{flugzeugeMietKaufBean.frmMaxMietZeit}" size="10" style="text-align: right">
+                <f:convertNumber pattern="#,##0"/>
+              </p:inputText>
+              <h:outputLabel value="#{sprache.Hangar_tbl_mietpreisProStunde} &euro;"/><p:inputText value="#{flugzeugeMietKaufBean.frmMietPreisTrocken}" size="10" style="text-align: right">
+                <f:convertNumber pattern="#,##0"/>
+              </p:inputText>
+              <h:outputLabel value="#{sprache.Hangar_tbl_pfand} &euro;"/><p:inputText value="#{flugzeugeMietKaufBean.frmPfand}" size="10" style="text-align: right">
+                <f:convertNumber pattern="#,##0"/>
+              </p:inputText>
+              <h:outputLabel value="#{sprache.Hangar_dlg_Edit_lbl_Verkaufspreis} &euro;"/><p:inputText value="#{flugzeugeMietKaufBean.frmVerkaufsPreis}" size="12" style="text-align: right" disabled="#{not flugzeugeMietKaufBean.isBenutzerEigentuemer}">
+                <f:convertNumber pattern="#,##0"/>
+              </p:inputText>
+
+              <h:outputLabel value="#{sprache.Hangar_Flugzeugeinstellungen_lbl_EigenesBild}"/>
+              <p:inputText id="txtGrafik" value="#{flugzeugeMietKaufBean.frmEigenesBild}" size="80" maxlength="250"/>
+
+              <h:outputLabel value=""/>
+
+              <p:fileUpload  fileUploadListener="#{flugzeugeMietKaufBean.onGrafikUpload}" mode="advanced"  dragDropSupport="false" 
+                             update="frm_edit" sizeLimit="512000" fileLimit="1" allowTypes="/(\.|\/)(jpg)$/" invalidSizeMessage="To Big, max. 512 KB"
+                             disabled="#{flugzeugeMietKaufBean.verleast}"/>
+
+
+            </p:panelGrid>
+
+            <p:panelGrid columns="2" rendered="#{loginMB.moduser}">
+              <h:outputLabel value="Position Breitengrad"/>
+              <p:inputText value="#{flugzeugeMietKaufBean.frmBreitenGrad}" size="25" maxlength="250"/>
+              <h:outputLabel value="Position Laengengrad"/>
+              <p:inputText value="#{flugzeugeMietKaufBean.frmLaengenGrad}" size="25" maxlength="250"/>
+            </p:panelGrid>
+
+
+          </h:form>
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_registrierung" widgetVar="wdg_registrierung" header="#{sprache.Hangar_dlg_registrierung_Header}" closable="false" responsive="true">
+          <h:form id="frm_registrierung">
+            <p:toolbar id="tlb_registrierung">
+              <p:toolbarGroup id="tbg_registrierung"  align="left">
+                <p:commandButton title="#{sprache.Hangar_dlg_registrierung_btn_RegistrierungPruefenUndSpeichern}" action="#{flugzeugeMietKaufBean.onRegistrierungAendern()}" update="frm_daten frm_toolbarFlugzeuge" icon="fa fa-save" oncomplete="PF('wdg_registrierung').hide()"/>
+                <p:commandButton title="#{sprache.Hangar_dlg_registrierung_btn_RegistrierungAbbrechen}" icon="fa fa-close" onclick="PF('wdg_registrierung').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Hangar_dlg_registrierung_lbl_Registrierung}"/>
+              <p:inputText value="#{flugzeugeMietKaufBean.frmRegistrierung}" maxlength="10">
+                <p:keyFilter regEx="/[A-Z0-9-]/i"/>
+              </p:inputText>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_AircraftTransferToAirport" widgetVar="wdg_AircraftTransferToAirport"  header="#{sprache.Hangar_Otto_dlg_Flugzeugueberfuehrung}" closable="true">
+          <h:form id="frm_transferToAirport">
+            <p:toolbar id="tbr_transferToAirport">
+              <p:toolbarGroup id="tlb_transferToAirport" align="left">
+                <p:commandButton title="#{sprache.Hangar_Otto_btn_auftragAusfuehren}" icon="fa fa-plane" action="#{flugzeugeMietKaufBean.onFlugzeugUeberfuehren()}" disabled="#{not flugzeugeMietKaufBean.trsIstKalkuliert}" 
+                                 oncomplete="location.reload()" >
+                  <p:confirm header="#{sprache.Hangar_Otto_Warnung_FlugzeugWirklichUeberfuehren}" message="#{sprache.Hangar_Otto_Warnung_FlugzeugWirklichUeberfuehren}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Hangar_Otto_btn_auftragBerechnen}" action="#{flugzeugeMietKaufBean.onBerechnungTransfer()}" icon="fa fa-calculator" update="frm_transferToAirport"/>
+
+                <p:commandButton title="#{sprache.Hangar_Otto_btn_abbruch}" icon="fa fa-times" onclick="PF('wdg_AircraftTransferToAirport').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p:panelGrid columns="2" style="width: 100%">
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/systempilot.png" style="width: 250px;" alt=" #{image}" title="#{image}"/>
+
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Hangar_Otto_lbl_zumFlughafenMitDerIcaoKennung}"/>
+                <h:inputText value="#{flugzeugeMietKaufBean.trsZielICAO}"/>
+
+                <h:outputLabel value="#{sprache.Hangar_Otto_lbl_meilen}"/><h:outputLabel value="#{flugzeugeMietKaufBean.trsEntfernung}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+
+
+                <h:outputLabel value="#{sprache.Hangar_Otto_lbl_ankunftInZeit} #{flugzeugeMietKaufBean.trsZielICAO} "/><h:outputLabel value="#{flugzeugeMietKaufBean.trsDatumEnde}">
+                  <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Hangar_Otto_lbl_betrag}"/><h:outputLabel value="#{flugzeugeMietKaufBean.trsBetrag}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Hangar_Otto_lbl_bankkonto}"/>
+
+                <p:selectOneMenu value="#{flugzeugeMietKaufBean.trsBankkonto}" style="width: 90%" >
+                  <f:selectItem itemLabel="#{flugzeugeMietKaufBean.trsBankkonto} - #{flugzeugeMietKaufBean.trsKontoName}" itemValue="#{flugzeugeMietKaufBean.trsBankkonto}"/>
+                  <f:selectItems var="trskonto" value="#{flugzeugeMietKaufBean.kontenFluggesellschaft}" itemLabel="#{trskonto.bankKonto} - #{trskonto.bankKontoName}" itemValue="#{trskonto.bankKonto}"/>
+                </p:selectOneMenu>
+
+              </p:panelGrid>
+
+            </p:panelGrid>
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_Siztkonfig" widgetVar="wdg_Sitzkonfig" width="1100" closeOnEscape="true" dynamic="true"  header="#{sprache.Hangar_Sitzkonfiguration_dlg_sitzkonfiguration}">
+          <h:form id="frm_Siztkonfig">
+            <p:toolbar id="tlb__Siztkonfig">
+              <p:toolbarGroup id="tbg__Siztkonfig">
+                <p:commandButton title="#{sprache.Hangar_Sitzkonfiguration_btn_schliessen}" icon="ui-icon-close" onclick="PF('wdg_Sitzkonfig').hide()"/>
+                <p:commandButton title="#{sprache.Hangar_Sitzkonfiguration_btn_standardkonfiguration}" action="#{flugzeugeMietKaufBean.onStandardKonfiguration()}" icon="fa fa-exchange" 
+                                 onclick="PF('wdg_Sitzkonfig').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable value="#{flugzeugeMietKaufBean.sitzKonfiguration}" var="konfig" >
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-wrench" title="#{sprache.Hangar_Sitzkonfiguration_btn_KonfigurationAnwenden}" action="#{flugzeugeMietKaufBean.onUmbau()}" 
+                                 update=":frm_daten" oncomplete="PF('wdg_Sitzkonfig').hide()">
+                  <f:setPropertyActionListener value="#{konfig}" target="#{flugzeugeMietKaufBean.selectedKonfig}"  />
+                </p:commandButton>
+              </p:column>                
+
+              <p:column headerText="#{sprache.Hangar_Details_tbl_bezeichnung}" width="300">
+                <h:outputText value="#{konfig.bezeichnung}"/>
+              </p:column>
+
+              <p:column width="30" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cockpit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_anzahlSaftschubsen}"/>
+                </f:facet>
+
+                <h:outputText value="#{konfig.flugbegleiter}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column width="30" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_eco-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeEconomy}"/>
+                </f:facet>
+                <h:outputText value="#{konfig.sitzeEconomy}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column width="30" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_bc-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeBusinessClass}"/>
+                </f:facet>
+                <h:outputText value="#{konfig.sitzeBusiness}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column width="80" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_cargo}" />  
+                </f:facet>
+                <h:outputText value="#{konfig.cargo}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Hangar_Details_tbl_maximaleNutzlast}" width="80">
+                <h:outputText value="#{konfig.maxPayload}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_Details_tbl_preis}" width="60">
+                <h:outputText value="#{konfig.preis}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_Details_tbl_umbauzeitInMinuten}" width="80">
+                <h:outputText value="#{konfig.umbauzeitMinuten}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_Details_tbl_faktor}" width="40">
+                <h:outputText value="#{konfig.faktor}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_kostenstelle" widgetVar="wdg_kostenstelle" header="#{sprache.Hangar_Kostenstelle_dlg_kostenstelle}" width="700">
+          <h:form id="frm_kostenstelle">
+            <p:toolbar id="tlb_kostenstelle">
+              <p:toolbarGroup id="tbg_kostenstelle">
+                <p:commandButton title="#{sprache.Hangar_Kostenstelle_btn_speichern}" action="#{statistikBean.createKostenStelle()}" icon="fa fa-save" update="kst_data"/>
+                <p:commandButton title="#{sprache.Hangar_Kostenstelle_btn_schliessen}" onclick="PF('wdg_kostenstelle').hide()" icon="fa fa-close"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Hangar_Kostenstelle_lbl_bezeichnung} "/><h:inputText value="#{statistikBean.frmBezeichnung}" size="80" maxlength="250"/>
+              <h:outputLabel value="#{sprache.Hangar_Kostenstelle_lbl_kostenstelle}"/><h:inputText value="#{statistikBean.frmKostenStelle}" size="15"/>
+            </p:panelGrid>
+
+            <p:dataTable id="kst_data" value="#{statistikBean.kostenstellen}" var="kst" scrollable="true" scrollHeight="480">
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-remove" title="#{Hangar_Kostenstelle_btn_kostenstelleLoeschen}" action="#{statistikBean.deleteKostenstelle()}" update="kst_data" >
+                  <f:setPropertyActionListener value="#{kst}" target="#{statistikBean.selectedKostenstelle}"  />
+                  <p:confirm header="#{sprache.Hangar_Kostenstelle_Warnung_KostenstelleLoeschen}" message="#{sprache.Hangar_Kostenstelle_Warnung_KostenstelleLoeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>                
+
+              <p:column headerText="#{sprache.Hangar_Kostenstelle_tbl_kostenstelle}" width="60" style="text-align: center">
+                <h:outputText value="#{kst.kostenstelle}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_Kostenstelle_tbl_bezeichnung}" style="text-align: center">
+                <h:outputText value="#{kst.bezeichnung}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugzeugKauf" widgetVar="wdg_FlugzeugKauf" header="#{sprache.Hangar_Flugzeugkauf_dlg_flugzeugkauf}" width="600" >
+          <h:form id="frm_FlugzeugKauf">
+            <p:toolbar id="tlb_FlugzeugKauf">
+              <p:toolbarGroup id="tbg_FlugzeugKauf" align="left">
+                <p:commandButton title="#{sprache.Hangar_Flugzeugkauf_btn_FlugzeugKaufen}" action="#{flugzeugeMietKaufBean.onKaufen()}" icon="fa fa-shopping-cart" update="frm_daten frm_toolbarFlugzeuge" oncomplete="PF('wdg_FlugzeugKauf').hide()">
+                  <p:confirm header="#{sprache.Hangar_Flugzeugkauf_Warnung_FlugzeugWirklichKaufen}" message="#{sprache.Hangar_Flugzeugkauf_Warnung_FlugzeugWirklichKaufen}" icon="ui-icon-alert" />
+                </p:commandButton>
+                <p:commandButton title="#{sprache.Hangar_Flugzeugkauf_btn_schliessen}" onclick="PF('wdg_FlugzeugKauf').hide()" icon="fa fa-close"/>
+
+                <p:commandButton value="#{sprache.Hangar_Flugzeugkauf_btn_neueKostenstelle}" icon="ui-icon-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+                <p:commandButton title="#{sprache.Hangar_Flugzeugkauf_btn_kostenstellenAktualisieren}" icon="ui-icon-refresh" update="som_Kostenstelle1"/>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="1" style="width: 100%;">
+
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="100%"/>
+              </div>
+
+
+              <p:panelGrid columns="2" style="width: 100%;">
+
+                <h:outputLabel  value="#{sprache.Hangar_Flugzeugkauf_lbl_FlugzeugPreis}" style="font-size: 2em;" />
+                <h:outputLabel value="#{flugzeugeMietKaufBean.selectedFlugzeug.verkaufsPreis}" style="font-size: 2em;">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Hangar_cbo_WaehleEineFluggesellschaftAusDerListe}"/>
+                <p:selectOneMenu value="#{flugzeugeMietKaufBean.fgID}"  style="width: 250px">
+                  <f:selectItem itemLabel="#{sprache.Hangar_cbo_WaehleEineFluggesellschaftAusDerListe}"  itemValue="-1" noSelectionOption="true" />
+                  <f:selectItems value="#{flugzeugeMietKaufBean.meineFluggesellschaftenFuerManager}" var="fgs" itemValue="#{fgs[0]}" itemLabel="#{fgs[1]}" />
+                  <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onChangeFluggesellschaft()}" update="som_Kostenstelle1"/>
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.Hangar_Flugzeugkauf_lbl_kostenstelle}"/>
+                <p:selectOneMenu id="som_Kostenstelle1" value="#{flugzeugeMietKaufBean.frmKostenStelle}" style="width: 95%" filter="true" filterMatchMode="contains" >
+                  <f:selectItem itemLabel="#{sprache.Hangar_dlg_Edit_cbo_WaehleEineKostenstelle}" itemValue="0"/>
+                  <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.Hangar_Flugzeugkauf_cbo_BankontoWaehlen}"/>
+
+                <p:selectOneMenu value="#{flugzeugeMietKaufBean.trsBankkonto}" style="width: 90%" >
+                  <f:selectItem itemLabel="#{flugzeugeMietKaufBean.trsBankkonto} - #{flugzeugeMietKaufBean.trsKontoName}" itemValue="#{flugzeugeMietKaufBean.trsBankkonto}"/>
+                  <f:selectItems var="kkonto" value="#{flugzeugeMietKaufBean.kontenFluggesellschaft}" itemLabel="#{kkonto.bankKonto} - #{kkonto.bankKontoName}" itemValue="#{kkonto.bankKonto}"/>
+                </p:selectOneMenu>
+
+
+              </p:panelGrid>
+
+
+            </p:panelGrid>
+
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugzeugVerkauf" widgetVar="wdg_FlugzeugVerkauf" header="#{sprache.Hangar_Flugzeugverkauf_dlg_flugzeugVerkauf}" width="700" modal="true">
+          <h:form id="frm_FlugzeugVerkauf">
+            <p:toolbar id="tlb_FlugzeugVerkauf">
+              <p:toolbarGroup id="tbg_FlugzeugVerkauf">
+                <p:commandButton title="#{sprache.Hangar_Flugzeugverkauf_btn_FlugzeugVerkaufen}" action="#{flugzeugeMietKaufBean.onVerKaufen()}" 
+                                 icon="fa fa-money" oncomplete="location.reload();" disabled="false">
+
+                  <p:confirm header="#{sprache.Hangar_Flugzeugverkauf_Warnung_FlugzeugWirklichVerkaufen}" message="#{sprache.Hangar_Flugzeugverkauf_Warnung_FlugzeugWirklichVerkaufen}" icon="ui-icon-alert" />
+
+                </p:commandButton>
+                <p:commandButton title="#{sprache.Hangar_Flugzeugverkauf_btn_schliessen}" onclick="PF('wdg_FlugzeugVerkauf').hide()" icon="fa fa-close"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="1" style="width: 100%">
+
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Hangar_Flugzeugverkauf_lbl_ankaufspreisDerBank}" style="font-size: 2em"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.verkaufsPreis}" style="font-size: 2em">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputText>
+              </p:panelGrid>
+
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="100%"/>
+              </div>
+
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugzeugReparatur" widgetVar="wdg_FlugzeugReparatur" header="#{sprache.Hangar_ServiceHangar_dlg_header}" width="700" modal="true" position="150,150" closeOnEscape="true">
+          <h:form id="frm_FlugzeugReparatur">
+            <p:toolbar id="tlb_FlugzeugReparatur">
+              <p:toolbarGroup id="tbg__FlugzeugReparatur" align="left">
+
+                <p:commandButton title="#{sprache.Hangar_ServiceHangar_btn_ReparaturauftragErteilen}" action="#{flugzeugeMietKaufBean.onReparaturDurchfuehren()}" update="frm_daten"
+                                 icon="fa fa-wrench" disabled="#{flugzeugeMietKaufBean.werkstattSumme le 0}" oncomplete="PF('wdg_FlugzeugReparatur').hide();">
+                  <p:confirm header="#{sprache.Hangar_ServiceHangar_WarnungReparatur}" message="#{sprache.Hangar_ServiceHangar_WarnungReparatur}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Hangar_ServiceHangar_btn_neuberechnung}" action="#{flugzeugeMietKaufBean.onRepair()}" update="frm_FlugzeugReparatur"  icon="fa fa-calculator"/>                
+
+                <p:commandButton title="#{sprache.Hangar_ServiceHangar_btn_schliessen}" onclick="PF('wdg_FlugzeugReparatur').hide()" icon="fa fa-close"/>
+
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg__FlugzeugReparaturRight" align="right">
+                <p:commandButton title="Flugzeug Umbauen" icon="fa fa-wrench" onclick="PF('wdg_FlugzeugUmbau').show();" 
+                                 oncomplete="PF('wdg_FlugzeugReparatur').hide();" disabled="#{not flugzeugeMietKaufBean.umbauFaehig}"
+                                 update="frm_FlugzeugUmbau"/>
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:panelGrid id="pnl_kosten" columns="1" style="width: 100%" rendered="#{not flugzeugeMietKaufBean.checkAufMaterial}">
+
+              <h2 align="center">Hangar current time: #{flugzeugeMietKaufBean.hangarZeit}</h2>    
+
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="600px"/>
+              </div>
+
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_Reparaturpreis}" style="font-size: 2em"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattSumme}" style="font-size: 2em; float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturzeitInMinuten}" style="font-size: 2em"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattZeit}" style="font-size: 2em; float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturzeitInStunden}" style="font-size: 2em" rendered="#{flugzeugeMietKaufBean.werkstattZeit ge 60}"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattZeit / 60}" style="font-size: 2em; float: right" rendered="#{flugzeugeMietKaufBean.werkstattZeit ge 60}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_zuReparierenInProzent}" style="font-size: 2em" />
+                <h:outputText value="#{100.0 - flugzeugeMietKaufBean.selectedFlugzeug.zustand}" style="font-size: 2em; float: right" rendered="#{not flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+                <h:outputText value="0.0" style="font-size: 2em; float: right" rendered="#{flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturProzent}" style="font-size: 2em" />
+                <h:inputText value="#{flugzeugeMietKaufBean.werkstattRepProzent}" style="float: right" disabled="#{flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:inputText>
+              </p:panelGrid>
+
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_Ccheck}" style="font-size: 2em; width: 100px" />
+                <h:outputLabel value="#{flugzeugeMietKaufBean.selectedFlugzeug.naechsterTerminCcheck}" style="font-size: 2em; float: right">
+                  <f:convertDateTime pattern="MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_CcheckPreis}" style="font-size: 2em; width: 100px" />
+                <h:outputLabel value="#{flugzeugeMietKaufBean.frmCCheckWert}" style="font-size: 2em; float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;" />
+                </h:outputLabel>
+
+                <h:outputText value="#{sprache.Hangar_ServiceHangar_lbl_CcheckDurchfuehren}" style="font-size: 2em;"/>
+                <p:selectBooleanButton value="#{flugzeugeMietKaufBean.frmCCheckDurchfuehren}" disabled="#{flugzeugeMietKaufBean.frmCCheckAktiv}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" 
+                                       onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:160px;font-size: 2em; float: right" >
+                  <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onRepair()}" update="frm_FlugzeugReparatur"/>
+                </p:selectBooleanButton> 
+
+              </p:panelGrid>              
+
+            </p:panelGrid>
+
+            <p:panelGrid id="pnl_kostenPrivat" columns="1" style="width: 100%" rendered="#{flugzeugeMietKaufBean.checkAufMaterial}">
+              <h2 align="center">Hangar current time: #{flugzeugeMietKaufBean.hangarZeit}</h2>
+              <p:graphicImage value="#{flugzeugeMietKaufBean.selectedFlugzeug.symbolUrl}" style="width: 100%" alt=" #{image}" title="#{image}"/>
+
+              <p:panelGrid columns="1" style="width: 100%">
+                <p:selectOneMenu value="#{flugzeugeMietKaufBean.PSHangarID}" filter="true" filterMatchMode="contains" autoWidth="true" >
+                  <f:selectItem itemLabel="#{sprache.FBOManagement_dlg_HangarHandel_cbo_Servicehangarwaehlen}" itemValue="-1"/>
+                  <f:selectItems var="hangar" value="#{flugzeugeMietKaufBean.serviceHangars}" itemLabel="#{hangar.name}" itemValue="#{hangar.iduserfbo}"/>
+                  <p:ajax event="change" update="pnl_kostenPrivat" listener="#{flugzeugeMietKaufBean.onRepair()}"/>
+                </p:selectOneMenu>
+
+                <p:selectOneMenu id="som_paket" value="#{flugzeugeMietKaufBean.PSHangarPaketArt}" autoWidth="true" rendered="#{flugzeugeMietKaufBean.PSHangarID gt 0}">
+                  <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Hangar_dlg_FlugzeugReparatur_cbo_RepArt}" itemValue=""/>
+                  <f:selectItems var="paket" value="#{flugzeugeMietKaufBean.pakete}" itemLabel="#{paket}" itemValue="#{paket}"/>
+                  <p:ajax event="change" listener="#{flugzeugeMietKaufBean.onRepair()}" update="frm_FlugzeugReparatur"/>
+                </p:selectOneMenu>
+
+              </p:panelGrid>
+
+
+              <p:panelGrid id="pnl_kostenPrivatDetail" columns="2" style="width: 100%" rendered="#{flugzeugeMietKaufBean.PSHangarPaketArt > '' and flugzeugeMietKaufBean.PSHangarID gt 0}">
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_Reparaturpreis}" style="font-size: 2em"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattSumme}" style="font-size: 2em; float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturzeitInMinuten}" style="font-size: 2em"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattZeit}" style="font-size: 2em; float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturzeitInStunden}" style="font-size: 2em" rendered="#{flugzeugeMietKaufBean.werkstattZeit ge 60}"/>
+                <h:outputText value="#{flugzeugeMietKaufBean.werkstattZeit / 60}" style="font-size: 2em; float: right" rendered="#{flugzeugeMietKaufBean.werkstattZeit ge 60}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_zuReparierenInProzent}" style="font-size: 2em" />
+                <h:outputText value="#{100.0 - flugzeugeMietKaufBean.selectedFlugzeug.zustand}" style="font-size: 2em; float: right" rendered="#{not flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+                <h:outputText value="0.0" style="font-size: 2em; float: right" rendered="#{flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputText>
+
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_ReparaturProzent}" style="font-size: 2em" />
+                <h:inputText value="#{flugzeugeMietKaufBean.werkstattRepProzent}" style="float: right" disabled="#{flugzeugeMietKaufBean.frmCCheckDurchfuehren}">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:inputText>
+
+
+                <h:outputLabel value="#{sprache.Hangar_ServiceHangar_lbl_Ccheck}" style="font-size: 2em; width: 100px" />
+                <h:outputLabel value="#{flugzeugeMietKaufBean.selectedFlugzeug.naechsterTerminCcheck}" style="font-size: 2em; float: right">
+                  <f:convertDateTime pattern="MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+
+              </p:panelGrid>              
+
+            </p:panelGrid>            
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugzeugUmbau" widgetVar="wdg_FlugzeugUmbau" header="Flugzeug Umbauen" closeOnEscape="true" modal="true" appendTo="@(body)" >
+          <h:form id="frm_FlugzeugUmbau">
+            <p:toolbar id="tlb_FlugzeugUmbau">
+              <p:toolbarGroup id="tbg_FlugzeugUmbau">
+
+                <p:commandButton title="Flugzeug umbauen" icon="fa fa-wrench" action="#{flugzeugeMietKaufBean.onFlugzeugUmbauen()}" oncomplete="PF('wdg_FlugzeugUmbau').hide()" 
+                                 update="frm_daten:tbl_flugzeuge">
+
+                  <p:confirm header="Flugzeug wirklich umbauen" message="Willst du wirklich das Flugzeug umbauen, der Umbau kann nicht rückgängig gemacht werden." icon="ui-icon-alert" />
+                </p:commandButton>
+
+
+                <p:commandButton title="#{sprache.Hangar_ServiceHangar_btn_schliessen}" onclick="PF('wdg_FlugzeugUmbau').hide()" icon="fa fa-close"/>                
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <div align="center">
+              <p>#{flugzeugeMietKaufBean.selectedFlugzeug.type} > #{flugzeugeMietKaufBean.umbauFlugzeug.type}</p>
+              <img src="#{flugzeugeMietKaufBean.getFlugzeugBildFuerUmbau(flugzeugeMietKaufBean.selectedFlugzeug.idUmbauModel)}" width="600px"/>
+            </div>
+
+            <p:panelGrid columns="2" style="width:98%">
+              <f:facet name="header">
+                Umbaudaten
+              </f:facet>
+
+              <h:outputLabel value="Flugzeug:"/>
+              <h:outputLabel value="#{flugzeugeMietKaufBean.umbauFlugzeug.type}"/>
+
+              <h:outputLabel value="Umbaukosten:"/>
+              <h:outputLabel value="#{flugzeugeMietKaufBean.umbauFlugzeug.umbaukosten}">
+                <f:convertNumber pattern="#,##0 &euro;" />
+              </h:outputLabel>
+
+              <h:outputLabel value="Umbauzeit:"/>
+              <h:outputLabel value="#{flugzeugeMietKaufBean.getMietZeitText(flugzeugeMietKaufBean.umbauFlugzeug.umbauzeit)}"/>
+
+              <h:outputLabel value="Payload:"/>
+              <h:outputLabel value="#{flugzeugeMietKaufBean.umbauFlugzeug.payload}">
+                <f:convertNumber pattern="#,##0 #{sprache.kg}" />
+              </h:outputLabel>
+
+              <h:outputLabel value="Cargo:"/>
+              <h:outputLabel value="#{flugzeugeMietKaufBean.umbauFlugzeug.cargo}">
+                <f:convertNumber pattern="#,##0 #{sprache.kg}" />
+              </h:outputLabel>
+
+            </p:panelGrid>
+
+
+
+          </h:form>
+
+
+        </p:dialog>
+
+
+
+
+
+        <p:dialog id="dlg_Flugzeuglog" widgetVar="wdg_Flugzeuglog" header="#{sprache.Hangar_dlg_Flugzeuglog_Header}" closeOnEscape="true" >
+          <h:form id="frm_Flugzeuglog">
+
+            <p:dataTable id="tbl_Flugzeuglog" value="#{flugzeugeMietKaufBean.flugzeuglog}" var="logItems"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="20"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         emptyMessage="Keine Log-Daten vorhanden">
+
+              <p:column width="15" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_datum}" width="80">
+                <h:outputLabel value="#{logItems.flugDatum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_flugnummer}" width="60">
+                <h:outputLabel value="#{logItems.acarsFlugNummer}"/>
+              </p:column>
+
+              <p:column headerText="Pilot" width="90">
+                <h:outputLabel value="#{logItems.pilotenName}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_vonIcao}" width="250">
+                <h:outputLabel value="#{logItems.fromicao} (#{logItems.fromIcaoFlughafenName})"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_nachIcao}" width="250">
+                <h:outputLabel value="#{logItems.toicao} (#{logItems.tocaoFlughafenName})"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_passagiere}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.pax}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_cargo}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.cargo}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_meilen}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.miles}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_verbrauch}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.treibstoffverbrauchkg}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_stunden}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.flugzeitMinuten/60}">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:rowExpansion>
+
+                <p:panelGrid columns="3"  style="margin-left: 10px; margin-top: 15px; float: left; width: 450px;">
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeit} #{sprache.stunden}"/>
+                  <h:outputLabel value="#{logItems.flugzeitMinuten / 60}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{logItems.flugzeitMinuten}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.minuten}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_meilen}"/>
+                  <h:outputLabel value="#{logItems.miles}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_rueckerstattungTreibstoffkosten}"/>
+                  <h:outputLabel value="#{logItems.treibstoffkosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{logItems.treibstoffverbrauchkg}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_buchungsgebuehr}"/>
+                  <h:outputLabel value="#{logItems.buchungsgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_summeKosten}" />
+                  <h:outputLabel value="#{logItems.summekosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_summeBonus}" />
+                  <h:outputLabel value="#{logItems.bonus1 + logItems.bonus2}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenLandegebuehren}"/>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{logItems.landegebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenStartgebuehr}"/>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{logItems.startgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeugmiete}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.mietgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_bezahlungDerCrew}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.crewgebuehren}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_departureGebuehren}"/>
+                  <h:outputLabel value="#{logItems.betragDepartureTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>            
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_arrivalGebuehren}"/>
+                  <h:outputLabel value="#{logItems.betragAriivalTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>            
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtGebuehrArrivalDeparture}"/>
+                  <h:outputLabel value="&nbsp;"/>            
+                  <h:outputLabel value="#{logItems.betragAriivalTerminal + logItems.betragDepartureTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtKostenDesFluges}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.summekosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_provision}"/>
+                  <h:outputLabel value="&nbsp;"/>            
+                  <h:outputLabel value="#{logItems.provision}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                </p:panelGrid>
+
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugUebertragen" widgetVar="wdg_FlugUebertragen" header="#{sprache.Hangar_dlg_FlugzeugUebertragen_Header}" width="800" closeOnEscape="true" >
+          <h:form id="frm_FlugUebertragen">
+            <p:toolbar id="tlb_FlugUebertragen">
+              <p:toolbarGroup id="tbg_FlugUebertragen">
+
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_Uebertragen}" action="#{flugzeugeMietKaufBean.onTransferToUser()}"  icon="fa fa-exchange" 
+                                 oncomplete="PF('wdg_FlugUebertragen').hide()" update="frm_daten frm_toolbarFlugzeuge">
+                  <p:confirm header="#{sprache.Hangar_FlugzeugTransferZuUser_Warnung}" message="#{sprache.Hangar_FlugzeugTransferZuUser_Warnung}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_Abbruch}" icon="fa fa-close" onclick="PF('wdg_FlugUebertragen').hide()"  />
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <div align="center">
+              <h1>#{flugzeugeMietKaufBean.selectedFlugzeug.type}</h1>
+              <h2>#{flugzeugeMietKaufBean.selectedFlugzeug.registrierung}</h2>
+
+              <p>
+                <h:outputText value="#{sprache.Hangar_dlg_FlugzeugUebertragen_lbl_UserIDNeuerEigentuemer}  "/>
+                <h:inputText  value="#{flugzeugeMietKaufBean.frmNeuerEigentuemer}" maxlength="12" size="6" />
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_lupe}" icon="fa fa-check" update="frm_FlugUebertragen" />
+              </p>  
+
+
+              <p style="font-weight: bold">#{flugzeugeMietKaufBean.pruefeUserID}</p>
+
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="100%"/>
+              </div>
+
+            </div>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FlugzeugAusDerLuftHolen" widgetVar="wdg_FlugzeugAusDerLuftHolen" closable="true" header="Flugzeug aus der Luft holen">
+          <h:form id="frm_FlugzeugAusDerLuftHolen">
+            <p:toolbar>
+              <p:toolbarGroup align="left">
+                <p:commandButton  title="Verlassen" icon="fa fa-close" onclick="PF('wdg_FlugzeugAusDerLuftHolen').hide()" />
+                <p:commandButton  title="Aktualisieren" icon="fa fa-refresh" update="tbl_flugzeugeinderluft" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_flugzeugeinderluft" widgetVar="wdg_flugzeugeinderluft" var="fzitems" value="#{flugzeugeMietKaufBean.flugzeugeMietKauf}"
+                         scrollable="true" scrollHeight="600"
+                         lazy="false"
+                         emptyMessage="#{sprache.Hangar_Tabelle_emptyMessage}">
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-trash" title="Flugzeug aus der Luft holen " action="#{flugzeugeMietKaufBean.onFlugzeugAusDerLuftHolenAusHangar()}" update="tbl_flugzeugeinderluft">
+                  <f:setPropertyActionListener value="#{fzitems}" target="#{flugzeugeMietKaufBean.selectedFlugzeug}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_tbl_kennung}" width="80" style="text-align: center;">
+                <h:outputText value="#{fzitems.registrierung}"/>
+              </p:column>
+
+              <p:column  width="40" style="text-align: center;" >
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_location.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_aktuellerStandort}"/>
+                </f:facet>
+                <h:outputText value="#{fzitems.aktuellePositionICAO}"/>
+              </p:column>
+
+              <p:column style="text-align: right;" width="40" >
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_home-location.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_heimatflughafenIcao}"/>
+                </f:facet>
+                <h:outputText value="#{fzitems.heimatICAO}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_tbl_modell}" width="250" style="text-align: center;" >
+                <h:outputText value="#{fzitems.type}"/>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_mietzeit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleMietzeit}"/>
+                </f:facet>
+                <h:outputText value="#{flugzeugeMietKaufBean.getMietZeitText(fzitems.maxMietzeitMinuten)}" style="float: right"/>
+              </p:column>
+
+              <p:column width="40" style="text-align: center;" >
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_rent-hour.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_mietpreisProStunde}"/>
+                </f:facet>
+                <h:outputText value="#{fzitems.mietpreisTrocken}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column width="200" style="text-align: center;">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_owner.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_eigentuemer}"/>
+                </f:facet>
+                <h:outputText value="#{fzitems.userName} #{fzitems.fluggesellschaftName} " />
+              </p:column>
+
+              <p:column width="200" style="text-align: center; padding: 0px;" >
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/owner.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_eigentuemer}"/>
+                </f:facet>
+                <table>
+                  <tr>
+                    <td>#{sprache.Hangar_Details_tbl_gesperrtVon}</td>
+                    <td>#{flugzeugeMietKaufBean.getUserName(fzitems.idUserDerFlugzeugGesperrtHat)}</td>
+                  </tr>
+                  <tr>
+                    <td>#{sprache.Hangar_Details_tbl_gesperrtSeit}</td>
+                    <td><h:outputLabel value="#{fzitems.istGesperrtSeit}">
+                        <f:convertDateTime pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputLabel>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#{sprache.Hangar_Details_tbl_gesperrtBisVoraussichtlich}</td>
+                    <td><h:outputLabel value="#{fzitems.istGesperrtBis}">
+                        <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputLabel>
+                    </td>
+                  </tr>
+                </table>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{sprache.Hangar_Otto_dlg_Flugzeugueberfuehrung}" modal="true" closable="false" visible="#{TransferGebucht}"
+                  widgetVar="wdg_transfer" minHeight="80">
+          <h:form id="frm_transfer">
+            <p align="center">
+              <h:outputText value="#{sprache.Hangar_msg_derAuftragWurdeAnDenSystempilotenUebermittelt}" />
+            </p>
+            <div align="center">
+              <p:commandButton value="OK" action="#{flugzeugeMietKaufBean.onTransferdialogClose()}" oncomplete="PF('wdg_transfer').hide()"/>
+            </div>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog header="#{sprache.Hangar_Otto_dlg_Flugzeugueberfuehrung}" modal="true" closable="false" visible="#{TransferNichtGebucht}"
+                  widgetVar="wdg_transferFail" minHeight="80">
+          <h:form id="frm_transferFail">
+            <p align="center">
+              <h:outputText value="#{sprache.Hangar_msg_TransferNichtGebucht}" />
+            </p>
+            <div align="center">
+              <p:commandButton value="OK" action="#{flugzeugeMietKaufBean.onTransferdialogClose()}" oncomplete="PF('wdg_transferFail').hide()"/>
+            </div>
+          </h:form>
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_FlugzeugSuchen" widgetVar="wdg_FlugzeugSuchen" header="#{sprache.Hangar_dlg_FlugzeugSuchen_header}" width="600" position="250,80">
+          <h:form id="frm_FlugzeugSuchen">
+            <p:toolbar id="tlb_FlugzeugSuchen">
+              <p:toolbarGroup id="tbg_FlugzeugSuchen" align="left">
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugSuchen_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_FlugzeugSuchen').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="3" style="width:100%">
+              <h:outputLabel value="#{sprache.Hangar_tbl_kennung}:"/> 
+              <h:inputText value="#{flugzeugeMietKaufBean.sucheKennung}" size="15"/>
+              <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugSuchen_btn_sucheStart}" icon="fa fa-search" action="#{flugzeugeMietKaufBean.onSucheUeberKennung()}"
+                               oncomplete="PF('wdg_FlugzeugSuchen').hide();" update="frm_daten:tbl_flugzeuge"/>
+
+              <h:outputLabel value="#{sprache.Hangar_dlg_FlugzeugSuchen_lbl_FlugzeugID}"/> 
+              <h:inputText value="#{flugzeugeMietKaufBean.sucheID}" size="15"/>
+              <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugSuchen_btn_sucheStart}" icon="fa fa-search" action="#{flugzeugeMietKaufBean.onSucheUeberMietkaufID()}"
+                               oncomplete="PF('wdg_FlugzeugSuchen').hide();" update="frm_daten:tbl_flugzeuge"/>
+
+              <h:outputLabel value="Klasse"/> 
+              <h:inputText value="#{flugzeugeMietKaufBean.sucheUberKlasse}" size="15"/>
+              <p:commandButton title="Zeige alle Flugzeuge mit der angegebenen Klasse" icon="fa fa-search" action="#{flugzeugeMietKaufBean.onSucheUeberKlasse()}"
+                               oncomplete="PF('wdg_FlugzeugSuchen').hide();" update="frm_daten:tbl_flugzeuge"/>
+
+              
+              <h:outputLabel value="#{sprache.Hangar_dlg_FlugzeugSuchen_lbl_besitzer}"/> 
+              <p:selectOneMenu value="#{flugzeugeMietKaufBean.sucheBesitzer}" autoWidth="true" filterMatchMode="contains" filter="true">
+                <f:selectItems var="users" value="#{flugzeugeMietKaufBean.user}"  itemValue="#{users[0]}" itemLabel="#{users[1]}" />
+              </p:selectOneMenu>
+              <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugSuchen_btn_sucheStart}" icon="fa fa-search" action="#{flugzeugeMietKaufBean.onSucheUeberUserID()}"
+                               oncomplete="PF('wdg_FlugzeugSuchen').hide();" update="frm_daten:tbl_flugzeuge"/>
+
+            </p:panelGrid>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_Flugzeugleasing" widgetVar="wdg_Flugzeugleasing" header="#{sprache.Hangar_dlg_Flugzeugleasing_header}" width="800" closeOnEscape="true" >
+          <h:form id="frm_Flugzeugleasing">
+            <p:toolbar id="tlb_Flugzeugleasing">
+              <p:toolbarGroup id="tbg_Flugzeugleasing">
+
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_Uebertragen}" action="#{flugzeugeMietKaufBean.onLeasingToUser()}"  icon="fa fa-check" 
+                                 oncomplete="PF('wdg_Flugzeugleasing').hide()" update="frm_daten frm_toolbarFlugzeuge" >
+                  <p:confirm header="#{sprache.Hangar_FlugzeugTransferZuUser_Warnung}" message="#{sprache.Hangar_FlugzeugTransferZuUser_Warnung}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_Abbruch}" icon="fa fa-close" onclick="PF('wdg_Flugzeugleasing').hide()"  />
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <div align="center">
+              <h1>#{flugzeugeMietKaufBean.selectedFlugzeug.type}</h1>
+              <h2>#{flugzeugeMietKaufBean.selectedFlugzeug.registrierung}</h2>
+
+              <p>
+                <h:outputText value="#{sprache.Hangar_dlg_Flugzeugleasing_lbl_Schuldner}  "/>
+                <h:inputText  value="#{flugzeugeMietKaufBean.frmNeuerEigentuemer}" maxlength="12" size="6" />
+                <p:commandButton title="#{sprache.Hangar_dlg_FlugzeugUebertragen_btn_lupe}" icon="fa fa-check" update="frm_Flugzeugleasing" />
+              </p>  
+
+
+              <p style="font-weight: bold">#{flugzeugeMietKaufBean.pruefeUserID}</p>
+
+              <div align="center">
+                <img src="#{flugzeugeMietKaufBean.getFlugzeugBild(flugzeugeMietKaufBean.selectedFlugzeug.idMietKauf)}" width="100%"/>
+              </div>
+
+            </div>
+
+          </h:form>
+
+        </p:dialog>
+
+
+
+
+        <p:dialog id="dlg_FlugzeugListe" widgetVar="wdg_FlugzeugListe" header="Verfügbare Flugzeuge in FTW" width="1100" height="600" position="250,80">
+          <h:form id="frm_FlugzeugListe">
+            <p:toolbar id="tlb_FlugzeugListe">
+              <p:toolbarGroup id="tbg_FlugzeugListe" align="left">
+                <p:commandButton title="#{sprache.ExternesFenster_Flugzeuge_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_FlugzeugListe').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+
+            <p align="center" style="font-size: 1.3em;">
+              Alle Preise sind Netto-Neupreise zuzügliche Auslieferungs- oder Anpassungskosten!
+            </p>
+
+
+            <table id="flzTabelle" align="left" width="100%" >
+
+              <th align="left">Hersteller</th>
+              <th align="left">Type</th>
+              <th align="left">Lizenz</th>
+              <th align="right">Klasse</th>
+              <th align="right">Sitze ECO</th>
+              <th align="right">Sitze BC</th>
+              <th align="right">Cargo (#{sprache.kg})</th>
+              <th align="right">Preis</th>
+              
+
+              <ui:repeat value="#{flugzeugBean.flugzeugeOrdered}" var="flz">
+
+                <tr>
+                  <td width="300" align="left"><h:outputLabel value="#{flz.hersteller}"/></td>
+                  <td width="300" align="left"><h:outputLabel value="#{flz.type}"/></td>
+                  <td width="50" align="left"><h:outputLabel value="#{flz.lizenz}"/></td>
+
+                  <td align="right">
+                    <h:outputLabel value="#{flz.flugzeugklasse}">
+                      <f:convertNumber pattern="0" />
+                    </h:outputLabel>
+                  </td>
+                  
+                  <td align="right">
+                    <h:outputLabel value="#{flz.sitzeEconomy}">
+                      <f:convertNumber pattern="#,## 0" />
+                    </h:outputLabel>
+                  </td>
+                  <td align="right">
+                    <h:outputLabel value="#{flz.sitzeBusinessClass}">
+                      <f:convertNumber pattern="#,## 0" />
+                    </h:outputLabel>
+                  </td>
+
+                  <td align="right">
+                    <h:outputLabel value="#{flz.cargo}">
+                      <f:convertNumber pattern="#,## 0" />
+                    </h:outputLabel>
+                  </td>
+
+                  <td width="100"  align="right">
+                    <h:outputLabel value="#{flz.verkaufspreis}">
+                      <f:convertNumber pattern="#,## 0 &euro;" />
+                    </h:outputLabel>
+                  </td>
+
+
+
+                </tr>
+
+              </ui:repeat>
+
+
+            </table>
+
+
+          </h:form>
+        </p:dialog>        
+
+
+        <ui:include src="/users/dialogs/dlgBlacklist.xhtml"/>
+
+
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+    </h:body>
+  </f:view>
+
+</html>
+

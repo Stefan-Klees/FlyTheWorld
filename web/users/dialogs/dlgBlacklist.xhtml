@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+  <p:dialog id="dlg_blacklist" widgetVar="wdg_blacklist" header="Flugzeug Blacklist" width="600" height="500" appendTo="@(BODY)" modal="true">
+    <h:form id="frm_blacklist">
+      <p:toolbar id="tlb_blacklist">
+        <p:toolbarGroup id="tbg_blacklist">
+
+          <p:panelGrid columns="5">
+            <p:commandButton title="#{sprache.ExternesFenster_Flugzeuge_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_blacklist').hide();"/>
+
+            <p:link href="#{configBean.wikiBlacklist}" target="_blank" >
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
+            </p:link>
+          </p:panelGrid>
+
+
+        </p:toolbarGroup>
+      </p:toolbar>
+
+      <p:panelGrid columns="3">
+
+        <h:outputLabel value="FTW-Username"/>
+
+        <p:selectOneMenu  value="#{flugzeugeMietKaufBean.blackListUserID}" style="width: 90%" filter="true" filterMatchMode="contains">
+          <f:selectItem itemLabel="Einen Piloten auswählen...." itemValue="-1"/>
+          <f:selectItems var="pilot" value="#{flugzeugeMietKaufBean.listUser}" itemLabel="#{pilot.name1}" itemValue="#{pilot.idUser}"/>
+        </p:selectOneMenu>
+
+        <p:commandButton title="Pilot zur Blacklist hinzufügen" icon="fa fa-save" action="#{flugzeugeMietKaufBean.onBlackListErgaenzen()}" update="blackTable" />
+
+      </p:panelGrid>
+
+
+      <p:dataTable id="blackTable" 
+                   widgetVar="blackTable"
+                   var="items"
+                   value="#{flugzeugeMietKaufBean.flugzeugBlackList}"
+                   rowKey="#{items.idblacklist}"
+                   rows="15"
+                   scrollable="true"
+                   emptyMessage="Keine Piloten zugeordnet">
+
+        <p:column width="25">
+          <p:commandButton title="Pilot aus Blacklist löschen" icon="fa fa-trash" action="#{flugzeugeMietKaufBean.onBlackListEntfernen()}" update="blackTable" >
+            <f:setPropertyActionListener target="#{flugzeugeMietKaufBean.blackListenEintrag}" value="#{items}"/>
+            <p:confirm header="Pilot Löschen" message="Pilot #{items.username} aus Liste löschen?" icon="ui-icon-alert" />
+          </p:commandButton>
+        </p:column>
+
+
+        <p:column headerText="Pilot">
+          <h:outputLabel value="#{items.username}"/>
+        </p:column>
+
+      </p:dataTable>
+
+
+
+    </h:form>
+
+
+
+
+  </p:dialog>
+
+</html>

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW - #{sprache.MeineFluggesellschaft_pnl}</title>
+
+      <style>
+        .myClass .ui-layout-unit-content{
+          background: transparent;
+          background-image: URL('#{configBean.picHintergrund}');
+          background-size: cover;
+        }
+      </style>
+
+
+    </h:head>
+
+    <h:body id="Body">
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/reports/menueUserReport.xhtml"/>
+
+        <p:layoutUnit position="center" closable="false" styleClass="myClass" >
+
+
+          <h:form id="frm_Pilot">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="idPilotTable" widgetVar="wdgPilotTable" var="fg" value="#{statistikBean.meineFluggesellschaften}"
+                         scrollable="true" scrollRows="20"  >
+
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-remove" title="#{sprache.MeineFluggesellschaft_btn_AusDerFluggesellschaftAustreten}" action="#{statistikBean.onRemovePilot()}" oncomplete="location.reload();" >
+                  <f:setPropertyActionListener value="#{fg}" target="#{statistikBean.selectedFlugesellschaft}" />
+                  <p:confirm header="#{sprache.MeineFluggesellschaft_Warnung_Austritt}" message="#{sprache.MeineFluggesellschaft_Warnung_Austritt}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>                
+
+
+              <p:column headerText="" width="96" style="text-align: center;">
+                <p:graphicImage url="#{fg.logoURL}" width="96" />
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_nameEigentuemer}" width="300" >
+                <h:outputText value="#{fg.name} - #{fg.besitzerName}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_heimatflughafenIcao}" width="200" >
+                <h:outputText value="#{fg.icao} - #{fg.flughafenName}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_icaoCode}" width="40" style="text-align: center">
+                <h:outputText value="#{fg.icaoCode}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_rufname}" width="120" style="text-align: center">
+                <h:outputText value="#{fg.callname}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Status}" width="300"  style="text-align: center">
+                <h:outputText value="#{statistikBean.BonusBezeichnungStatus(fg.iduser, fg.idFluggesellschaft)}"/>
+              </p:column>
+
+              <p:column style="text-align: center" >
+                <p:graphicImage value="#{statistikBean.bonusAbzeichen}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_bonus}" width="60" style="text-align: right">
+                <h:outputText value="#{fg.bonus}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_umsatz}" width="100">
+                <h:outputText value="#{fg.umsatz}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_meilen}"  width="80" style="text-align: right">
+                <h:outputText value="#{fg.meilen}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_passagiere}"  width="80"  style="text-align: right">
+                <h:outputText value="#{fg.passagiere}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_cargo}" width="80"  style="text-align: right">
+                <h:outputText value="#{fg.waren}" style="float: right">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_flugzeit}" width="60"  style="text-align: right">
+                <h:outputText value="#{fg.zeit / 60}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.MeineFluggesellschaft_tbl_letzterFlug}" width="80">
+                <h:outputLabel value="#{fg.letzterFlug}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+      </p:layout>
+
+    </h:body>
+
+  </f:view>
+</html>
+

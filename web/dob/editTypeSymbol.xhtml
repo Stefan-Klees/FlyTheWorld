@@ -1,0 +1,212 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Type- und Symbolverwaltung</title>
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.moduser}" />
+  <c:if test="${ifAllow==true}" >
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" header="Type- und Symbolverwaltung">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+            <p:toolbar id="tlb_daten">
+              <p:toolbarGroup id="tbg_daten">
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+
+            <p:dataTable id="tbl_typen" var="typen" value="#{flugzeugBean.flugzeugModell}" scrollHeight="350" scrollable="true" selection="#{flugzeugBean.selectedModel}">
+
+              <p:column width="30">
+                <p:commandButton title="Neuen Typeeintrag anlegen" icon="fa fa-file" onclick="PF('wdg_newModell').show()"/>
+              </p:column>
+
+              <p:column width="30">
+                <p:commandButton title="Typeeintrag bearbeiten" icon="fa fa-pencil" oncomplete="PF('wdg_editModell').show()" update="frm_editModell">
+                  <f:setPropertyActionListener value="#{typen}" target="#{flugzeugBean.selectedModel}"/>
+
+                </p:commandButton>
+              </p:column>
+
+              <p:column width="30">
+                <p:commandButton title="Typeeintrag löschen (ohne Rückfrage ob gelöscht werden soll)" icon="fa fa-trash" action="#{flugzeugBean.onDeleteModell()}" oncomplete="location.reload();" >
+                  <f:setPropertyActionListener value="#{typen}" target="#{flugzeugBean.selectedModel}"/>
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column headerText="Modell" filterBy="#{typen.modellName}" filterMatchMode="contains">
+                <h:outputText value="#{typen.modellName}"/>
+              </p:column>
+
+
+            </p:dataTable>
+
+
+            <p:dataTable id="tbl_symbole" var="symbol" value="#{flugzeugBean.flugzeugSymbole}" scrollHeight="350" scrollable="true" selection="#{flugzeugBean.selectedSymbol}">
+
+              <p:column width="30">
+                <p:commandButton title="Neues Symbol anlegen" icon="fa fa-file" action="#{flugzeugBean.onSymbolURL()}" update="frm_newSymbol" onclick="PF('wdg_newSymbol').show()"/>
+              </p:column>
+
+              <p:column width="30">
+                <p:commandButton title="Symbol bearbeiten" icon="fa fa-pencil" oncomplete="PF('wdg_editSymbol').show()" update="frm_editSymbol">
+                  <f:setPropertyActionListener value="#{symbol}" target="#{flugzeugBean.selectedSymbol}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column width="30">
+                <p:commandButton title="Symbol löschen (ohne Rückfrage ob gelöscht werden soll)" icon="fa fa-trash" action="#{flugzeugBean.onDeleteSymbol()}" oncomplete="location.reload();" >
+                  <f:setPropertyActionListener value="#{symbol}" target="#{flugzeugBean.selectedSymbol}"/>
+                </p:commandButton>
+              </p:column>
+              
+              
+              <p:column headerText="Modell" filterBy="#{symbol.flugzeugModell}" filterMatchMode="contains">
+                <h:outputText value="#{symbol.flugzeugModell}"/>
+              </p:column>
+
+              <p:column headerText="Bild URL">
+                <h:outputText value="#{symbol.urlFlugzeugsymbol}"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+
+          </h:form>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_editModell" widgetVar="wdg_editModell" header="Modell editieren" width="750" >
+          <h:form id="frm_editModell">
+            <p:toolbar id="tlb_editModell">
+              <p:toolbarGroup id="tbg__editModell" align="left">
+                <p:commandButton title="Modell speichern" action="#{flugzeugBean.onSaveModell()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_editModell').hide()"/>
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" onclick="PF('wdg_editModell').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" rendered="#{not empty flugzeugBean.selectedModel}">
+              <h:outputLabel value="Modellbezeichnung"/>
+              <h:inputText value="#{flugzeugBean.selectedModel.modellName}" size="90" maxlength="250"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        
+        <p:dialog id="dlg_newModell" widgetVar="wdg_newModell" header="Modell estellen" width="750" >
+          <h:form id="frm_newModell">
+            <p:toolbar id="tlb_newModell">
+              <p:toolbarGroup id="tbg_newModell" align="left">
+                <p:commandButton title="Modell speichern" action="#{flugzeugBean.onNewModell()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_newModell').hide()"/>
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" onclick="PF('wdg_newModell').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="Modellbezeichnung"/>
+              <h:inputText value="#{flugzeugBean.frmflugzeugTyp}" size="90" maxlength="250"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+        
+
+
+        <p:dialog id="dlg_editSymbol" widgetVar="wdg_editSymbol" header="Symbol bearbeiten" width="750" >
+          <h:form id="frm_editSymbol">
+            <p:toolbar id="tlb_editSymbol">
+              <p:toolbarGroup id="tbg_editSymbol" align="left">
+                <p:commandButton title="Symbol speichern" action="#{flugzeugBean.onSaveSymbol()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_editSymbol').hide()"/>
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" onclick="PF('wdg_editSymbol').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" rendered="#{not empty flugzeugBean.selectedSymbol}">
+
+              <h:outputLabel value="Bezeichnung"/>
+              <h:inputText value="#{flugzeugBean.selectedSymbol.flugzeugModell}" size="90" maxlength="250"/>
+            
+              <h:outputLabel value="URL"/>
+              <h:inputText value="#{flugzeugBean.selectedSymbol.urlFlugzeugsymbol}" size="90" maxlength="250"/>
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        
+        <p:dialog id="dlg_newSymbol" widgetVar="wdg_newSymbol" header="Symbol neu anlegen" width="750" >
+          <h:form id="frm_newSymbol">
+            <p:toolbar id="tlb_newSymbol">
+              <p:toolbarGroup id="tbg_newSymbol" align="left">
+                <p:commandButton title="Symbol speichern" action="#{flugzeugBean.onNewSymbol()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_newSymbol').hide()"/>
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" onclick="PF('wdg_newSymbol').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+
+              <h:outputLabel value="Bezeichnung"/>
+              <h:inputText value="#{flugzeugBean.frmflugzeugTyp}" size="90" maxlength="250"/>
+              
+              <h:outputLabel value="URL"/>
+              <h:inputText value="#{flugzeugBean.frmsymbolUrl}" size="90" maxlength="250"/>
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+        
+
+      </p:layout>
+    </h:body>
+
+  </c:if>
+</html>
+

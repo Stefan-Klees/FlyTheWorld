@@ -1,0 +1,28 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 20.06.2016, 17:17:46
+    Author     : Stefan Klees
+*/
+
+body {
+    font-size: 80% !important;
+
+}
+
+.ui-widget,.ui-widget-header,.ui-widget-content,.ui-widget-header .ui-widget-header,.ui-widget-content .ui-widget-content,.ui-widget input,.ui-widget select,.ui-widget textarea,.ui-widget button
+    {
+    font-size: 100% !important;
+}
+
+
+.ui-editor .text
+{
+  background-color: white;
+  
+}
+
+.cke_contents{margin:5px;background-color:blue;}

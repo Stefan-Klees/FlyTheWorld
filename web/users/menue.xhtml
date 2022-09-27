@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+
+      <!--
+   
+ Fly the World
+ Wirtschaftsymulation für Flugsimulatoren
+ Copyright (C) 2016 Stefan Klees
+ stefan.klees@gmail.com
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+   
+      -->
+
+      <h:outputStylesheet library="css" name="default.css" />
+      <script>
+        function PlaySound(onPlay) {
+          if (onPlay === 'an') {
+            var snd = new Audio("http://www.ftw-sim.de/images/FTW/sound/post.mp3");
+            snd.play;
+          }
+        }
+      </script>
+
+
+    </h:head>
+
+    <p:layoutUnit position="west" style="min-width:300px" closable="false" resizable="false">
+      <h:form id="frm_menue">
+
+        <p:growl id="messages" widgetVar="messages" showDetail="false"  life="10000"  autoUpdate="true" />
+
+        <pe:timer timeout="300" update="frm_menue" autoStart="true" singleRun="false" visible="false"/>
+        <pe:timer timeout="30" update="dlg_meldung" autoStart="true" singleRun="false" visible="false"/>
+
+        <div align="center">
+          <p:panelGrid columns="3" style="text-align: center; width: 100%;" rendered="#{not empty loginMB.bankSaldo}">
+            <p:commandButton title="#{sprache.mnu_Startseite}" action="/users/index.xhtml?faces-redirect=true" icon="fa fa-home fa-lg"/>
+            <h:outputLabel value="#{sprache.mnu_Kopf_kontostand}"/>
+            <h:outputLabel id="lbl_banksaldo" value="#{loginMB.bankSaldo}" style="float: right">
+              <f:convertNumber pattern="#,##0.00 &euro;" />
+            </h:outputLabel>
+          </p:panelGrid>
+        </div>
+
+
+        <p:menu style="width: 100%" toggleable="true" >
+          <p:submenu label="#{loginMB.username}" >
+            <p:menuitem value="#{sprache.mnu_Einstellungen}" outcome="/users/einstellungen.xhtml" icon="fa fa-gears"/>
+            <p:menuitem id="mnuMail" value="Mail (#{mailBean.getAnzahlUngeleseneMails()})" outcome="/users/mail.xhtml" icon="fa fa-envelope"/>
+            <p:menuitem value="#{sprache.mnu_Abmelden}"  action="#{loginMB.logout()}" icon="fa fa-sign-out fa-lg"/> 
+            <p:menuitem value="#{sprache.mnu_Statistik}"  outcome="/users/reports/statistik.xhtml" icon="fa fa-stack-overflow "/>
+            <p:menuitem value="Flugzeugbörse Verwaltung"  outcome="/users/flugzeugboerse_verwaltung.xhtml" icon="fa fa-plane "/>
+            <p:menuitem value="#{sprache.mnu_FTWForum}" url="#{configBean.forumLink}" target="_blank" icon="fa fa-info-circle"/>
+            <p:menuitem value="#{sprache.mnu_FTWHandbuch}" outcome="/users/handbuch.xhml" icon="fa fa-book"/>
+          </p:submenu>
+
+
+          <p:submenu label="#{sprache.mnu_Flugbetrieb}" >
+            <p:menuitem disabled="false" value="#{sprache.mnu_Auftragsplanung}" outcome="/users/assignments.xhtml" icon="fa fa-tasks"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Auftragsbestand}" outcome="/users/assignments_meineAuftraege.xhtml" icon="fa fa-tasks"/>                      
+            <p:menuitem disabled="false" value="#{sprache.mnu_Hangar}" outcome="/users/hangar.xhtml" icon="fa fa-plane"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Flughafeninfo}" outcome="/users/flughafen.xhtml" icon="fa fa-globe"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Terminal}" outcome="/users/newTakeoff.xhtml" icon="fa fa-laptop"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Luftrettung}" outcome="/users/newHeliport.xhtml" icon="fa fa-laptop"/>
+            <p:menuitem disabled="false" value="Missionen Terminal" outcome="/users/missionTerminal.xhtml" icon="fa fa-laptop"/>            
+
+            <p:menuitem disabled="false" value="#{sprache.mnu_LiveFlugverfolgung}" outcome="/users/liveVerfolgung.xhtml" icon="fa fa-globe"/>
+          </p:submenu>
+
+
+          <p:submenu label="#{sprache.mnu_Management}" >
+            <p:menuitem disabled="false" value="#{sprache.mnu_Bank}" outcome="/users/banking.xhtml" icon="fa fa-money"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Fluggesellschaften}" outcome="/users/fluggesellschaft.xhtml" icon="fa fa-building"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_FBOManagement}" outcome="/users/fboverwaltung.xhtml" icon="fa fa-building"/>
+
+          </p:submenu>
+
+          <p:submenu label="#{sprache.mnu_Markt}" >
+            <p:menuitem disabled="false" value="#{sprache.mnu_UnternehmenInFTW}" outcome="/users/ftwinformation.xhtml" icon="fa fa-bullhorn"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_JobBoerse} (#{fgJobBean.anzahlJobs}) " outcome="/users/interessantejobs.xhtml" icon="fa fa-code-fork"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_FlugzeugBoerse} (#{flugzeugBoerseBean.anzahlEintraege}) " outcome="/users/flugzeugboerse.xhtml" icon="fa fa-plane"/>          
+            <p:menuitem disabled="false" value="#{sprache.mnu_Top20}" outcome="/users/forbesliste.xhtml" icon="fa fa-star"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_Flughafenuebersicht}" outcome="/users/flughaefen_uebersicht.xhtml" icon="fa fa-globe"/>
+            <p:menuitem disabled="false" value="#{sprache.mnu_FTWHerald}" outcome="/users/herald.xhtml" icon="fa fa-newspaper-o"/>
+          </p:submenu>
+
+        </p:menu>
+
+        <p:menu rendered="#{loginMB.allowToolsOpen}" style="width: 100%" toggleable="true" >
+          <p:submenu label="#{sprache.mnu_tools}" >
+            <p:menuitem value="Tools" disabled="false" async="true" outcome="/dob/tools.xhtml" icon="fa fa-cogs"/>
+            <p:menuitem value="Feinabstimmung" disabled="false" async="true" outcome="/dob/feinabstimmung.xhtml" icon="ui-icon-arrowrefresh-1-w"/>
+            <p:menuitem disabled="false" value="Type- und Symbolverwaltung" async="true" outcome="/dob/editTypeSymbol.xhtml" icon="ui-icon-wrench"/>
+          </p:submenu>
+        </p:menu>
+
+
+        <p:menu style="width: 100%;" toggleable="true" >
+          <p:submenu label="#{sprache.mnu_Administration}"           rendered="#{loginMB.allowAdminOpen}" >
+            <p:menuitem value="Support Tools" rendered="#{loginMB.supportUser}" async="true" outcome="/admin/tools.xhtml" icon="fa fa-cogs"/>            
+            <p:menuitem value="#{sprache.mnu_Benutzer}"       rendered="#{loginMB.allowBenutzerEdit}"   outcome="/dob/user.xhtml" icon="fa fa-user-plus" />
+            <p:menuitem value="#{sprache.mnu_Flugzeuge} " rendered="#{loginMB.allowFlugzeugEdit}" outcome="/admin/flugzeuge.xhtml" icon="fa fa-plane" />
+            <p:menuitem value="#{sprache.mnu_Flughaefen}"   rendered="#{loginMB.allowFlughafenEdit}"  outcome="/admin/flughafen.xhtml" icon="fa fa-globe"/>
+            <p:menuitem value="#{sprache.mnu_FBOObjekte}" rendered="#{loginMB.moduser}"  outcome="/admin/fboobjekte.xhtml" icon="fa fa-building"/>
+            <p:menuitem value="#{sprache.mnu_NachrichtenVerwalten}"       rendered="#{loginMB.allowNewsEdit}" outcome="/admin/news.xhtml" icon="fa fa-newspaper-o" />
+            <p:menuitem value="#{sprache.mnu_Geschichten}"     rendered="#{loginMB.allowGeschichtenEdit}" outcome="/admin/storys.xhtml" icon="fa fa-archive" />
+            <p:menuitem value="#{sprache.mnu_Jobverwaltung}"    rendered="#{loginMB.moduser}" outcome="/admin/jobbeschreibungen.xhtml" icon="fa fa-archive" />   
+            <p:menuitem value="#{sprache.mnu_VerwaltungRettungsstationen}"    rendered="#{loginMB.allowRettungsstationEdit}" outcome="/admin/rettungsverwaltung.xhtml" icon="fa fa-ambulance" />  
+            <p:menuitem value="Missionen verwalten"    rendered="#{loginMB.allowRettungsstationEdit}" outcome="/admin/missionsverwaltung.xhtml" icon="fa fa-list" />              
+            <p:menuitem value="#{sprache.mnu_BenutzerOnline}"  outcome="/admin/loggedUsers.xhtml" icon="fa fa-group" />          
+          </p:submenu>
+        </p:menu>
+
+      </h:form>
+
+    </p:layoutUnit>
+  </f:view>
+</html>

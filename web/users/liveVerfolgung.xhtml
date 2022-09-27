@@ -1,0 +1,334 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW - #{sprache.mnu_LiveFlugverfolgung}</title>
+
+
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+
+
+
+
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+      <h:outputStylesheet library="css" name="default.css" />
+
+      <style type="text/css">
+        html, body {
+          width:100%;
+          height:100%;
+        }
+      </style>
+
+    </h:head>
+
+    <h:body>
+
+      #{mapsBean.onLiveArcas()}
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <h:form id="frm_timer">
+          <pe:timer update="frm_map frm_list" singleRun="false"  listener="#{mapsBean.onLiveArcas()}" timeout="180"/>
+        </h:form>
+
+
+        <p:layoutUnit position="west" closable="false" resizable="false" style="width: 410px;">
+          <h:form id="frm_list">
+            <p:toolbar id="tlb_list" >
+              <p:toolbarGroup id="tbg_list" align="left">
+                <p:commandButton title="#{sprache.LiveFlugverfolgung_btn_StartSeite}" action="/users/index.xhtml?faces-redirect=true" icon="fa fa-home fa-lg"/>
+                <p:commandButton title="#{sprache.LiveFlugverfolgung_btn_aktualisieren}" action="#{mapsBean.onLiveArcas()}"  icon="fa fa-refresh" update="frm_map frm_list"/>
+                <p:commandButton title="MOD Tool - Flug zurücksetzen" onclick="PF('wdg_FlugZuruecksetzen').show();"  icon="fa fa-plane" 
+                                 disabled="#{mapsBean.currentPiolot eq ''}" rendered="#{loginMB.moduser or loginMB.supportUser}" update="frm_FlugZuruecksetzen"/>
+
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tlb_list_right" align="right">
+                <h:outputLabel value="User in Flight: #{mapsBean.userInFlight}"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="3" style="width: 350px;">
+              <p:outputLabel value="#{sprache.LiveFlugverfolgung_lbl_zoom}"/> 
+              <p:selectOneMenu value="#{mapsBean.zoom}"  >
+                <f:selectItem itemLabel="3" itemValue="3" noSelectionOption="true" />
+                <f:selectItem itemLabel="4" itemValue="4" noSelectionOption="true" />
+                <f:selectItem itemLabel="5" itemValue="5" noSelectionOption="true" />
+                <f:selectItem itemLabel="6" itemValue="6" noSelectionOption="true" />
+                <f:selectItem itemLabel="7" itemValue="7" noSelectionOption="true" />
+                <f:selectItem itemLabel="8" itemValue="8" noSelectionOption="true" />
+                <f:selectItem itemLabel="9" itemValue="9" noSelectionOption="true" />
+                <f:selectItem itemLabel="10" itemValue="10" noSelectionOption="true" />
+                <f:selectItem itemLabel="11" itemValue="11" noSelectionOption="true" />
+                <f:selectItem itemLabel="12" itemValue="12" noSelectionOption="true" />
+                <f:selectItem itemLabel="13" itemValue="13" noSelectionOption="true" />
+                <f:selectItem itemLabel="14" itemValue="14" noSelectionOption="true" />
+                <f:selectItem itemLabel="15" itemValue="15" noSelectionOption="true" />
+                <f:selectItem itemLabel="16" itemValue="16" noSelectionOption="true" />
+                <f:selectItem itemLabel="17" itemValue="17" noSelectionOption="true" />
+                <f:selectItem itemLabel="18" itemValue="18" noSelectionOption="true" />
+                <f:selectItem itemLabel="19" itemValue="19" noSelectionOption="true" />
+
+                <p:ajax event="change" listener="#{mapsBean.onLiveAcarsZoomAendern()}"  update="frm_map"/>
+              </p:selectOneMenu>
+
+
+              <p:selectOneMenu value="#{mapsBean.currentPiolot}"  filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="#{sprache.LiveFlugverfolgung_cbo_focusAufEinenPiloten}" itemValue="" noSelectionOption="false" />
+                <f:selectItems value="#{mapsBean.fliegendeUser}" var="fgs" itemValue="#{fgs}" itemLabel="#{fgs}" />
+                <p:ajax event="change" listener="#{mapsBean.onLiveArcas()}"  update="frm_map frm_list"/>
+              </p:selectOneMenu>
+
+
+            </p:panelGrid>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="Map Layer"/>
+              <p:selectOneMenu value="#{loginMB.mapLayer}"  filter="true" filterMatchMode="contains" style="width: 180px;" >
+                <f:selectItem itemLabel="OpenStreetMap Mapnik" itemValue="OpenStreetMap.Mapnik" noSelectionOption="true" />
+                <f:selectItem itemLabel="OpenStreetMap topografische Ansicht" itemValue="OpenTopoMap" noSelectionOption="true" />
+                <f:selectItem itemLabel="Stamen Terrain" itemValue="Stamen.Terrain" noSelectionOption="true" />
+                <f:selectItem itemLabel="Stamen Toner Lite" itemValue="Stamen.TonerLite" noSelectionOption="true" />
+                <p:ajax event="change" update="frm_map"/>
+              </p:selectOneMenu>
+
+
+
+            </p:panelGrid>
+
+
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputText value="Flug"/>
+              <h:outputText value="#{mapsBean.pilotKopfdaten.departureicao} >>> #{mapsBean.pilotKopfdaten.arrivalicao}" />
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_FlugNummer}"/>
+              <h:outputText value="#{mapsBean.pilotKopfdaten.flugnummer}"/>
+
+              <h:outputText value="FTW Flugart"/>
+              <h:outputText value="---" rendered="#{mapsBean.pilotKopfdaten.missionsart eq 0}"/>
+              <h:outputText value="Normaler Flug" rendered="#{mapsBean.pilotKopfdaten.missionsart eq 1}"/>
+              <h:outputText value="Charter-Auftrag" rendered="#{mapsBean.pilotKopfdaten.missionsart eq 2}"/>
+              <h:outputText value="Luftrettung" rendered="#{mapsBean.pilotKopfdaten.missionsart eq 3}"/>
+              <h:outputText value="Mission" rendered="#{mapsBean.pilotKopfdaten.missionsart eq 4}"/>
+
+              <h:outputText value="Flugstatus"/>
+              <h:outputText value="Flug in Vorbereitung" rendered="#{mapsBean.pilotKopfdaten.flugstatus eq 0}"/>
+              <h:outputText value="Flug gestartet" rendered="#{mapsBean.pilotKopfdaten.flugstatus eq 1}"/>
+              <h:outputText value="Flug beendet" rendered="#{mapsBean.pilotKopfdaten.flugstatus eq 2}"/>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_Pax}"/>
+              <h:outputText value="#{mapsBean.pilotKopfdaten.paxanzahl}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_Cargo}"/>
+              <h:outputText value="#{mapsBean.pilotKopfdaten.cargogewicht}" style="float: right">
+                <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+              </h:outputText>
+
+              <h:outputLabel value="#{sprache.LiveFlugverfolgung_lbl_Kurs} #{mapsBean.aktuellerPilotPosdaten.heading}"/>
+              <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{mapsBean.aktuellerPilotPosdaten.heading}.png"/>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_Hoehe} #{sprache.ft}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.agl}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="ASL"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.asl}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="Wind  #{mapsBean.aktuellerPilotPosdaten.winddirection} / #{mapsBean.aktuellerPilotPosdaten.windspeed}"/>
+              <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{mapsBean.windBlown}.png"/>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_IAS} / #{sprache.LiveFlugverfolgung_lbl_TAS} / #{sprache.LiveFlugverfolgung_lbl_GS}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.ias} / #{mapsBean.aktuellerPilotPosdaten.tas} / #{mapsBean.aktuellerPilotPosdaten.gs}" style="float: right"/>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_VS}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.steigrate}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_OAT}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.oat}&deg;C" style="float: right"/>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_GeflogeneMeilen}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.geflogeneentfernung}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="Geflogene Zeit Minuten"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.geflogenezeitminuten}" style="float: right">
+                <f:convertNumber pattern="###0"/>
+              </h:outputText>
+
+              <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_AktuelleTankfuellung} #{sprache.kg}"/>
+              <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.fuelonboard}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+              <h:outputText value="Verflogener Sprit #{sprache.kg}"/>
+              <h:outputText value="#{mapsBean.pilotKopfdaten.verbrauchtetankmengekg}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputText>
+
+
+            </p:panelGrid>
+
+
+            <div align="center" style="width: 95%">
+
+              <p>
+                <p:graphicImage id="AirGrafik" value="#{mapsBean.getAirlineBild(mapsBean.pilotKopfdaten.flugzeugid)}" style="width: 120px;" rendered="#{mapsBean.getAirlineBild(mapsBean.pilotKopfdaten.flugzeugid) ne ''}"/>
+              </p>
+              
+              <p style="font-size: 130%"><h:outputText value="#{mapsBean.pilotKopfdaten.flugzeugtype}"/>
+                <br></br>
+                <h:outputText value="#{mapsBean.pilotKopfdaten.flugzeugkennung}"/>
+              </p>
+
+
+              <p:graphicImage id="grafik1" value="#{mapsBean.aktuellesFlugzeug.symbolUrl}" style="width: 90%" rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL eq ''}"/>
+              <p:graphicImage id="grafik2" value="#{mapsBean.aktuellesFlugzeug.eigenesBildURL}" style="width: 90%"  rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL ne ''}"/>
+
+              <p:tooltip for="grafik1" rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL eq ''}">
+                <p:graphicImage value="#{mapsBean.aktuellesFlugzeug.symbolUrl}" style="width: 90%"  rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL eq ''}"/>
+              </p:tooltip>
+
+              <p:tooltip for="grafik2" rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL ne ''}" >
+                <p:graphicImage value="#{mapsBean.aktuellesFlugzeug.eigenesBildURL}" style="width: 90%"  rendered="#{mapsBean.aktuellesFlugzeug.eigenesBildURL ne ''}"/>
+              </p:tooltip>
+
+
+            </div>
+
+
+
+          </h:form>
+        </p:layoutUnit>
+
+
+        <p:layoutUnit id="layOut" style="height: 100%; width: 100%" position="center" closable="false" >
+
+          <h:form id="frm_map">
+            <div id="airportMap"></div>
+
+            <script>
+              function drawErrorFix() {
+                mymap.setView(new L.LatLng(#{mapsBean.pilotKoordinaten}), mymap.getZoom());
+                mymap.invalidateSize(true);
+              }
+
+              var x = document.getElementById("airportMap");
+              x.style.height = document.getElementById("layOut").offsetHeight - 10 + "px";
+
+              var airportIcon = L.icon({
+                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                iconSize: [24, 24],
+                popupAnchor: [0, -10]
+              });
+
+              var paxIcon = L.icon({
+                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+                iconSize: [38, 95],
+                popupAnchor: [0, -10]
+              });
+
+              var cargoIcon = L.icon({
+                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+                iconSize: [38, 95],
+                popupAnchor: [0, -10]
+              });
+
+
+              var mymap = L.map('airportMap').setView(new L.LatLng(#{mapsBean.pilotKoordinaten}), #{mapsBean.zoom});
+              var scale = L.control.scale().addTo(mymap);
+              L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'}).addTo(mymap);
+              //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19,attribution: '© <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}).addTo(mymap);
+
+              #{mapsBean.acarsMapData}
+
+              drawErrorFix();
+
+
+
+            </script>
+
+          </h:form>
+
+
+
+          <p:dialog id="dlg_FlugZuruecksetzen" widgetVar="wdg_FlugZuruecksetzen" closable="true" header="Flug eines Users Zurücksetzen">
+            <h:form id="frm_FlugZuruecksetzen">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{mapsBean.onUserFlugZuruecksetzen()}" value="Flug zurücksetzen" oncomplete="PF('wdg_FlugZuruecksetzen').hide()" 
+                                   update="frm_list frm_map"/>
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugZuruecksetzen').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="User: "/><h:outputText value="#{mapsBean.currentPiolot}" />
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:64px;">
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" style="height: 128px;" />
+        </p:dialog>
+
+      </p:layout>
+
+
+    </h:body>
+  </f:view>
+
+</html>
+

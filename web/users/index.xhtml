@@ -1,0 +1,405 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-Startseite</title>
+
+      <style>
+
+        .customDialog {
+          background-color: #616161;
+        }
+
+        .ui-dialog.customDialog .ui-dialog-content {
+          background-color: #616161;
+          padding: 0;
+          margin: 0px 0px;
+        }
+
+        .myClass .ui-layout-unit-content{
+          background-size: 100%;
+          background-repeat: no-repeat;
+        }
+
+        .example {
+          padding: 0 0 10px;
+          margin-bottom: 20px;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .noCellBorder, table.noBorder thead tr.ui-widget-header, table.noBorder .ui-panelgrid-even, table.noBorder .ui-panelgrid-odd {
+          border: none !important;
+        }
+      </style>
+
+
+    </h:head>
+
+    <h:body id="Body" >
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <p:layoutUnit position="north" closable="false" header="#{loginMB.ftwVersion}" style="text-align: center; max-height: 25px"/>
+
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" styleClass="myClass" >
+
+          <p:toolbar>
+            <f:facet name="left">
+              <h:form id="mnu_form" >
+
+                <p:toolbar id="tlb_form">
+                  <p:toolbarGroup id="tbg_form">
+
+                    <ui:fragment rendered="#{not loginMB.newMenue}">
+                      <ui:include src="/users/menueNew.xhtml"/>
+                    </ui:fragment>
+
+                    <p:selectBooleanButton  value="#{loginMB.newMenue}" onLabel="Sidebar on" offLabel="Sidebar off" onIcon="ui-icon-check" offIcon="ui-icon-close" >
+                      <p:ajax event="change" oncomplete="location.reload();"/>
+                    </p:selectBooleanButton>
+
+
+                    <p:selectBooleanButton  value="#{loginMB.arrivalsOn}" onLabel="Arrivals on" offLabel="Arrivals off" onIcon="ui-icon-check" offIcon="ui-icon-close" >
+                      <p:ajax event="change" update="mnu_form dlg_arrival" listener="#{statistikBean.onLetzteFluege()}"/>
+                    </p:selectBooleanButton>
+
+
+                    <p:selectBooleanButton  value="#{loginMB.departuresOn}" onLabel="Departures on" offLabel="Departures off" onIcon="ui-icon-check" offIcon="ui-icon-close" >
+                      <p:ajax event="change" update="mnu_form dlg_flip" />
+                    </p:selectBooleanButton>
+
+
+                    <p:selectBooleanButton value="#{loginMB.isDlgLoggedUserOn}" onLabel="User on" offLabel="User off" onIcon="fa fa-users" offIcon="ui-icon-close">
+                      <p:ajax event="change" update="mnu_form dlg_loggedUser"/>
+                    </p:selectBooleanButton>
+
+
+                    <p:commandButton title="About FTW" icon="fa fa-info" onclick="PF('wdg_about').show();" />
+
+                  </p:toolbarGroup>
+                </p:toolbar>
+
+
+                <!--
+                <p:dock position="bottom">
+                  <p:menuitem value="FTW Discord Server" icon="http://www.ftw-sim.de/images/FTW/icons/discord.png" url="https://discord.gg/d9YQPGx" target="_blank"/>
+                  <p:menuitem value="FTW Portalsite" icon="http://www.ftw-sim.de/images/FTW/icons/home-location.png" url="#{configBean.websiteLink}" target="_blank"/>
+                  <p:menuitem value="FTW Hangar" icon="http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg" url="http://www.ftw-sim.de/forum/viewforum.php?f=32" target="_blank"/>
+                  <p:menuitem value="YAACARS Traking Client" icon="http://www.ftw-sim.de/images/FTW/icons/icon_flightinfo.svg" url="http://openair-alliance.eu/yaacars/doc/doku.php?id=start" target="_blank"/>
+                  <p:menuitem value="YAACARS Traking Client" icon="http://www.ftw-sim.de/images/FTW/icons/" url="https://openair-alliance.eu/ftw/doc/doku.php?id=start" target="_blank"/>
+                </p:dock>
+                -->
+
+
+              </h:form>
+            </f:facet>
+          </p:toolbar>
+
+          <p:graphicImage id="backGrafik" value="#{configBean.picHintergrund}" width="100%" />
+
+        </p:layoutUnit>
+
+
+
+
+        <p:dialog id="dlg_loggedUser" widgetVar="wdg_loggedUser" visible="#{loginMB.isDlgLoggedUserOn and not loginMB.istGesperrt}" 
+                  header="#{sprache.Window_UserOnline_dlg_header}" width="600" height="730" 
+                  closable="true" closeOnEscape="true" rendered="#{not loginMB.systemMeldung}" >
+
+
+
+          <h:form id="frm_loggedUser" >
+            <pe:timer id="id_loggedUserRefresh" singleRun="false"  visible="false" timeout="30" update=":frm_loggedUser" />
+            <p:toolbar id="tlb_loggedUser" style="background-color: transparent;">
+              <p:toolbarGroup id="tbg_loggedUser">
+
+                <p:commandLink id="cbtdiscord_logged" action="#{loginMB.onDiscord()}" update="frm_loggedUser" title="#{sprache.Title_FTWDiscord}" style="vertical-align: bottom; padding: 4px">
+                  <p:graphicImage width="32" value="http://www.ftw-sim.de/images/FTW/icons/discord.png"/>
+                </p:commandLink>
+
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="3" >
+
+              <p:link target="_blank" href="https://discord.gg/d9YQPGx">
+                <h:outputText value="Discord FTW" title="Discord - Fly the World" style="font-size: 1.3em;"/>
+              </p:link>
+
+              <p:link target="_blank" href="#{configBean.websiteLink}" >
+                <h:outputText value="FTW - Portal" title="#{sprache.Title_FTWWebsite}" style="font-size: 1.3em;"/>
+              </p:link>
+
+              <p:link target="_blank" href="http://openair-alliance.eu/yaacars" >
+                <h:outputText value="YAACARS" title="YAACARS-Tracking-Client" style="font-size: 1.3em;"/>
+              </p:link>
+
+              <p:link target="_blank" href="https://openair-alliance.eu/ftw/doc/doku.php?id=start" >
+                <h:outputText value="FTW Wiki" title="Fly the World - WIKI" style="font-size: 1.3em;"/>
+              </p:link>
+
+
+              <p:link target="_blank" href="#{configBean.donationLink}" >
+                <h:outputText value="Donation Page" title="Donation Page" style="font-size: 1.3em;"/>
+              </p:link>
+
+
+            </p:panelGrid>
+
+            <p:dataTable id="tbl_loggedUser" value="#{loginMB.sessions}" var="item" style="border: hidden" scrollHeight="510" scrollable="true" >
+
+              <p:column width="16" style="border: hidden; text-align: left">
+                <p:graphicImage id="gi" width="24" value="#{item.getAttribute('Rangabzeichen')}"/>
+                <p:tooltip for="gi" showEffect="fade" >
+                  <p style="font-size: 1.3em" align="center"><h:outputLabel value="#{item.getAttribute('UserName')}"/> </p>
+                  <p style="font-size: 1.5em" align="center"><h:outputLabel value="#{item.getAttribute('Rolle')}"/> </p>
+                  <p:graphicImage value="#{item.getAttribute('Rangabzeichen')}" title="Rang"/>
+                  <p style="font-size: 1.5em" align="center"><h:outputLabel value="#{item.getAttribute('UserFunktion')}" /> </p>
+
+
+                </p:tooltip>
+
+              </p:column>
+
+              <p:column width="16" style="border: hidden; text-align: left">
+                <p:graphicImage width="24" value="http://www.ftw-sim.de/images/FTW/icons/discord.png" rendered="#{item.getAttribute('Discord-ON')}"  title="#{sprache.Title_FTWDiscordOnline}"/>
+              </p:column>
+              
+              <p:column width="16" style="border: hidden; text-align: left">
+                <p:graphicImage width="24" value="#{item.getAttribute('FlightLogo')}" rendered="#{item.getAttribute('Flight-ON')}"  title="#{item.getAttribute('FlugzeugType')}"/>
+              </p:column>
+
+              
+              
+              <p:column style="border: hidden; text-align: left" width="50">
+                <f:facet name="header">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/lizenz.png" height="#{loginMB.iconSize}" title="#{sprache.Benutzer_Einstellungen_lbl_Lizenz}"/>
+                </f:facet>
+                <h:outputLabel value="#{item.getAttribute('Lizenz')}"/>
+              </p:column>
+
+              <p:column style="border: hidden; text-align: left"  >
+                <h:outputLabel escape="false" value="#{item.getAttribute('DisplayName')} #{configBean.BR}" style="noCellBorder" />
+              </p:column>
+
+            </p:dataTable>
+            <div id="div_loggedUsers" align="center">
+              <h3>User Online : #{loginMB.sessions.size()}</h3>
+            </div>
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_flip" widgetVar="wdg_flip" visible="#{loginMB.departuresOn and not loginMB.istGesperrt}" closable="false"  
+                  styleClass="customDialog" >
+
+          <div style="height: 460px;">
+
+            <table border='1' cellpadding="5" bgcolor="#616161" style="color: #E7FD42;">
+              <f:facet name="header">
+                <div style="alignment-adjust: middle; font-size: 1.5em">
+                  <img src="http://www.ftw-sim.de/images/FTW/icons/departures.png"/> &nbsp; #{sprache.Index_Departure_header}
+                </div>
+              </f:facet>
+
+              <tr>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " ><h:outputLabel value=""/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " ><h:outputText value="#{sprache.Index_Departure_FlightNumber}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Departure_Departure}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Departure_Arrival}"/></td>
+                <td width="180" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Departure_Pilot}"/></td>
+                <td width="400" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Departure_Aircraft}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Departure_Cargo} #{sprache.kg}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Departure_Pax}"/></td>
+                <td width="160" style="color: #FFFFFF; font-weight: bold; " align="center"><h:outputText value="#{sprache.Index_Departure_Status}"/></td>
+
+              </tr>
+
+              <ui:repeat id="klappentext" value="#{statistikBean.aktuelleFluege}" var="aca">
+
+                <tr>
+                  <td><h:outputText value="#{aca.flugerstelltam}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText></td>
+                  <td><h:outputText value="#{aca.flugnummer}"/></td>
+                  <td><h:outputText value="#{aca.departureicao}"/></td>
+                  <td><h:outputText value="#{aca.arrivalicao}"/></td>
+                  <td><h:outputText value="#{aca.username} "/></td>
+                  <td><h:outputText value="#{aca.flugzeugtype} "/></td>
+                  <td align="right">
+                    <h:outputText value="#{aca.cargogewicht}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></td>
+                  <td align="right">
+                    <h:outputText value="#{aca.paxanzahl}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></td>
+
+                  <td align="center">
+                    <h:outputText value="Flight preparation" rendered="#{aca.flugstatus eq 0}"/>
+                    <h:outputText value="In flight" rendered="#{aca.flugstatus eq 1}"/>
+                    <h:outputText value="Arrived" rendered="#{aca.flugstatus eq 2}"/>
+
+                  </td>
+
+                </tr>
+
+              </ui:repeat>
+
+            </table>
+
+            <!--
+                      //"flugstatus"
+                      //0 = angelegt
+                      //1 = gestartet
+                      //2 = beendet
+                      //
+                      //"missionsart"
+                      //1 = Normaler FTW-Flug
+                      //2 = Charter
+                      //3 = Rettung
+                      //4 = Missionen
+            -->
+
+          </div>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_arrival" widgetVar="wdg_arrival" visible="#{loginMB.arrivalsOn and not loginMB.istGesperrt}" closable="false" 
+                  height="700" styleClass="customDialog" >
+
+
+          <div style="width: 1400px">
+
+            <table id="tbl_kopf" border='1' cellpadding="5" bgcolor="#616161" style="color: #E7FD42; height: 400px; overflow-y:scroll; width: 100%"  >
+              <f:facet name="header">
+                <div style="alignment-adjust: middle; font-size: 1.5em">
+                  <img src="http://www.ftw-sim.de/images/FTW/icons/arrivals.png"/> &nbsp; #{sprache.Index_Top100_dlg_header}
+                </div>
+              </f:facet>
+              <tr>
+
+
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " ><h:outputText value="#{sprache.Index_Top100_tbl_FlugNr}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " ><h:outputText value="#{sprache.Index_Top100_tbl_datum}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Top100_tbl_pilot} "/></td>
+                <td width="250" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Top100_tbl_Flugzeug}"/></td>
+                <td width="100" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Top100_tbl_vonICAO}"/></td>
+                <td width="100" style="color: #FFFFFF; font-weight: bold; "><h:outputText value="#{sprache.Index_Top100_tbl_nachICAO}"/></td>
+                <td width="40" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Top100_tbl_FlugZeit}"/></td>
+                <td width="40" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Top100_tbl_meilen}"/></td>
+                <td width="40" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Top100_tbl_Pax}"/></td>
+                <td width="40" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Top100_tbl_Cargo}"/></td>
+                <td width="80" style="color: #FFFFFF; font-weight: bold; " align="right"><h:outputText value="#{sprache.Index_Top100_tbl_Betrag}"/></td>
+                <td width="60" style="color: #FFFFFF; font-weight: bold; " align="center"><h:outputText value="Status"/></td>
+
+              </tr>
+
+              <ui:repeat id="lastArrivals" value="#{statistikBean.letzteFluege}" var="aca">
+
+                <tr>
+                  <td><h:outputText value="#{aca.acarsFlugNummer}"/></td>
+                  <td align="center"><h:outputText value="#{aca.flugDatum}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText></td>
+
+                  <td><h:outputText value="#{aca.name}"/></td>
+
+                  <td><h:outputText value="#{aca.registrierung} - #{aca.type} "/></td>
+
+                  <td><h:outputText escape="false" value="#{aca.fromicao} #{configBean.BR} #{aca.fromIcaoFlughafenName}"/></td>
+                  <td><h:outputText escape="false" value="#{aca.toicao} #{configBean.BR} #{aca.tocaoFlughafenName}"/></td>
+
+                  <td align="right">
+                    <h:outputText value="#{aca.flugzeitMinuten/60}">
+                      <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputText></td>
+
+                  <td align="right">
+                    <h:outputText value="#{aca.miles}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></td>
+
+                  <td align="right">
+                    <h:outputText value="#{aca.pax}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></td>
+
+                  <td align="right">
+                    <h:outputText value="#{aca.cargo}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></td>
+
+                  <td align="right">
+                    <h:outputText value="#{aca.buchungsgebuehr}">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputText></td>
+
+
+                  <td align="center"><h:outputText value="Arrived"/></td>
+
+                </tr>
+
+              </ui:repeat>
+
+            </table>
+
+
+
+          </div>
+        </p:dialog>
+
+        <p:dialog id="dlg_herald" widgetVar="wdg_herald" header="FTW Herald" visible="#{loginMB.heraldMeldung and loginMB.wartungsTabelleAnzeigen}" closable="true" maximizable="true" width="1024" height="768" >
+          <h:form id="frm_herald" style="height: 100%" rendered="#{loginMB.heraldUrl gt '' }">
+            <p:media value="#{loginMB.heraldUrl}" width="100%" height="100%"/>
+          </h:form>
+
+        </p:dialog>
+
+
+        <ui:include src="/users/dialogs/dlgAbout.xhtml"/>
+
+      </p:layout>
+
+    </h:body>
+
+  </f:view>
+</html>
+

@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+  <p:dialog id="dlg_jobsZuweisen" widgetVar="wdg_jobsZuweisen" header="#{sprache.Fluggesellschaften_Routen_Auftraege_dlg_jobsZuweisen_header}" width="300" height="100"  >
+
+    <h:form id="frm_jobsZuweisen">
+      <p:toolbar id="tlb_jobsZuweisen">
+        <p:toolbarGroup id="tbg_jobsZuweisen">
+          <p:commandButton value="#{sprache.Fluggesellschaften_Routen_Auftraege_dlg_jobsZuweisen_btn_Zuweisen}" action="#{airrouteBean.onAuftraegeZuweisen()}" oncomplete="PF('wdg_jobsZuweisen').hide()"  update="frm_Auftraege" />
+          <p:commandButton value="#{sprache.Fluggesellschaften_Routen_Auftraege_dlg_jobsZuweisen_btn_Abbruch}" onclick="PF('wdg_jobsZuweisen').hide()" />
+        </p:toolbarGroup>
+      </p:toolbar>
+
+      <p:panelGrid columns="2">
+        <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_Auftraege_dlg_jobsZuweisen_lbl_pilotWaehlen}"/>
+
+        <p:selectOneMenu value="#{airrouteBean.selPilot}" filter="true" filterMatchMode="contains">
+          <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Routen_Auftraege_dlg_jobsZuweisen_cbo_pilotWaehlen}" itemValue=""  />
+          <f:selectItems value="#{airline_pilotenBean.listPiloten}" var="piloten" itemValue="#{piloten.iduser}" itemLabel="#{piloten.callname}" />
+        </p:selectOneMenu>
+
+      </p:panelGrid>
+
+    </h:form>
+
+  </p:dialog>
+
+
+
+  <p:dialog id="dlg_Auftraege" widgetVar="wdg_Auftraege" header="Routenauftraege" height="800" position="top">
+    <h:form id="frm_Auftraege">
+      <p:toolbar id="tlb_Auftraege">
+        <p:toolbarGroup id="tbg_Auftraege" align="right">
+
+          <p:panelGrid columns="8">
+
+            <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_Auftraege_lbl_Abflughafen} "/>
+            <p:selectOneMenu value="#{airrouteBean.selAbflughafen}" filter="true" filterMatchMode="contains">
+              <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Routen_Auftraege_cbo_Abflughafen}" itemValue=""  />
+              <f:selectItems value="#{airrouteBean.flugroutenGroup}" var="routen" itemValue="#{routen.vonIcao}" itemLabel="#{routen.vonIcao} - #{routen.fromName}" />
+              <p:ajax event="change" update="frm_Auftraege tbl_Auftraege" listener="#{airrouteBean.onChangeFilterAuftraege()}"/>
+            </p:selectOneMenu>
+
+
+
+            <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_Auftraege_lbl_Piloten} "/>
+            <p:selectOneMenu value="#{airrouteBean.selPilot}" filter="true" filterMatchMode="contains">
+              <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Routen_Auftraege_cbo_PilotWaehlen}" itemValue="-1"  />
+              <f:selectItem itemLabel="Buchbar" itemValue="-1"  />
+              <f:selectItems value="#{airrouteBean.piloten}" var="piloten" itemValue="#{piloten.idowner}" itemLabel="#{piloten.username}" />
+              <p:ajax event="change" update="frm_Auftraege tbl_Auftraege" listener="#{airrouteBean.onChangeFilterAuftraege()}"/>
+            </p:selectOneMenu>
+
+            <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_Auftraege_Zielflughafen} "/>
+            <p:selectOneMenu value="#{airrouteBean.selZielflughafen}" filter="true" filterMatchMode="contains">
+              <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Routen_Auftraege_cbo_Zielflughafen}" itemValue=""  />
+              <f:selectItems value="#{airrouteBean.ziele}" var="toicao" itemValue="#{toicao.toIcao}" itemLabel="#{toicao.toIcao}" />
+              <p:ajax event="change" update="frm_Auftraege tbl_Auftraege" listener="#{airrouteBean.onChangeFilterAuftraege()}"/>
+            </p:selectOneMenu>
+
+          </p:panelGrid>
+        </p:toolbarGroup>
+
+        <p:toolbarGroup id="tbg__AuftraegeLeft" align="left">
+          <p:commandButton value="#{sprache.Fluggesellschaften_Routen_Auftraege_btn_AuftraegeZurueckHolen}" action="#{airrouteBean.onAuftraegeZurueckholen()}" update="tbl_Auftraege" />
+          <p:commandButton value="#{sprache.Fluggesellschaften_Routen_Auftraege_btn_AlleAuftraege}" action="#{airrouteBean.onAlleAuftraegeZeigen()}" update="frm_Auftraege" />
+          <p:commandButton value="#{sprache.Fluggesellschaften_Routen_Auftraege_btn_AuftraegeZuweisen}" onclick="PF('wdg_jobsZuweisen').show()" />          
+          <p:commandButton icon="fa fa-close" title="Exit" onclick="PF('wdg_Auftraege').hide();" />
+          <p:commandButton icon="fa fa-refresh" title="Refresh"  update="tbl_Auftraege"  action="#{airrouteBean.onChangeFilterAuftraege()}"/>
+
+          <h:commandLink id="cmd_export">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+            <p:dataExporter type="csv" target="tbl_Auftraege" fileName="FG-Auftragsuebersicht"  pageOnly="false" />
+            <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+          </h:commandLink>
+
+        </p:toolbarGroup>
+
+
+      </p:toolbar>
+
+      <p:dataTable id="tbl_Auftraege"
+                   widgetVar="wdg_tbl_Auftraege"
+                   var="assignmentItems"
+                   value="#{airrouteBean.auftraege}"
+                   rowKey="#{assignmentItems.idassignement}"
+                   selection="#{airrouteBean.selectedAssignments}"
+                   paginator="true"
+                   paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                   rows="15"
+                   rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60,100,500"
+                   scrollable="true"
+                   lazy="false"
+                   sortMode="multiple"
+                   emptyMessage="#{sprache.Auftragsplanung_table_emptyMessage}">
+
+        <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false">
+
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_status}" width="80" style="text-align: center;"  sortBy="#{assignmentItems.userlock}">
+          <h:outputText value='#{sprache.Auftragsplanung_msg_AuftraegeSindInDerLuft}' rendered="#{assignmentItems.userlock==1}"/>
+          <h:outputText value='#{sprache.Auftragsplanung_msg_AuftraegeBereitZumAbflug}' rendered="#{assignmentItems.userlock==0}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_Pilot}"  width="100" style="text-align: center;" >
+          <h:outputText value='Buchbar' rendered="#{assignmentItems.username == null}" />
+          <h:outputText value='#{assignmentItems.username}' rendered="#{assignmentItems.username != ''}" />
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_vonIcao}"  width="80" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.fromIcao}' />
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsbestand_tbl_aktuellerStandort}" width="80"  style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.locationIcao}' />
+        </p:column>
+
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_nachIcao}" width="80"  style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.toIcao}' />
+        </p:column>
+
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_menge}"  width="80" style="text-align: right;" sortBy="#{assignmentItems.ammount}" >
+          <h:outputText value="#{assignmentItems.comment} #{assignmentItems.ammount} #{sprache.kg}" rendered="#{assignmentItems.routenArt==2}" >
+            <f:convertNumber pattern="#,##0"/>
+          </h:outputText>
+          <h:outputText value="#{assignmentItems.ammount} #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==1}" />
+          <h:outputText value="#{assignmentItems.ammount}" rendered="#{assignmentItems.routenArt==3}" />
+          <h:outputText value="#{assignmentItems.ammount} BC #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==4}" />
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;"  width="30" sortBy="#{assignmentItems.routenArt}">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
+          <h:outputText value="TRF"    rendered="#{assignmentItems.routenArt==3}" />
+
+        </p:column>
+
+        <p:column width="55" style="text-align: right" >
+          <f:facet name="header">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+          </f:facet>
+          <h:outputText value='#{assignmentItems.gewichtPax}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
+            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+          </h:outputText>
+          <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+        </p:column>
+
+        <p:column width="50" style="text-align: right" >
+          <f:facet name="header">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/gepaeck.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+          </f:facet>
+          <h:outputText value='#{assignmentItems.gepaeck}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
+            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+          </h:outputText>
+          <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+        </p:column>
+
+        <p:column width="80" style="text-align: right;" >
+          <f:facet name="header">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/money.png"  height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+          </f:facet>
+          <h:outputText value='#{assignmentItems.pay}'>
+            <f:convertNumber pattern="#,##0 &euro;"/>
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_meilen}" width="60" style="text-align: center;"  >
+          <h:outputText value='#{assignmentItems.distance}'/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_kurs}" width="60" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.direct}'/>
+          <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_laeuftAb}" width="130" style="text-align: center;" sortBy="#{assignmentItems.expires}" >
+          <h:outputText id="expires" value='#{assignmentItems.expires}'>
+            <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+          </h:outputText>
+
+          <p:tooltip for="expires">
+            <h:outputText value="#{assignmentItems.creation}">
+              <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+            </h:outputText>
+          </p:tooltip>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_bonus1}" width="80" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.bonusoeffentlich}'>
+            <f:convertNumber pattern="0.00"/>
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_bonus2}" width="80" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.bonusclosed}'>
+            <f:convertNumber pattern="0.00"/>
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="#{sprache.Auftragsplanung_tbl_provision}" width="80" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.provision}'>
+            <f:convertNumber pattern="0.00"/>
+          </h:outputText>
+        </p:column>
+
+        <p:column headerText="Job ID" width="80" style="text-align: center;" >
+          <h:outputText value='#{assignmentItems.idjob}'/>
+        </p:column>
+
+        
+      </p:dataTable>
+
+    </h:form>
+  </p:dialog>
+
+</html>

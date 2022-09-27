@@ -1,0 +1,495 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <h:outputScript library="js" name="leaflet/leaflet.js" />
+  <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+  <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+  <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+  <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+  <h:outputStylesheet library="css" name="default.css" />
+
+  <style type="text/css">
+    html, body {
+      width:100%;
+      height:100%;
+    }
+    .ui-tabs .ui-tabs-panel {
+      padding: 0;
+    }
+
+  </style>
+
+  <script>
+    var airportIcon = L.icon({
+      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+      iconSize: [38, 95],
+      popupAnchor: [0, -10]
+    });
+
+    var paxIcon = L.icon({
+      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+      iconSize: [38, 95],
+      popupAnchor: [0, -10]
+    });
+
+    var cargoIcon = L.icon({
+      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+      iconSize: [38, 95],
+      popupAnchor: [0, -10]
+    });
+
+  </script>
+
+
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - Geschichten Verwaltung</title>
+
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.allowGeschichtenEdit}" />
+  <c:if test="${ifAllow==true}" >
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            <p:toolbar id="tlb_daten">
+              <p:toolbarGroup id="tbg_daten" align="left">
+
+                <h:outputLabel value="Filter: "/>
+                <p:selectOneMenu id="bez" value="#{storyBean.storyKurzbezeichnung}"  style="width: 150px" filter="true" filterMatchMode="contains" editable="true">
+                  <f:selectItem itemValue="%" itemLabel="Auswahl treffen" />
+                  <f:selectItems value="#{storyBean.allDistinct}" var="bez" itemValue="#{bez.bezeichnung}" itemLabel="#{bez.bezeichnung}" />
+                  <p:ajax event="change" listener="#{storyBean.onFilterBezeichnung()}" update="frm_daten" />
+                </p:selectOneMenu>
+
+                <p:separator/>
+                <p:commandButton title="Daten aktualisieren" icon="fa fa-refresh" action="#{storyBean.onRefresh()}" update="frm_daten"/>                
+                <p:separator/>
+                
+                <p:commandButton value="Neue Geschichte" icon="ui-icon-document" onclick="PF('dlg_NewStory').show()"/>
+                <p:commandButton value="Geschichte bearbeiten" icon="ui-icon-pencil" onclick="PF('dlg_Edit').show()" update="frm_StoryEdit" disabled="#{empty storyBean.selectedStory}"/>
+                <p:commandButton value="Geschichte kopieren" icon="ui-icon-copy" action="#{storyBean.onCopy}" oncomplete="PF('dlg_Edit').show()" update="frm_StoryEdit" disabled="#{empty storyBean.selectedStory}"/>                
+
+                <p:commandButton value="Test" title="Geschichte im Dialogfenster testen" icon="ui-icon-check" update="frm_CharterAgent" action="#{randomJobBean.onCharterAgentTest()}" 
+                                 oncomplete="PF('wdg_CharterAgent').show();" disabled="#{empty storyBean.selectedStory}">
+                  <f:setPropertyActionListener target="#{randomJobBean.storyBezeichnung}" value="#{storyBean.selectedStory.bezeichnung}"/>
+                </p:commandButton>
+
+                <p:commandButton value="Geschichte löschen" icon="ui-icon-trash" async="true" action="#{storyBean.onDelete()}" update="frm_daten" disabled="#{empty storyBean.selectedStory}">
+                  <p:confirm header="delete Record ?" message="Delete Record(s) ?" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                
+
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_daten_right" align="right">
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="storyTable"
+                         widgetVar="storyTable"
+                         var="storyItems"
+                         value="#{storyBean.storyList}"
+                         rowKey="#{storyItems.idStory}"
+                         selection="#{storyBean.selectedStory}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="25"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         sortMode="multiple"
+                         selectionMode="single">
+
+
+              <p:ajax listener="#{storyBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{storyBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column headerText="Aktiv" width="40" sortBy="#{storyItems.aktiv}"  style="text-align: center">
+                <h:outputText value="#{sprache.ja}" rendered="#{storyItems.aktiv}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not storyItems.aktiv}"/>
+              </p:column>
+
+              <p:column headerText="Sprache" sortBy="#{storyItems.sprache}" width="60" filterMatchMode="contains" filterBy="#{storyItems.sprache}" filterStyle="width: 40px;" style="text-align: center">
+                <h:outputText value="#{storyItems.sprache}"/>
+              </p:column>
+
+              <p:column headerText="Lizenz" sortBy="#{storyItems.flugzeuglizenz}" width="60" filterMatchMode="contains" filterBy="#{storyItems.flugzeuglizenz}" filterStyle="width: 50px;" style="text-align: center;">
+                <h:outputText value="#{storyItems.flugzeuglizenz}"/>
+              </p:column>
+
+              <p:column headerText="Typ" sortBy="#{storyItems.flugzeugKlasse}" width="120" filterMatchMode="contains" filterBy="#{storyItems.flugzeugKlasse}" filterStyle="width: 120px;" style="text-align: center;">
+                <h:outputText value="#{storyItems.flugzeugKlasse}"/>
+              </p:column>
+
+              <p:column headerText="Kurzbezeichnung" sortBy="#{storyItems.bezeichnung}" filterMatchMode="contains" filterBy="#{storyItems.bezeichnung}" width="450" filterStyle="width: 220px;">
+                <h:outputText value="#{storyItems.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="Art" width="80" style="text-align: center;"  sortBy="#{storyItems.artdestransports}" >
+                <h:outputText value="#{sprache.Fluggesellschaften_cbo_RoutenArtCargo}" rendered="#{storyItems.artdestransports==2}" />
+                <h:outputText value="#{sprache.Fluggesellschaften_cbo_RoutenArtPax}" rendered="#{storyItems.artdestransports==1}" />
+              </p:column>
+
+              <p:column headerText="Min (mi)" width="50" style="text-align: right;">
+                <h:outputText value="#{storyItems.mindestEnfernung}" >
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Max (mi)"  width="50" style="text-align: right;">
+                <h:outputText value="#{storyItems.maxEntferung}" >
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="&euro; /Std." width="50" style="text-align: right;">
+                <h:outputText value="#{storyItems.verguetung}" >
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Verfasser" sortBy="#{storyItems.verfasser}" width="120" filterMatchMode="contains" filterBy="#{storyItems.verfasser}" style="text-align: center;">
+                <h:outputText value="#{storyItems.verfasser}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+
+        <p:dialog widgetVar="dlg_NewStory" id="dlg_NewStory" width="860" height="900">
+          <h:form id="frm_NewStoryCreate">
+            <p:toolbar id="tbr2">
+              <f:facet id="fc2" name="left">
+                <p:commandButton value="Speichern" action="#{storyBean.onCreate()}" icon="ui-icon-disk" onclick="PF('dlg_NewStory').hide()" update=":frm_daten"/>
+                <p:commandButton value="Variablen" icon="ui-icon-disk" onclick="PF('dlg_Variablen').show()" type="button"/>
+                <p:commandButton value="Fusszeile einfügen" icon="ui-icon-pencil" action="#{storyBean.onInsertFussEintrag('Create')}" update="edt_editor1"/>
+                <p:commandButton value="Template einfügen" icon="ui-icon-pencil" action="#{storyBean.onInsertTemplate('Create')}" update="edt_editor1"/>                  
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <p:outputLabel value="Aktiviert:" /> <p:selectBooleanButton value="#{storyBean.storyAktiviert}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+              <p:outputLabel value="Verfasser:"/>   <p:inputText value="#{storyBean.storyVerfasser}" />
+              <p:outputLabel value="Kurzbezeichnung max. 80 Zeichen:"/>   <p:inputText value="#{storyBean.storyKurzbezeichnung}" maxlength="80" size="80" />
+
+              <h:outputText value="Routenart:" />
+              <p:selectOneMenu value="#{storyBean.storyRoutenArt}" style="width:250px">
+                <f:selectItem itemLabel="Routenart auswählen.... " itemValue="#{storyBean.storyRoutenArt}" noSelectionOption="false"/>
+                <f:selectItems value="#{storyBean.routenArt}" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Sprache:"/>   
+              <p:selectOneMenu id="SpracheNew"  value="#{storyBean.storySprache}" style="width:150px" disabled="false">
+                <f:selectItem itemValue="DE" itemLabel="Deutsch" />
+                <f:selectItem itemValue="EN" itemLabel="English" />
+                <f:selectItem itemValue="RU" itemLabel="Pусский" />
+                <f:selectItem itemValue="CZ" itemLabel="český" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Land:"/>
+              <p:selectOneMenu id="sel_suche3" value="#{storyBean.storyLand}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="Wähle ein Land ...."  itemValue="Alle" noSelectionOption="true" />
+                <f:selectItems var="lnd" value="#{airportBean.laender}" itemValue="#{lnd.land}" itemLabel="#{lnd.land}"/>
+                <p:ajax event="change" update="sel_suche2" />  
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Bundesland:"/>
+              <p:selectOneMenu id="sel_suche2" value="#{storyBean.storyBundesland}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="Wähle ein Bundesland ...."  itemValue="Alle" noSelectionOption="true" />
+                <f:selectItems value="#{storyBean.bundesLaender}" var="bdl" itemValue="#{bdl.bundesland}" itemLabel="#{bdl.bundesland}"/>
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Flugzeuglizenz:"/>   
+              <p:selectOneMenu  value="#{storyBean.storyFlugzeugLizenz}"   style="width:80px">
+                <f:selectItem itemValue="PPL-A" itemLabel="PPL-A" noSelectionOption="false" />
+                <f:selectItem itemValue="CPL" itemLabel="CPL" noSelectionOption="false" />
+                <f:selectItem itemValue="MPL" itemLabel="MPL" noSelectionOption="false" />
+                <f:selectItem itemValue="ATPL" itemLabel="ATPL" noSelectionOption="false" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="Art :" />
+              <p:selectOneMenu value="#{storyBean.storyFlugzeugType}" style="width:200px"  filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="Geschäftsflugzeug" itemValue="Geschäftsflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Passagierflugzeug" itemValue="Passagierflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Hubschrauber" itemValue="Hubschrauber" noSelectionOption="true" />
+                <f:selectItem itemLabel="Wasserflugzeug" itemValue="Wasserflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Amphibienflugzeug" itemValue="Amphibienflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Sportflugzeug" itemValue="Sportflugzeug" noSelectionOption="true" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Text der Geschichte:" />       <p:editor id="edt_editor1" value="#{storyBean.storyText}" />
+              <p:outputLabel value="Midestenfernung in Meilen:" />  <p:inputText value="#{storyBean.storyMindestEnfernungInMeilen}" />
+              <p:outputLabel value="Maximalentferung in Meilen:" />  <p:inputText value="#{storyBean.storyMaxEnfernungInMeilen}" />
+              <p:outputLabel value="Vergütung / Std." />  <p:inputText value="#{storyBean.storyVerguetung}" />
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog widgetVar="dlg_Edit" id="dlg_Edit" width="860" >
+          <h:form id="frm_StoryEdit">
+            <p:toolbar id="tbr1">
+              <p:toolbarGroup align="left">
+                <p:commandButton title="Speichern" action="#{storyBean.onEdit()}" icon="ui-icon-disk" onclick="PF('dlg_Edit').hide()" update="frm_daten:storyTable"/>
+                <p:commandButton title="Schließen" icon="ui-icon-close" onclick="PF('dlg_Edit').hide()"/>
+                <p:commandButton value="Variablen" icon="ui-icon-disk" onclick="PF('dlg_Variablen').show()" type="button"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <p:outputLabel value="id Story:" />     <p:outputLabel value="#{storyBean.selectedStory.idStory}" />
+              <p:outputLabel value="Aktiviert:" /> <p:selectBooleanButton value="#{storyBean.selectedStory.aktiv}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+              <p:outputLabel value="Verfasser:" />  <p:inputText value="#{storyBean.selectedStory.verfasser}" />
+              <p:outputLabel value="Kurzbezeichnung max. 80 Zeichen:"/>   <p:inputText value="#{storyBean.selectedStory.bezeichnung}" maxlength="80" size="80" />
+
+              <h:outputText value="Routenart:" />
+              <p:selectOneMenu value="#{storyBean.selectedStory.artdestransports}" style="width:250px">
+                <f:selectItems value="#{storyBean.routenArt}" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Sprache:" /> 
+              <p:selectOneMenu id="Sprache"  value="#{storyBean.selectedStory.sprache}" style="width:150px" disabled="false">
+                <f:selectItem itemValue="DE" itemLabel="Deutsch" />
+                <f:selectItem itemValue="EN" itemLabel="English" />
+                <f:selectItem itemValue="RU" itemLabel="Pусский" />
+                <f:selectItem itemValue="CZ" itemLabel="český" />
+              </p:selectOneMenu>
+
+
+              <p:outputLabel value="Land:"/>
+              <p:selectOneMenu id="sel_suche3" value="#{storyBean.selectedStory.land}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="Wähle ein Land ...."  itemValue="Alle" noSelectionOption="true" />
+                <f:selectItems var="lnd" value="#{airportBean.laender}" itemValue="#{lnd.land}" itemLabel="#{lnd.land}"/>
+                <p:ajax event="change" update="sel_suche2" />  
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Bundesland:"/>
+              <p:selectOneMenu id="sel_suche2" value="#{storyBean.selectedStory.bundesland}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                <f:selectItem itemLabel="Wähle ein Bundesland ...."  itemValue="Alle" noSelectionOption="true" />
+                <f:selectItems value="#{storyBean.bundesLaender}" var="bdl" itemValue="#{bdl.bundesland}" itemLabel="#{bdl.bundesland}"/>
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Flugzeuglizenz:" />
+              <p:selectOneMenu value="#{storyBean.selectedStory.flugzeuglizenz}" style="width:80px">
+                <f:selectItem itemValue="PPL-A" itemLabel="PPL-A" noSelectionOption="false" />
+                <f:selectItem itemValue="CPL" itemLabel="CPL" noSelectionOption="false" />
+                <f:selectItem itemValue="MPL" itemLabel="MPL" noSelectionOption="false" />
+                <f:selectItem itemValue="ATPL" itemLabel="ATPL" noSelectionOption="false" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="Art :" />
+              <p:selectOneMenu value="#{storyBean.selectedStory.flugzeugKlasse}" style="width:200px"  filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="Geschäftsflugzeug" itemValue="Geschäftsflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Passagierflugzeug" itemValue="Passagierflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Hubschrauber" itemValue="Hubschrauber" noSelectionOption="true" />
+                <f:selectItem itemLabel="Wasserflugzeug" itemValue="Wasserflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Amphibienflugzeug" itemValue="Amphibienflugzeug" noSelectionOption="true" />
+                <f:selectItem itemLabel="Sportflugzeug" itemValue="Sportflugzeug" noSelectionOption="true" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Text der Geschichte:" /> <p:commandButton icon="fa fa-pencil" update="editText" oncomplete="PF('wdg_EditText').show()"/>
+              <p:outputLabel value="Midestenfernung in Meilen:" />  <p:inputText value="#{storyBean.selectedStory.mindestEnfernung}" />
+              <p:outputLabel value="Maximalenfernung in Meilen:" />  <p:inputText value="#{storyBean.selectedStory.maxEntferung}" />
+              <p:outputLabel value="Vergütung / Std." />  <p:inputText value="#{storyBean.selectedStory.verguetung}" />
+
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+
+
+        <p:dialog widgetVar="wdg_EditText" id="dlg_EditText" width="800" height="600">
+          <h:form id="editText">
+            <p:toolbar id="tlb_editText" >
+              <p:toolbarGroup id="tbg_editText">
+                <p:commandButton title="Speichern" action="#{storyBean.onEdit()}" icon="ui-icon-disk" onclick="PF('wdg_EditText').hide()"/>
+                <p:commandButton title="Schließen" icon="ui-icon-close" onclick="PF('wdg_EditText').hide()"/>
+                <p:commandButton value="Fusszeile einfügen" icon="ui-icon-pencil" action="#{storyBean.onInsertFussEintrag('Edit')}" update="edt_editor"/>
+                <p:commandButton value="Template einfügen" icon="ui-icon-pencil" action="#{storyBean.onInsertTemplate('Edit')}" update="edt_editor"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p:panelGrid columns="1" style="width: 100%">
+              <p:editor id="edt_editor" value="#{storyBean.selectedStory.storyText}" style="width: 760px; height: 540px;" height="540" />
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog widgetVar="dlg_Variablen" id="dlg_Variablen" responsive="true" position="10">
+          <p:panelGrid columns="2">
+            <h:outputLabel value="#flughafen_icao#"/><h:outputLabel value="Zielflughafen ICAO"/>
+            <h:outputLabel value="#flughafen_city#"/><h:outputLabel value="Zielflughafen City"/>
+            <h:outputLabel value="#standort_city#"/><h:outputLabel value="Standort City"/>
+            <h:outputLabel value="#standort_icao#"/><h:outputLabel value="Standort ICAO"/>
+            <h:outputLabel value="#meilen#"/><h:outputLabel value="Entfernung"/>
+            <h:outputLabel value="#summe#"/><h:outputLabel value="Betrag der gezahlt wird"/>
+            <h:outputLabel value="#anzahl#"/><h:outputLabel value="Anzahl Pax / Cargo"/>
+            <h:outputLabel value="#gewicht#"/><h:outputLabel value="Gewicht der Ladung"/>
+            <h:outputLabel value="#datum#"/><h:outputLabel value="Erfüllungsdatum des Jobs"/>
+            <h:outputLabel value="#minuten#"/><h:outputLabel value="Minuten bis Abflug des Jobs"/>
+            <h:outputLabel value="#geschichte_von#"/><h:outputLabel value="Autor der Geschichte"/>
+            <h:outputLabel value=""/><h:outputLabel value=""/>
+            <h:outputLabel value=""/><h:outputLabel value=""/>
+          </p:panelGrid>
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_CharterAgent" widgetVar="wdg_CharterAgent" header="Charter Agent" width="1300" height="800" closable="false" modal="true" style="background-image: URL('http://www.ftw-sim.de/images/FTW/images/ramp-manager.jpg');" >
+
+          <h:form id="frm_CharterAgent">
+            <p:toolbar id="tlb_CharterAgent">
+              <p:toolbarGroup id="tbg_CharterAgent">
+                <p:commandButton title="Schliessen" icon="fa fa-close" onclick="PF('wdg_CharterAgent').hide()" />
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_CharterAgent_right" align="right" >
+                <h:outputLabel value="Anzahl Auftraege: #{randomJobBean.joblist.size()} für #{randomJobBean.flugzeugTyp}"  />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_joblist" var="joblist" value="#{randomJobBean.joblist}"
+                         scrollable="true"
+                         scrollHeight="700"
+                         emptyMessage="Kein passendes Flugzeug gemietet, falscher Flughafen oder der Airport Agent hat keine Aufträge für dich!">
+
+
+              <p:column width="15" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="Lang" width="40" sortBy="#{joblist.sprache}">
+                <h:outputText value="#{joblist.sprache} "/>
+              </p:column>
+
+              <p:column headerText="Lizenz" width="100">
+                <h:outputText escape="false" value="#{joblist.lizenz} #{configBean.BR} #{joblist.flugzeugArt} "/>
+              </p:column>
+
+              <p:column headerText="Nach" width="400">
+                <h:outputText escape="false" value="#{joblist.nachICAO} - #{joblist.nachBezeichnung} (#{joblist.nachLand}) #{configBean.BR} #{joblist.charterKurzbezeichnung} "/>
+              </p:column>
+
+              <p:column headerText="Pax" style="text-align: right;">
+                <h:outputText value="#{joblist.pax}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Cargo" style="text-align: right;">
+                <h:outputText value="#{joblist.cargo}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Meilen" style="text-align: right;" sortBy="#{joblist.entfernung}">
+                <h:outputText value="#{joblist.entfernung}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Kurs" style="text-align: center;" sortBy="#{joblist.kurs}">
+                <h:outputText value="#{joblist.kurs}"/>
+                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
+
+              </p:column>
+
+              <p:column headerText="Auftragswert" style="text-align: right;" width="100" sortBy="#{joblist.verguetung}">
+                <h:outputText value="#{joblist.verguetung}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:rowExpansion>
+                <p:panelGrid columns="1" style="width: 75%;">
+                  <h:outputText escape="false" value="#{joblist.bezeichnung}"/>  
+                </p:panelGrid>
+              </p:rowExpansion>
+
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+    </h:body>
+  </c:if>  
+</html>
+

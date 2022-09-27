@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+  <p:dialog id="dlg_FlughafenLog" widgetVar="wdg_FlughafenLog" header="#{sprache.Flughafeninfo_dlg_FlughafenLog_header}" position="top" closeOnEscape="true" >
+    <h:form id="frm_FlughafenLog">
+
+      <p:dataTable id="tbl_FlughafenLog" value="#{airportBean.flughafenLog}" var="logItems"
+                   scrollRows="40"
+                   liveScroll="true"
+                   scrollHeight="500"
+                   lazy="true"
+                   scrollable="true"
+                   emptyMessage="Keine Log-Daten vorhanden">
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_datum}" width="80">
+          <h:outputLabel value="#{logItems.flugDatum}">
+            <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_flugnummer}" width="80">
+          <h:outputLabel value="#{logItems.acarsFlugNummer}"/>
+        </p:column>
+
+        <p:column headerText="Pilot" width="90">
+          <h:outputLabel value="#{logItems.pilotenName}"/>
+        </p:column>
+
+        <p:column headerText="Flugzeug" width="300">
+          <h:outputLabel value="#{logItems.type}"/>
+        </p:column>
+
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_vonIcao}" >
+          <h:outputLabel value="#{logItems.fromicao} (#{logItems.fromIcaoFlughafenName})"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_nachIcao}" >
+          <h:outputLabel value="#{logItems.toicao} (#{logItems.tocaoFlughafenName})"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_passagiere}" width="90" style="text-align: right">
+          <h:outputLabel value="#{logItems.pax}">
+            <f:convertNumber pattern="#,##0"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_cargo}" width="90" style="text-align: right">
+          <h:outputLabel value="#{logItems.cargo}">
+            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_meilen}" width="90" style="text-align: right">
+          <h:outputLabel value="#{logItems.miles}"/>
+        </p:column>
+
+      </p:dataTable>
+
+    </h:form>
+
+  </p:dialog>
+
+</html>

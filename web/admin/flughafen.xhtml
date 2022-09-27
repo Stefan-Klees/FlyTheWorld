@@ -1,0 +1,760 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <h:outputScript library="js" name="leaflet/leaflet.js" />
+    <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+    <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+    <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+    <script type="text/javascript">
+
+      function setVars(icao) {
+        document.getElementById("frm_FlughafenVerwalten:exPopupText").value = icao;
+      }
+
+
+      function setVarsAirport(icao) {
+        var latLong = marker.getLatLng();
+        document.getElementById("frm_AirportEdit:latLong").value = latLong;
+        document.getElementById("frm_AirportEdit:exPopupTextAirport").value = icao;
+      }
+
+
+    </script>
+
+
+    <style type="text/css">
+      .ui-growl {
+        top: 50px;
+      }
+    </style>
+
+
+    <title>FTW - Admin - Flughafenverwaltung</title>
+
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.allowFlughafenEdit}" />
+  <c:if test="${ifAllow==true}">
+
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" >
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            <p:toolbar id="tlb_suche">
+
+              <p:toolbarGroup id="tbg_suche_right"  align="right">
+                <h:outputLabel value="Search ICAO-Code : " title="Max. Results 25"/>
+                <h:inputText id="icaosuche" value="#{airportBean.suchText}" title="Max. Results 25"/>
+                <p:commandButton icon="ui-icon-search" action="#{airportBean.onSuche()}" update="frm_daten" />
+              </p:toolbarGroup> 
+
+              <p:toolbarGroup id="tbg_suche" align="left">
+
+                <p:panelGrid columns="8" >
+
+                  <p:selectOneMenu id="sel_suche3" value="#{airportBean.frmLand}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="Wähle ein Land ...."  itemValue="" noSelectionOption="true" />
+                    <f:selectItems var="lnd" value="#{airportBean.laender}" itemValue="#{lnd.land}" itemLabel="#{lnd.land}"/>
+                    <p:ajax event="change" update="sel_suche2" />  
+                  </p:selectOneMenu>
+
+                  <p:selectOneMenu id="sel_suche2" value="#{airportBean.frmBundesLand}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="Wähle ein Bundesland ...."  itemValue="" noSelectionOption="true" />
+                    <f:selectItems value="#{airportBean.bundesLaender}" var="bdl" itemValue="#{bdl.bundesland}" itemLabel="#{bdl.bundesland}"/>
+                  </p:selectOneMenu>
+
+                  <p:selectOneMenu id="sel_suche1" value="#{airportBean.frmKlasse}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="Klasse auswählen .... " itemValue="-1" noSelectionOption="false" />
+                    <f:selectItems value="#{airportBean.airportKlassen}" var="fgklasse" itemValue="#{fgklasse.klasseNummer}" itemLabel="#{fgklasse.bezeichnung}" />
+                  </p:selectOneMenu>
+
+                  <p:commandButton icon="ui-icon-search" action="#{airportBean.onSucheDetails()}" oncomplete="PF('wdg_AirportListe').show();" update="frm_AirportListe"/>
+
+                </p:panelGrid>
+
+                <p:tooltip value="Parameter :-I ICAO | -K Klasse | -C Country | -N Airportname | -S City (% = Joker) max. 500 Datarecords" for="icaosuche" />
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+
+
+            <p:toolbar id="tlb_daten">  
+              <p:toolbarGroup align="left">
+                <p:commandButton value="Neu" onclick="PF('wdg_NewAirport').show();" icon="ui-icon-document" type="button"/>
+
+                <p:commandButton value="Bearbeiten" icon="ui-icon-pencil" onclick="PF('wdg_AirportEdit').show();" oncomplete="drawErrorFix();" action="#{airportBean.onEditAirport()}" update="frm_AirportEdit" rendered="#{not empty airportBean.selectedAirport}"/>
+
+                <p:commandButton value="Anflugliste zeigen" oncomplete="PF('wdg_AnflugListe').show();" update="frm_AnflugListe" icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}"/>
+
+                <p:commandButton value="Anflugliste grafisch" onclick="PF('wdg_anflugziele').show();" update="frm_AnflugMap"
+                                 icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}">
+                  <f:setPropertyActionListener target="#{mapsBean.currentAirport}" value="#{airportBean.selectedAirport}"/>
+                </p:commandButton>
+
+                <p:commandButton value="Dispatch Logfile" oncomplete="PF('wdg_DispatchLog').show();" action="#{airportBean.onRefreshLog()}" update="frm_DispatchLog" 
+                                 icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}"/>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:dataTable id="airportTable" 
+                         widgetVar="airportTable"
+                         var="airportItems"
+                         value="#{airportBean.airports}"
+                         rowKey="#{airportItems.idairport}"
+                         selection="#{airportBean.selectedAirport}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         lazy="false" selectionMode="single" sortFunction="true" sortMode="multiple">
+
+
+              <p:ajax listener="#{airportBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{airportBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+
+
+              <p:column headerText="ID" width="40" style="text-align: center;">
+                <h:outputText value='#{airportItems.idairport}'/>
+              </p:column>
+
+              <p:column headerText="ICAO" width="60" style="text-align: center;">
+                <h:outputText value='#{airportItems.icao}'/>
+              </p:column>
+
+              <p:column headerText="Name" style="text-align: left;" width="250">
+                <h:outputText escape="false" value='#{airportItems.name}#{configBean.BR}#{airportBean.KlassenName(airportItems.klasse)}#{configBean.BR}#{airportItems.land} #{airportItems.stadt} #{airportItems.bundesland}'/>
+              </p:column>
+
+              <p:column headerText="LuVe" width="50" style="text-align: center;" sortBy="#{airportItems.luftversorgung}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.luftversorgung == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.luftversorgung == true}"/>
+              </p:column>
+
+              <p:column headerText="Disp" width="50" style="text-align: center;" sortBy="#{airportItems.dispatch}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.dispatch == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.dispatch == true}"/>
+              </p:column>
+
+              <p:column headerText="Gpfgt" width="60" style="text-align: center;" sortBy="#{airportItems.gepflegt}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.gepflegt == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.gepflegt == true}"/>
+              </p:column>
+
+              <p:column headerText="NOTAM" width="60" style="text-align: center;">
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.notem.length() > 0}"/>
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.notem.length() le 0}"/>
+              </p:column>
+
+              <p:column headerText="Pax" width="60" style="text-align: right;">
+                <h:outputText value='#{airportItems.maxpassagiereprotag}'>
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="+ %" style="text-align: right;" width="50">
+                <h:outputText value='#{airportBean.getTransferPaxProzent(airportItems.icao)}'>
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Koordinaten " width="160" style="text-align: center;">
+                <h:outputText escape="false" value='Lat: #{airportItems.latitude}#{configBean.BR}Long: #{airportItems.longitude}'/>
+              </p:column>
+
+              <p:column headerText="Runw.(m)" width="60" style="text-align: center;">
+                <h:outputText value='#{airportItems.laengsteLandeBahn}'/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>        
+
+        </p:layoutUnit>
+
+
+        <p:dialog id="dlg_AirportEdit" widgetVar="wdg_AirportEdit" header="Flughafen Details" closable="true" height="800" width="1100" >
+          <h:form id="frm_AirportEdit">
+
+            <h:inputHidden id="latLong" value="#{airportBean.exLatLong}" />
+            <h:inputHidden id="exPopupTextAirport" value="#{airportBean.exPopupText}" />
+
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton value="Save" action="#{airportBean.saveAirport()}" icon="ui-icon-disk" oncomplete="PF('wdg_AirportEdit').hide()" update="frm_AirportEdit frm_daten" />
+                <p:commandButton value="Exit" icon="ui-icon-pencil" oncomplete="PF('wdg_AirportEdit').hide()" update="frm_daten"/>
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="4" style="width: 100%">
+              <f:facet name="header">
+                Allgemeine Flughafendaten
+              </f:facet>
+              <p:outputLabel value="ID:" />
+              <p:outputLabel value="#{airportBean.selectedAirport.idairport}" />
+              <p:outputLabel value="ICAO:" />
+              <p:inputText value="#{airportBean.selectedAirport.icao}" />
+
+              <p:outputLabel value="Klasse:" />
+              <p:selectOneMenu  value="#{airportBean.selectedAirport.klasse}"   style="width:250px" filter="true" filterMatchMode="contains" rendered="#{not empty airportBean.selectedAirport}">
+                <f:selectItems value="#{airportBean.airportKlassen}" var="fgklasse" itemValue="#{fgklasse.klasseNummer}" itemLabel="#{fgklasse.bezeichnung}" />
+                <p:ajax event="change"   listener="#{airportBean.MTOW()}" update="maxLand MaxPax MaxCargo frm_AirportEdit" />
+              </p:selectOneMenu>
+              <p:outputLabel value="Luftversorgung" />
+              <p:selectBooleanButton id="blb21" value="#{airportBean.selectedAirport.luftversorgung}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+              <p:outputLabel value="Gepflegt" />
+              <p:selectBooleanButton id="blb1" value="#{airportBean.selectedAirport.gepflegt}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+              <p:outputLabel value="Dispatch" />
+              <p:selectBooleanButton id="blb11" value="#{airportBean.selectedAirport.dispatch}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+              <p:outputLabel value="Belag:" />
+              <p:selectOneMenu value="#{airportBean.selectedAirport.belag}" style="width:250px" filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="Belag wählen" itemValue="" noSelectionOption="false" />
+                <f:selectItems value="#{airportBean.landebahn}"  />
+              </p:selectOneMenu>
+              <p:outputLabel value="Verfügbar:" />
+              <p:selectBooleanButton id="blb2" value="#{airportBean.selectedAirport.isActiv}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+              <p:outputLabel value="Landebahnlänge / Meter"/>
+              <p:inputText value="#{airportBean.selectedAirport.laengsteLandeBahn}" />
+              <p:outputLabel value="Job-Template" />
+              <p:selectOneMenu value="#{airportBean.selectedAirport.jobTemplate}" style="width:250px" filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="FTW Einstellungen verwenden" itemValue="" noSelectionOption="false" />
+                <f:selectItems var="tmp" value="#{airportBean.templates}" itemValue="#{tmp.templatename}" itemLabel="#{tmp.templatename}" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="Name:" />
+              <p:inputText value="#{airportBean.selectedAirport.name}"/>
+              <p:outputLabel value="Stadt:" />
+              <p:inputText value="#{airportBean.selectedAirport.stadt}"/>
+
+              <p:outputLabel value="Land:" />
+              <p:inputText value="#{airportBean.selectedAirport.land}"/>
+              <p:outputLabel value="Bundesland:" />
+              <p:inputText value="#{airportBean.selectedAirport.bundesland}"/>
+
+              <p:outputLabel value="Breitengrad:" />
+              <p:inputText value="#{airportBean.selectedAirport.latitude}"/>
+              <p:outputLabel value="Längengrad:" />
+              <p:inputText value="#{airportBean.selectedAirport.longitude}" />
+
+              <p:outputLabel value="Höhe / Fuss:" />
+              <p:inputText value="#{airportBean.selectedAirport.hoehe}" />
+              <p:outputLabel value="MTOW"/>
+              <p:inputText id="maxLand" value="#{airportBean.selectedAirport.maxlandegewicht}" />
+
+              <p:outputLabel id="MaxPax" value="Max. Pax:" />
+              <p:inputText value="#{airportBean.selectedAirport.maxpassagiereprotag}" />
+              <p:outputLabel id="MaxCargo" value="Max. Cargo:" />
+              <p:inputText value="#{airportBean.selectedAirport.maxCargo}" />
+
+              <p:outputLabel value="Zustand:"/>
+              <p:inputText value="#{airportBean.selectedAirport.zustand}" />
+              <p:outputLabel value="" />
+              <p:outputLabel value="" />
+
+              <p:outputLabel value="Umkreisbestimmung" />
+              <p:panelGrid columns="3">
+                <f:facet name="header">
+                  Umkreisbestimmung in &deg;
+                </f:facet>
+
+                <h:outputLabel value=""/>
+                <p:inputText value="#{airportBean.selectedAirport.bgVon}" size="5" />
+                <h:outputLabel value=""/>
+
+                <p:inputText value="#{airportBean.selectedAirport.lgBis}" size="5" />
+                <h:outputLabel value=""/>
+                <p:inputText value="#{airportBean.selectedAirport.lgVon}" size="5" />
+
+                <h:outputLabel value=""/>
+                <p:inputText value="#{airportBean.selectedAirport.bgBis}" size="5" />
+                <h:outputLabel value=""/>
+              </p:panelGrid>
+              <p:outputLabel value="" />
+              <p:outputLabel value="" />
+
+              <h:outputLabel value=""/><h:outputLabel value=""/>
+
+            </p:panelGrid>
+
+            <p:panelGrid columns="1" style="width: 100%">
+              <f:facet name="header">
+                NOTAM Information
+              </f:facet>
+
+              <p:editor id="edt_1" widgetVar="wdg_1" value="#{airportBean.selectedAirport.notem}" />
+
+            </p:panelGrid>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <f:facet name="header">
+                Download-Links
+              </f:facet>
+              <p:outputLabel value="FS9 Freeware Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.freeFS9SceneryUrl}" size="100" maxlength="250"/>
+              <p:outputLabel value="FS9 Payware Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.paywareFS9SceneryUrl}" size="100" maxlength="250"/>
+              <p:outputLabel value="FSX Freeware Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.freeFSXSceneryUrl}" size="100" maxlength="250"/>
+              <p:outputLabel value="FSX Payware Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.paywareFSXSceneryUrl}" size="100" maxlength="250"/>
+
+              <p:outputLabel value="Free P3D Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.freeP3DSceneryUrl}" size="100" maxlength="250"/>
+              <p:outputLabel value="Payware P3D Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.paywareP3DSceneryUrl}" size="100" maxlength="250"/>
+
+              <p:outputLabel value="Free x-Plane Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.freeXPlaneSceneryUrl}" size="100" maxlength="250"/>
+              <p:outputLabel value="Payware X-Plane Scenery URL:" />
+              <p:inputText value="#{airportBean.selectedAirport.paywareXPlaneSceneryUrl}" size="100" maxlength="250"/>
+            </p:panelGrid>
+
+            <p:panelGrid columns="1" style="width: 100%">
+              <f:facet name="header">
+                Bilder
+              </f:facet>
+              <p:inputTextarea value="#{airportBean.selectedAirport.bilderUrls}" rows="5" cols="135" title="Einzelne Bilder-Links durch ; trennen "/>
+            </p:panelGrid>
+
+
+
+            <div id="airportMap" style="width: 100%; height: 400px;">
+              <script>
+
+                function drawErrorFix() {
+                  mymap.setView(new L.LatLng(#{airportBean.exLatLong}), 14);
+                  mymap.invalidateSize(true);
+                }
+
+                var homeIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                  iconSize: [64, 64],
+                  popupAnchor: [0, -10]
+                });
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [38, 95],
+                  popupAnchor: [0, -10]
+                });
+
+                var mymap = L.map('airportMap').setView(new L.LatLng(#{airportBean.exLatLong}), 14);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}).addTo(mymap);
+
+                var marker = new L.marker([#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}],
+                        {
+                          draggable: true, icon: homeIcon
+                        }).addTo(mymap).bindPopup('#{airportBean.selectedAirport.icao} - #{airportBean.selectedAirport.name.replaceAll("'", "")}');
+
+                          marker.on("drag", function (e) {
+                            var marker = e.target;
+                            var position = marker.getLatLng();
+                            setVarsAirport('#{airportBean.selectedAirport.icao}');
+                          });
+
+
+
+              </script>
+
+            </div>
+
+          </h:form>
+        </p:dialog>           
+
+
+        <p:dialog id="id_AnflugListe" widgetVar="wdg_AnflugListe" header="Anflugliste " closable="true" height="800" >
+          <h:form id="frm_AnflugListe">
+            <p:toolbar id="tlb_anflugListe">
+              <p:toolbarGroup align="left">
+                <p:commandButton value="Flughafen hinzufügen" icon="ui-icon-document" onclick="PF('wdg_NeuerListenEintrag').show()" update="frm_AnflugListe" disabled="#{not loginMB.allowAirportDispatcher}"/>
+                <p:commandButton value="Aktualisieren" action="#{airportZieleBean.onRefresh()}" icon="ui-icon-refresh" update="frm_AnflugListe"/>
+                <p:commandButton value="Exit" icon="ui-icon-close" oncomplete="PF('wdg_AnflugListe').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="anflugZiele" 
+                         widgetVar="anflugTable"
+                         var="anflugItems"
+                         value="#{airportZieleBean.anflugziele}"
+                         selection="#{airportZieleBean.selectedAnfluege}" 
+                         rowKey="#{anflugItems.idListe}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         lazy="false" 
+                         sortMode="multiple"
+                         >
+
+
+              <p:ajax listener="#{airportZieleBean.onRowSelect}" event="rowSelect" update="frm_AnflugListe"/>
+              <p:ajax listener="#{airportZieleBean.onRowUnselect}" event="rowUnselect" update="frm_AnflugListe"/>
+
+              <p:column headerText="" width="32">
+                <p:commandButton disabled="#{not loginMB.allowAirportDispatcher}" title="Flughafen loeschen" icon="fa fa-trash"  action="#{airportZieleBean.onDeleteAnflugZielSchnell()}" update="frm_AnflugListe" >
+                  <f:setPropertyActionListener value="#{anflugItems}" target="#{airportZieleBean.selectedAirportZiele}" />
+                </p:commandButton>
+              </p:column>
+
+              <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false"/>
+
+              <p:column headerText="Gepflegt" width="45" style="text-align: center;" sortBy="#{anflugItems.gepflegt}">
+                <h:outputText value='#{sprache.nein}' rendered="#{anflugItems.gepflegt == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{anflugItems.gepflegt == true}"/>
+              </p:column>
+
+              <p:column headerText="Klasse" style="text-align: center;" sortBy="#{anflugItems.klasse}">
+                <h:outputText value='Class 1 - Primary Hub' rendered="#{anflugItems.klasse eq 1}"/>
+                <h:outputText value='Class 2 - Secondary Hub' rendered="#{anflugItems.klasse eq 2}"/>
+                <h:outputText value='Class 3 - Major International Airport' rendered="#{anflugItems.klasse eq 3}"/>
+                <h:outputText value='Class 4 - Minor International Airport' rendered="#{anflugItems.klasse eq 4}"/>
+                <h:outputText value='Class 5 - Regional Airport' rendered="#{anflugItems.klasse eq 5}"/>
+                <h:outputText value='Class 6 - Large GA-Airport' rendered="#{anflugItems.klasse eq 6}"/>
+                <h:outputText value='Class 7 - Small GA-Airport' rendered="#{anflugItems.klasse eq 7}"/>
+                <h:outputText value='Class 8 - Airstrip' rendered="#{anflugItems.klasse eq 8}"/>
+                <h:outputText value='Class 9 - Unclassified' rendered="#{anflugItems.klasse eq 9}"/>
+                <h:outputText value='Class M1 - Major Military Airport' rendered="#{anflugItems.klasse eq 10}"/>
+                <h:outputText value='Class M2 - Minor Military Airport' rendered="#{anflugItems.klasse eq 11}"/>
+                <h:outputText value='Class 12 - Drop-Off' rendered="#{anflugItems.klasse eq 12}"/>
+                <h:outputText value='Class 13 - Closed ((partially) intact structure)' rendered="#{anflugItems.klasse eq 13}"/>
+                <h:outputText value='Class 14 - Closed (tore off, demolished' rendered="#{anflugItems.klasse eq 14}"/>
+              </p:column>
+
+              <p:column headerText="ICAO" width="40" style="text-align: center;" sortBy="#{anflugItems.icao}">
+                <h:outputText value='#{anflugItems.icao}'/>
+              </p:column>
+
+              <p:column headerText="Name" style="text-align: center;" sortBy="#{anflugItems.name}">
+                <h:outputText value='#{anflugItems.name}'/>
+              </p:column>
+
+              <p:column headerText="Stadt" style="text-align: center;">
+                <h:outputText value='#{anflugItems.stadt}'/>
+              </p:column>
+
+              <p:column headerText="Land" style="text-align: center;" sortBy="#{anflugItems.land}">
+                <h:outputText value='#{anflugItems.land}'/>
+              </p:column>
+
+              <p:column headerText="Bundesland" style="text-align: center;" >
+                <h:outputText value='#{anflugItems.bundesland}'/>
+              </p:column>
+
+              <p:column headerText="Meilen" width="50" style="text-align: center;" sortBy="#{anflugItems.entfernung}">
+                <h:outputText value='#{anflugItems.entfernung}'/>
+              </p:column>
+
+              <p:column headerText="Kurs" width="50" style="text-align: center;" >
+                <h:outputText value='#{anflugItems.kurs}'/>
+                <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{anflugItems.kurs}.png" />
+              </p:column>
+
+              <p:column headerText="Breitengrad" style="text-align: center;">
+                <h:outputText value='#{anflugItems.latitude}'/>
+              </p:column>
+
+              <p:column headerText="Längengrad" style="text-align: center;">
+                <h:outputText value='#{anflugItems.longitude}'/>
+              </p:column>
+
+              <p:column headerText="Landeb.Länge" style="text-align: center;">
+                <h:outputText value='#{anflugItems.laengsteLandeBahn}'/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="id_NewAirport" widgetVar="wdg_NewAirport" header="Neuer Flughafen - Überprüfung ICAO" closable="false">
+          <h:form id="frm_NewAirport">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{airportBean.createAirport()}" value="Prüfen und Anlegen" icon="ui-icon-disk" update=":frm_daten" />
+                <p:commandButton value="Exit" icon="ui-icon-pencil" oncomplete="PF('wdg_NewAirport').hide()"/>
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid id="plg_NewAirport" columns="2">
+              <h:outputLabel value="ICAO - Code : "/>
+              <p:inputText value="#{airportBean.airportICAO}"/>
+
+              <h:outputLabel value="Latitude: "/>
+              <p:inputText value="#{airportBean.frmLatitude}"/>
+
+              <h:outputLabel value="Longitude : "/>
+              <p:inputText value="#{airportBean.frmLongitude}"/>
+
+            </p:panelGrid>
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="id_NeuerListenEintrag" widgetVar="wdg_NeuerListenEintrag" header="Neuer Listeneintrag" closable="false">
+          <h:form id="frm_NeuerListenEintrag">
+            <p:toolbar>
+              <p:toolbarGroup align="left">
+                <p:commandButton action="#{airportZieleBean.onFlughafenHinzufuegen()}" value="Prüfen und Anlegen" icon="ui-icon-disk" update=":frm_AnflugListe" oncomplete="PF('wdg_NeuerListenEintrag').hide()"/>
+                <p:commandButton type="button" value="Exit" icon="fa fa-close" onclick="PF('wdg_NeuerListenEintrag').hide()"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid id="plg_NewAirport" columns="2">
+              <h:outputLabel value="ICAO - Code : "/>
+              <p:inputText value="#{airportZieleBean.frmICAO}"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_anflugziele" widgetVar="wdg_anflugziele" width="1400" height="800" header="Grafische Bearbeitung der Anflugliste" >
+
+          <h:form id="frm_AnflugMap">
+
+            <p:toolbar id="tlb_anflugziele">
+              <p:toolbarGroup id="tbg_anflugziele">                  
+                <p:panelGrid columns="15">
+
+                  <p:commandButton type="button" icon="fa fa-close" onclick="PF('wdg_anflugziele').hide()"/>
+                  <p:commandButton icon="fa fa-refresh" update="frm_AnflugMap">
+                    <f:setPropertyActionListener target="#{mapsBean.currentAirport}" value="#{airportBean.selectedAirport}"/>
+                  </p:commandButton>
+
+                  <p:commandButton  title="Anflugziele in Notam eintragen" action="#{airportZieleBean.onNotamEintragAnflugziele()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_anflugziele').hide()">
+                    <f:setPropertyActionListener target="#{airportBean.isLoaded}" value="false"/>
+                  </p:commandButton>
+
+
+                  <p:outputLabel value="#{sprache.LiveFlugverfolgung_lbl_zoom}"/> 
+                  <p:selectOneMenu value="#{mapsBean.zoom}"  style="width: 100px" >
+                    <f:selectItem itemLabel="3" itemValue="3" noSelectionOption="true" />
+                    <f:selectItem itemLabel="4" itemValue="4" noSelectionOption="true" />
+                    <f:selectItem itemLabel="5" itemValue="5" noSelectionOption="true" />
+                    <f:selectItem itemLabel="6" itemValue="6" noSelectionOption="true" />
+                    <f:selectItem itemLabel="7" itemValue="7" noSelectionOption="true" />
+                    <f:selectItem itemLabel="8" itemValue="8" noSelectionOption="true" />
+                    <f:selectItem itemLabel="9" itemValue="9" noSelectionOption="true" />
+                    <f:selectItem itemLabel="10" itemValue="10" noSelectionOption="true" />
+                    <f:selectItem itemLabel="11" itemValue="11" noSelectionOption="true" />
+                    <f:selectItem itemLabel="12" itemValue="12" noSelectionOption="true" />
+                    <f:selectItem itemLabel="13" itemValue="13" noSelectionOption="true" />
+                    <f:selectItem itemLabel="14" itemValue="14" noSelectionOption="true" />
+                    <f:selectItem itemLabel="15" itemValue="15" noSelectionOption="true" />
+                    <f:selectItem itemLabel="16" itemValue="16" noSelectionOption="true" />
+                    <f:selectItem itemLabel="17" itemValue="17" noSelectionOption="true" />
+                    <p:ajax event="change" update="frm_AnflugMap"/>
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value="Von Klasse"/> <h:inputText value="#{mapsBean.frmVonKlasse}" size="10"/>
+                  <h:outputLabel value="Bis Klasse"/> <h:inputText value="#{mapsBean.frmBisKlasse}" size="10"/>
+
+
+                  <p:commandButton title="Auto-Dispatch" icon="fa fa-list" action="#{airportZieleBean.onAutoDispatch()}" update="frm_AnflugMap frm_daten">
+                    <p:confirm header="Automatische Anflugliste erstellen" message="Achtung: beim Erstellen der Anflugliste wird die alte Liste gelöscht! Unbedingt von Klasse, bis Klasse korrekt eintragen!" icon="ui-icon-alert" />
+                    <f:setPropertyActionListener value="#{mapsBean.tmpFlughaefen}" target="#{airportZieleBean.airportList}"/>
+                    <f:setPropertyActionListener value="#{mapsBean.currentAirport}" target="#{airportZieleBean.currentAirport}"/>
+                  </p:commandButton>
+
+
+                </p:panelGrid>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+
+            <div id="anflugMap" style="width: 100%; height: 750px;">
+
+              <script type="text/javascript">
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+                var homeIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                  iconSize: [64, 64],
+                  popupAnchor: [0, -10]
+                });
+
+                var fahne = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_rot_32px.png',
+                  iconSize: [16, 24],
+                  popupAnchor: [0, -10]
+                });
+
+                var anflugMap = L.map('anflugMap').setView(new L.LatLng(#{airportBean.flughafenKoordinaten}), #{mapsBean.zoom});
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        {maxZoom: 19, attribution: '© <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'})
+                        .addTo(anflugMap);
+
+                #{mapsBean.getFlughaefenVisuelleAnflugliste(airportBean.selectedAirport)}
+
+                anflugMap.setView(new L.LatLng(#{airportBean.flughafenKoordinaten}), #{mapsBean.zoom});
+                anflugMap.invalidateSize(true);
+
+                function markerOnClick()
+                {
+                  PF('wdg_FlughafenVerwalten').show();
+                }
+              </script>
+
+            </div>
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_FlughafenVerwalten" widgetVar="wdg_FlughafenVerwalten" visible="#{airportBean.visuellerDialogFlughafen}" modal="true" header="Flughafen hinzufügen/entfernen" width="460">
+          <h:form id="frm_FlughafenVerwalten">
+            <h:inputHidden id="exPopupText" value="#{airportBean.exPopupText}" />
+            <p:toolbar id="tlb_FlughafenVerwalten">
+              <p:toolbarGroup id="tbg_FlughafenVerwalten">
+                <p:commandButton title="Flughafen hinzufügen" icon="fa fa-plus"  action="#{airportBean.onFlughafenHinzufuegen()}" update="dlg_FlughafenVerwalten frm_AnflugMap"/>
+                <p:commandButton title="Flughafen entfernen" icon="fa fa-trash" action="#{airportBean.onflughafenEntfernen()}" update="dlg_FlughafenVerwalten frm_AnflugMap" />
+                <p:commandButton title="Zu diesem Flughafen wechseln" icon="fa fa-exchange"  action="#{airportBean.onFlughafenWechseln()}" 
+                                 update="frm_AnflugMap frm_daten" onclick="PF('wdg_FlughafenVerwalten').hide();"/>
+                <p:separator/>
+                <p:commandButton type="button" title="Schliessen" icon="fa fa-close" onclick="PF('wdg_FlughafenVerwalten').hide();"/>
+
+
+              </p:toolbarGroup>
+            </p:toolbar>
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_DispatchLog" widgetVar="wdg_DispatchLog" closable="true" header="Dispatch Logfile" width="1024">
+          <h:form id="frm_DispatchLog">
+            <p:toolbar id="tlb_DispatchLog">
+              <p:toolbarGroup id="tbg_DispatchLog">
+                <p:commandButton type="button" title="Schliessen" icon="fa fa-close" onclick="PF('wdg_DispatchLog').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable var="dispatch" value="#{airportBean.dispatchLog}" 
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         lazy="false" 
+                         sortMode="multiple"
+                         >
+
+              <p:column headerText="Datum" width="150">
+                <h:outputText value="#{dispatch.datum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="User" width="150">
+                <h:outputText value="#{dispatch.userName}"/>
+              </p:column>
+
+              <p:column headerText="Änderung" width="100">
+                <h:outputText value="#{dispatch.artDerAenderung}"/>
+              </p:column>
+
+              <p:column headerText="Bezeichnung">
+                <h:outputText value="#{dispatch.airportBezeichnung}"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <ui:include src="dlg/airportListe.xhtml"/>
+
+      </p:layout>
+
+
+
+
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </c:if>
+</html>
+

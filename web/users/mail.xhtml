@@ -1,0 +1,251 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Mail_Seitentitel}</title>
+
+
+      <style>
+        .ui-panelgrid .ui-panelgrid-cell {
+          padding: 2px;
+        } 
+      </style>
+
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="Mail">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_tool">
+
+            <p:toolbar id="tlb_frm_tool">
+              <p:toolbarGroup id="tbg_frm_tool_left" align="left">
+
+                <p:panelGrid columns="7">
+
+
+                  <p:commandButton title="#{sprache.Mail_btn_Neu}" oncomplete="PF('wdg_NeueMail').show()" action="#{mailBean.clearMail()}" icon="fa fa-file-o"  update="frm_NeueMail"/>
+
+                  <p:commandButton title="#{sprache.Mail_btn_Antworten}" oncomplete="PF('wdg_MailAntwort').show()" icon="fa fa-reply"  update="frm_MailAntwort" disabled="#{empty mailBean.selectedMails}"/>
+
+                  <p:commandButton title="#{sprache.Mail_btn_Kategorie}" icon="fa fa-pencil" onclick="PF('wdg_KategorieAendern').show();" disabled="#{empty mailBean.selectedMails}" />
+
+                  <p:commandButton title="#{sprache.Mail_btn_Loeschen}" action="#{mailBean.deleteMail()}" icon="fa fa-trash" update="frm_daten frm_tool" disabled="#{empty mailBean.selectedMails}" >
+                    <p:confirm header="#{sprache.Mail_btn_Loeschen_confirm_header}" message="#{sprache.Mail_btn_Loeschen_confirm_message}" icon="ui-icon-alert" />
+                  </p:commandButton>
+
+                  <h:outputLabel value="Mail folder: " style="vertical-align: middle;"/>
+                  <p:selectOneMenu id="basic" value="#{mailBean.frmKategorie}" style="vertical-align: middle;" height="500">
+                    <f:selectItem itemLabel="#{sprache.Mail_cbo_Kategorie_alle}" itemValue=""/>
+                    <f:selectItem itemLabel="#{sprache.Mail_cbo_Kategorie_Posteingang}" itemValue="Posteingang"/>
+                    <f:selectItem itemLabel="Sent" itemValue="Sent"/>
+                    <f:selectItems  var="katlist" value="#{mailBean.mailKategorien}"  itemLabel=" #{katlist.kategorie}"  itemValue="#{katlist.kategorie}" />
+                    <p:ajax event="change" listener="#{mailBean.onDeselectAll()}" update="frm_daten"/>
+                  </p:selectOneMenu>
+
+                </p:panelGrid>
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+          </h:form>
+
+          <h:form id="frm_daten">
+
+            <p:panelGrid columns="1">
+
+              <p:column>
+
+                <p:dataTable id="tbl_mails" widgetVar="wdg_tbl_mails" var="mails" value="#{mailBean.listMails}"
+                             sortMode="muliple"
+                             scrollable="true"
+                             scrollHeight="300"
+                             rowKey="#{mails.idmail}"
+                             selection="#{mailBean.selectedMails}"
+                             emptyMessage="#{sprache.Mail_tbl_emptyMessage}">
+
+                  <p:ajax event="rowSelectCheckbox" update="frm_tool"   />
+                  <p:ajax event="rowUnselectCheckbox" update="frm_tool"   />
+                  <p:ajax event="toggleSelect" update="frm_tool"   />
+
+
+                  <p:ajax listener="#{mailBean.onRowSelect}" event="rowSelect" update="frm_daten frm_tool frm_menue"/>
+                  <p:ajax listener="#{mailBean.onRowUnselect}" event="rowUnselect" update="frm_daten frm_tool frm_menue"/>
+
+
+                  <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false">
+
+                  </p:column>
+
+                  <p:column width="15" exportable="false" >
+                    <p:rowToggler />
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Pinnwand_tbl_Absender}" width="150">
+                    <h:outputText value="#{mails.vonUser}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Pinnwand_tbl_Empfaenger}" width="150">
+                    <h:outputText value="#{mails.anUser}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Pinnwand_tbl_Betreff}">
+                    <h:outputText value="#{mails.betreff}" rendered="#{mails.gelesen}"/>
+                    <h:outputText value="#{mails.betreff}" style="font-style: italic;font-weight: bolder" rendered="#{not mails.gelesen}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Pinnwand_tbl_Datum}" width="100">
+                    <h:outputText value="#{mails.datumZeit}">
+                      <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </p:column>
+
+                  
+                  <p:rowExpansion>
+                    <h2><h:outputLabel value="Folder: #{mails.kategorie}"/></h2>
+                  </p:rowExpansion>
+                  
+                </p:dataTable>
+
+
+                <div style="overflow: scroll;height: calc(100vh - 420px);">
+                  <h:outputText id="txt_mailText" escape="false" value="#{mailBean.selectedMail.nachrichtText}" rendered="#{not empty mailBean.selectedMail}"/>
+                </div>
+
+              </p:column>
+
+            </p:panelGrid>
+
+
+          </h:form>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_NeueMail" widgetVar="wdg_NeueMail" header="#{sprache.Mail_dlg_NeueMail_header}" width="800" height="640">
+          <h:form id="frm_NeueMail">
+            <p:toolbar id="tlb_NeueMail">
+              <p:toolbarGroup id="tbg_NeueMail" align="left">
+                <p:commandButton title="#{sprache.Mail_dlg_NeueMail_btn_senden}" icon="fa fa-envelope" action="#{mailBean.saveMail()}" oncomplete="PF('wdg_NeueMail').hide();" update="frm_daten frm_tool"/>
+                <p:commandButton title="#{sprache.Mail_dlg_NeueMail_btn_abbruch}" icon="fa fa-close" onclick="PF('wdg_NeueMail').hide();" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputText value="#{sprache.Mail_dlg_NeueMail_lbl_Betreff}" style="vertical-align: middle;"/>
+              <h:inputText value="#{mailBean.frmBetreff}" maxlength="250" style="width: 98%;"/>
+
+              <h:outputText value="#{sprache.Mail_dlg_NeueMail_lbl_An}" style="vertical-align: middle;"/>
+              <p:selectOneMenu id="som_AnUser" value="#{mailBean.frmAnUser}" filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="#{sprache.Mail_dlg_NeueMail_cbo_empfaenger}" itemValue=""/>
+                <f:selectItems var="user" value="#{mailBean.userList}" itemLabel="#{user}" itemValue="#{user}"/>
+              </p:selectOneMenu>
+
+            </p:panelGrid>    
+
+            <p:editor value="#{mailBean.frmNachrichtenText}" style="width:100%" height="500"/>
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_MailAntwort" widgetVar="wdg_MailAntwort" header="#{sprache.Mail_dlg_MailAntwort_header}" width="800" height="640">
+          <h:form id="frm_MailAntwort">
+            <p:toolbar id="tlb_MailAntwort">
+              <p:toolbarGroup id="tbg_MailAntwort" align="left">
+                <p:commandButton title="#{sprache.Mail_dlg_NeueMail_btn_senden}" icon="fa fa-reply" action="#{mailBean.saveMail()}" oncomplete="PF('wdg_MailAntwort').hide();" update="frm_daten frm_tool"/>
+                <p:commandButton title="#{sprache.Mail_dlg_NeueMail_btn_abbruch}" icon="fa fa-close" onclick="PF('wdg_MailAntwort').hide();" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputText value="#{sprache.Mail_dlg_NeueMail_lbl_Betreff}" style="vertical-align: middle;"/>
+              <h:inputText value="#{mailBean.frmBetreff}" maxlength="250" style="width: 98%;"/>
+
+              <h:outputText value="#{sprache.Mail_dlg_NeueMail_lbl_An}" style="vertical-align: middle;"/>
+              <p:selectOneMenu id="som_AnUser" value="#{mailBean.frmAnUser}" filter="true" filterMatchMode="contains">
+                <f:selectItem itemLabel="#{sprache.Mail_dlg_NeueMail_cbo_empfaenger}" itemValue=""/>
+                <f:selectItems var="user" value="#{mailBean.userList}" itemLabel="#{user}" itemValue="#{user}"/>
+              </p:selectOneMenu>
+
+            </p:panelGrid>    
+
+            <p:editor value="#{mailBean.frmNachrichtenText}" style="width:100%" height="500"/>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_KategorieAendern" widgetVar="wdg_KategorieAendern" header="#{sprache.Mail_dlg_KategorieAendern_header}" width="450" height="250">
+          <h:form id="frm_KategorieAendern">
+            <p:toolbar id="tlb_KategorieAendern">
+              <p:toolbarGroup id="tbg_KategorieAendern" align="left">
+                <p:commandButton title="#{sprache.Mail_dlg_KategorieAendern_btn_speichern}" icon="fa fa-save" action="#{mailBean.kategorieAendern()}" oncomplete="PF('wdg_KategorieAendern').hide();" update="frm_daten frm_tool"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width:100%;">
+              <h:outputText value="#{sprache.Mail_dlg_KategorieAendern_lbl_NeueKategorie}: "/>
+              <p:selectOneMenu id="som_Kategorie" value="#{mailBean.frmKategorie}" filter="true" editable="true" filterMatchMode="contains">
+                <f:selectItems var="kat" value="#{mailBean.mailKategorien}" itemLabel="#{kat.kategorie}" itemValue="#{kat.kategorie}"/>
+              </p:selectOneMenu>
+            </p:panelGrid>
+
+          </h:form>
+        </p:dialog>
+
+
+      </p:layout>
+    </h:body>
+
+  </f:view>
+</html>
+

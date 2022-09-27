@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW MOD - FIX</title>
+  </h:head>
+
+  <h:body>
+
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+      <p:layoutUnit position="center" closable="false">
+
+        <h:form id="frm_fix">
+          <p:toolbar id="tlb_fix">
+            <p:toolbarGroup id="tbg_fix">
+              <p:commandButton title="aktuelle Daten einlesen" action="#{feinabstimmungBean.onUpdateModus()}" update="frm_fix" icon="fa fa-pencil" />
+              <p:commandButton title="Einstellungen speichern" action="#{feinabstimmungBean.onSaveUpdateModus()}" icon="fa fa-save" />
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:panelGrid columns="3">
+            <h:outputLabel value="Meldung Auswählen"/>
+            <p:selectOneMenu value="#{feinabstimmungBean.wartungsMeldung}" filter="true" filterMatchMode="contains" editable="true">
+              <f:selectItem itemLabel="#{configBean.updateText}" itemEscaped="true" itemValue="#{configBean.updateText}"  />
+              <f:selectItem itemLabel="#{configBean.updateHotfixText}" itemEscaped="true"   itemValue="#{configBean.updateHotfixText}"  />              
+              <f:selectItem itemLabel="FTW Update" itemValue="FTW Update installiert - Installed"  />
+              <f:selectItem itemLabel="FTW Hotfix" itemValue="FTW Hotfix installiert - Installed"  />
+              <f:selectItem itemLabel="Wartung - Maintenance" itemValue="Wartung - Maintenance" />
+              <f:selectItem itemLabel="Unerwarteter Serverfehler" itemValue="Unerwarteter Serverfehler - unexpected server error" />
+            </p:selectOneMenu>
+            <p:commandButton title="aktuelle Meldung speichern" action="#{feinabstimmungBean.onSaveSystemMeldung()}" icon="fa fa-save" />
+          </p:panelGrid>
+
+
+          <p:panelGrid columns="2" style="width: 100%" >
+            <h:outputLabel value="Updatemodus" />
+            <p:selectBooleanButton value="#{feinabstimmungBean.frmAktiv}" onLabel="Eingeschaltet" offLabel="Ausgeschaltet" onIcon="ui-icon-check" offIcon="ui-icon-close"/>
+            <h:outputLabel value="" />
+
+            <p:editor id="edit1" widgetVar="editor1" value="#{feinabstimmungBean.frmMessage}" height="600" />
+
+          </p:panelGrid>
+
+
+
+
+        </h:form>
+
+      </p:layoutUnit>
+
+    </p:layout>
+
+  </h:body>
+
+
+</html>
+

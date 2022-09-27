@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+
+<p:dialog id="dlg_AirportListe" widgetVar="wdg_AirportListe" header="Airportliste über Suche" width="1024" height="800" closable="true" minimizable="true">
+  
+    
+<h:form id="frm_AirportListe">
+
+            <p:toolbar id="tlb_AirportListe">  
+              <p:toolbarGroup id="tbg_AirportListe" align="left">
+
+                <p:commandButton id="cmd_AirportListe1" value="Bearbeiten" icon="ui-icon-pencil" onclick="PF('wdg_AirportEdit').show();" oncomplete="drawErrorFix();" action="#{airportBean.onEditAirport()}" update="frm_AirportEdit" rendered="#{not empty airportBean.selectedAirport}"/>
+
+                <p:commandButton id="cmd_AirportListe2" value="Anflugliste zeigen" oncomplete="PF('wdg_AnflugListe').show();" update="frm_AnflugListe" icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}"/>
+
+                <p:commandButton id="cmd_AirportListe3" value="Anflugliste grafisch" onclick="PF('wdg_anflugziele').show();" update="frm_AnflugMap"
+                                 icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}">
+                  <f:setPropertyActionListener target="#{mapsBean.currentAirport}" value="#{airportBean.selectedAirport}"/>
+                </p:commandButton>
+
+                <p:commandButton id="cmd_AirportListe4" value="Dispatch Logfile" oncomplete="PF('wdg_DispatchLog').show();" action="#{airportBean.onRefreshLog()}" update="frm_DispatchLog" 
+                                 icon="ui-icon-document" rendered="#{not empty airportBean.selectedAirport}" disabled="#{not loginMB.allowAirportDispatcher}"/>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+  
+  <p:dataTable id="airportTable_AirportListe" 
+                         widgetVar="airportTable_AirportListe"
+                         var="airportItems"
+                         value="#{airportBean.airportsFuerListe}"
+                         rowKey="#{airportItems.idairport}"
+                         selection="#{airportBean.selectedAirport}"
+                         scrollable="true"
+                         scrollHeight="700"
+                         lazy="false" selectionMode="single" sortFunction="true" sortMode="multiple">
+
+
+              <p:ajax listener="#{airportBean.onRowSelect}" event="rowSelect" update="frm_AirportListe"/>
+              <p:ajax listener="#{airportBean.onRowUnselect}" event="rowUnselect" update="frm_AirportListe"/>
+
+
+
+              <p:column headerText="ID" width="40" style="text-align: center;">
+                <h:outputText value='#{airportItems.idairport}'/>
+              </p:column>
+
+              <p:column headerText="ICAO"  width="60" style="text-align: center;">
+                <h:outputText value='#{airportItems.icao}'/>
+              </p:column>
+
+              <p:column headerText="Name" style="text-align: left;" width="250">
+                <h:outputText escape="false" value='#{airportItems.name}#{configBean.BR}#{airportBean.KlassenName(airportItems.klasse)}#{configBean.BR}#{airportItems.land} #{airportItems.stadt} #{airportItems.bundesland}'/>
+              </p:column>
+
+              <p:column headerText="LuVe" width="60" style="text-align: center;" sortBy="#{airportItems.luftversorgung}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.luftversorgung == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.luftversorgung == true}"/>
+              </p:column>
+
+              <p:column headerText="Disp" width="60" style="text-align: center;" sortBy="#{airportItems.dispatch}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.dispatch == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.dispatch == true}"/>
+              </p:column>
+
+              <p:column headerText="Gpflgt" width="60" style="text-align: center;" sortBy="#{airportItems.gepflegt}">
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.gepflegt == false}"/>
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.gepflegt == true}"/>
+              </p:column>
+
+              <p:column headerText="NOTAM" width="60" style="text-align: center;">
+                <h:outputText value='#{sprache.ja}' rendered="#{airportItems.notem.length() > 0}"/>
+                <h:outputText value='#{sprache.nein}' rendered="#{airportItems.notem.length() le 0}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+  
+  </p:dialog>
+  
+  </html>

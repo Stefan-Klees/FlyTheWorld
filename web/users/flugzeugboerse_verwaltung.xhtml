@@ -1,0 +1,380 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Flugzeugboerse_Verwaltung_Seitentitel}</title>
+
+      <style>
+        .ui-dialog {
+          position: fixed !important;
+        }
+      </style>
+
+      <h:outputStylesheet library="css" name ="job.css"/>
+
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Flugzeugboerse_Verwaltung_Seitentitel}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_daten">
+
+            <p:toolbar id="tlb_daten" >
+
+              <p:toolbarGroup id="tbg_daten" align="left" >
+                <p:panelGrid columns="10" style="vertical-align: middle; padding: 2px;">
+                  <p:selectOneMenu value="#{flugzeugBoerseBean.aktivePositionen}" >
+                    <f:selectItem itemLabel="#{sprache.Flugzeugboerse_Verwaltung_tlb_cbo_AktivePos_AlleAnzeigen}" itemValue="-1"/>
+                    <f:selectItem itemLabel="#{sprache.Flugzeugboerse_Verwaltung_tlb_cbo_AktivePos_Aktive}" itemValue="1"/>
+                    <f:selectItem itemLabel="#{sprache.Flugzeugboerse_Verwaltung_tlb_cbo_AktivePos_Inaktive}" itemValue="0"/>
+                    <p:ajax event="change" listener="#{flugzeugBoerseBean.onChangeAnzeige()}" update="frm_daten" />
+                  </p:selectOneMenu>
+
+                  <p:selectBooleanButton offLabel="#{sprache.Flugzeugboerse_Verwaltung_tlb_boolBtnBilder_an}" onLabel="#{sprache.Flugzeugboerse_Verwaltung_tlb_boolBtnBilder_aus}" 
+                                         value="#{flugzeugBoerseBean.zeigeBilder}" offIcon="fa fa-image" onIcon="fa fa-eye-slash">
+                    <p:ajax event="change" update="frm_daten"/>
+                  </p:selectBooleanButton>
+                  
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_btn_neu}" action="#{flugzeugBoerseBean.onNeueAnzeige()}" icon="fa fa-plus" update="frm_daten"/>
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_btn_bearbeiten}"  icon="fa fa-pencil" oncomplete="PF('wdg_Anzeige').show();" update="frm_Anzeige" rendered="#{not empty flugzeugBoerseBean.selectedAnzeige}"/>
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_btn_loeschen}" action="#{flugzeugBoerseBean.onDeletAnzeige()}" icon="fa fa-trash" update="frm_daten" rendered="#{not empty flugzeugBoerseBean.selectedAnzeige}">
+                    <p:confirm header="#{sprache.Flugzeugboerse_Verwaltung_btn_loeschen_confirm_header}" message="#{sprache.Flugzeugboerse_Verwaltung_btn_loeschen_confirm_message}" icon="fa fa-warning" />
+                  </p:commandButton>
+
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_btn_vorlagen}" oncomplete="PF('wdg_template').show();" icon="fa fa-newspaper-o" />
+
+                </p:panelGrid>
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:dataTable id="tbl_Angebote" 
+                         widgetVar="wdgtbl_Angebote" 
+                         var="angebot"
+                         value="#{flugzeugBoerseBean.anzeigenListe}"
+                         rowKey="#{angebot.idflugzeugboerse}"
+                         selection="#{flugzeugBoerseBean.selectedAnzeige}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rowsPerPageTemplate="1,5,10,15,20,25"
+                         rows="5"
+                         selectionMode="single"
+                         emptyMessage="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_emptyMessage}" 
+                         >
+
+              <p:ajax listener="#{flugzeugBoerseBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{flugzeugBoerseBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column width="15" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Flugzeug}" width="150" style="text-align: center;">
+                <h:outputText escape="false" value="#{angebot.flugzeugtyp}#{configBean.BR}" style="font-style: italic; font-weight: bolder" rendered="#{angebot.freigabe}"/>
+                <h:outputText escape="false" value="#{angebot.flugzeugtyp}#{configBean.BR}" rendered="#{not angebot.freigabe}"/>
+                <p:graphicImage value="#{flugzeugBoerseBean.getFlugzeugBild(angebot.idmietkauf)}" style="height: 70px;" rendered="#{flugzeugBoerseBean.zeigeBilder}" />
+                <h:outputText escape="false" value="#{configBean.BR}#{flugzeugBoerseBean.flugzeugKennung}" style="font-style: italic; font-weight: bolder" rendered="#{angebot.freigabe}"/>
+                <h:outputText escape="false" value="#{configBean.BR}#{flugzeugBoerseBean.flugzeugKennung}" rendered="#{not angebot.freigabe}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}" width="100" style="text-align: right;">
+                <h:outputText value="#{angebot.verkaufspreis}">
+                  <f:convertNumber pattern="#,##0.00 &euro;" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}" width="100" style="text-align: right;">
+                <h:outputText value="#{angebot.leasingpreis}">
+                  <f:convertNumber pattern="#,##0.00 &euro;" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}" width="100" style="text-align: right;">
+                <h:outputText value="#{angebot.finanzierungspreis}">
+                  <f:convertNumber pattern="#,##0.00 &euro;" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Art}" width="120">
+                <h:outputText value=" * Leasing" rendered="#{angebot.leasing eq true}"/>
+                <h:outputText value=" * Verkauf" rendered="#{angebot.verkauf eq true}"/>
+                <h:outputText value=" * Finanzierung" rendered="#{angebot.finanzierung eq true}"/>
+              </p:column>
+
+              <p:rowExpansion>
+                <h:outputText escape="false" value="#{angebot.text}"/>
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>        
+
+        </p:layoutUnit>
+
+
+        <p:dialog id="dlg_Anzeige" widgetVar="wdg_Anzeige" header="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_Header}" width="1200" position="200,10">
+          <h:form id="frm_Anzeige">
+            <p:toolbar id="tlb_Anzeige">
+              <p:toolbarGroup id="tbg_Anzeige">
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_btn_speichern}" icon="fa fa-save" action="#{flugzeugBoerseBean.onEditAnzeige()}" update=":frm_daten"/>
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_btn_loeschen}" icon="fa fa-trash" action="#{flugzeugBoerseBean.onDeletAnzeige()}" oncomplete="PF('wdg_Anzeige').hide();" update=":frm_daten" />
+                <p:commandButton value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_btn_vorlageLaden}" icon="fa fa-th-large" onclick="PF('wdg_loadtemplate').show()" update="frm_loadtemplate"/>
+                <p:commandButton value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_btn_vorlageVerw}" oncomplete="PF('wdg_template').show();" icon="fa fa-newspaper-o" />
+                <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" onclick="PF('wdg_Anzeige').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Flugzeug}"/>
+              <p:selectOneMenu id="FlugzeugID" value="#{flugzeugBoerseBean.selectedAnzeige.idmietkauf}" style="width: 95%" filter="true" filterMatchMode="contains" 
+                               rendered="#{not empty flugzeugBoerseBean.selectedAnzeige}" >
+                <f:selectItems var="Flugzeug" value="#{flugzeugBoerseBean.flugzeugeUser}" itemValue="#{Flugzeug.idMietKauf}" itemLabel="#{Flugzeug.aktuellePositionICAO} - #{Flugzeug.type}" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedAnzeige.verkauf}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedAnzeige.leasing}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedAnzeige.finanzierung}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />              
+
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_lbl_Verkaufsspreis}" /> <h:inputText value="#{flugzeugBoerseBean.selectedAnzeige.verkaufspreis}" size="10"/>
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_lbl_Leasingpreis}" /> <h:inputText value="#{flugzeugBoerseBean.selectedAnzeige.leasingpreis}" size="10"/>
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_lbl_Finanzierungspreis}" /> <h:inputText value="#{flugzeugBoerseBean.selectedAnzeige.finanzierungspreis}" size="10"/>
+
+              <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_Anzeige_lbl_freigabe}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedAnzeige.freigabe}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />              
+
+            </p:panelGrid>
+
+            <p:editor id="Beschreibung" value="#{flugzeugBoerseBean.selectedAnzeige.text}" height="750" styleClass="job"/>
+
+
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_template" widgetVar="wdg_template" header="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_Header}" width="1150" position="200,10" >
+          <h:form id="frm_template">
+            <p:toolbar id="tlb_template">
+              <p:toolbarGroup id="tbg_template" align="left">
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_btn_neu}" action="#{flugzeugBoerseBean.onNeueVorlage()}" update="frm_template" icon="fa fa-plus"/>
+                <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" onclick="PF('wdg_template').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_vorlage" var="vorlage" value="#{flugzeugBoerseBean.vorlagenList}"
+                         rowKey="#{vorlage.idflugzeugboersetemplates}"
+                         scrollable="true"
+                         scrollHeight="150"
+                         emptyMessage="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_emptyMessage}" >
+
+              <p:column width="25">
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_btn_bearbeiten}" icon="fa fa-pencil" update="frm_template" >
+                  <f:setPropertyActionListener value="#{vorlage}" target="#{flugzeugBoerseBean.selectedVorlage}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_template_lbl_Bezeichnung}">
+                <h:outputText value="#{vorlage.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_lbl_Art}" >
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}" rendered="#{vorlage.leasing eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}" rendered="#{vorlage.verkauf eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}" rendered="#{vorlage.finanzierung eq true}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_lbl_geteilt}" width="80">
+                <h:outputText value="#{sprache.ja}" rendered="#{vorlage.tausch eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{vorlage.tausch eq false}"/>                
+              </p:column>
+
+            </p:dataTable>
+
+            <p:panel id="pnl_template" header="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_header}" rendered="#{not empty flugzeugBoerseBean.selectedVorlage}" >
+              <p:toolbar id="tlb_pnl_template">
+                <p:toolbarGroup id="tbg_pnl_template">
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_btn_speichern}" icon="fa fa-save" action="#{flugzeugBoerseBean.onEditVorlage()}" update="frm_template"/>
+                  <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_btn_loeschen}" icon="fa fa-trash" action="#{flugzeugBoerseBean.onLoescheVorlage()}" update="frm_template">
+                    <p:confirm header="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_btn_loeschen_confirm_header}" 
+                               message="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_btn_loeschen_confirm_message}" icon="ui-icon-alert" />
+                  </p:commandButton>
+
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="2" style="width: 100%;">
+                <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_lbl_Bezeichnung}"/> <h:inputText value="#{flugzeugBoerseBean.selectedVorlage.bezeichnung}" style="width: 98%"/>
+                <p:column>
+                  <h3>Platzhalter</h3>
+                  #contact#<br></br>
+                  #expires#<br></br>
+                  #location#<br></br>
+                  #miles#<br></br>
+                  #aircraft#<br></br>
+                  #aircraftimage#<br></br> 
+                  #fuellOB#<br></br> 
+                  #constructionyear#<br></br>
+                  #airframe#<br></br>
+                  #nextccheck#<br></br>
+                  #conditions#<br></br>
+                  #retailprice#<br></br>
+                  #leasingprice#<br></br>
+                  #financingprice#<br></br>
+                </p:column>
+
+                <p:column>
+                  <p:editor id="pnl_template_editor" value="#{flugzeugBoerseBean.selectedVorlage.beschreibung}"  height="500"/>
+                </p:column>
+                <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedVorlage.verkauf}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+                <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedVorlage.leasing}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+                <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedVorlage.finanzierung}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />                
+                <h:outputLabel value="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_pnl_template_lbl_teilen}"/> <p:selectBooleanButton value="#{flugzeugBoerseBean.selectedVorlage.tausch}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />                
+              </p:panelGrid>
+
+            </p:panel>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_loadtemplate" widgetVar="wdg_loadtemplate" header="Vorlagen" width="800" >
+          <h:form id="frm_loadtemplate">
+            <p:dataTable id="tbl_vorlage" var="vorlage" value="#{flugzeugBoerseBean.vorlagenList}"
+                         rowKey="#{vorlage.idflugzeugboersetemplates}"
+                         scrollable="true"
+                         scrollHeight="200"
+                         emptyMessage="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_emptyMessage}" >
+              <f:facet name="header">
+                #{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_Header}
+              </f:facet>
+
+              <p:column width="25">
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_btn_uebernehmen}" action="#{flugzeugBoerseBean.loadTemplate()}" icon="fa fa-check" update="frm_Anzeige" oncomplete="PF('wdg_loadtemplate').hide();">
+                  <f:setPropertyActionListener value="#{vorlage}" target="#{flugzeugBoerseBean.importTemplate}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_lbl_Bezeichnung}">
+                <h:outputText value="#{vorlage.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_lbl_Art}" >
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}" rendered="#{vorlage.leasing eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}" rendered="#{vorlage.verkauf eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}" rendered="#{vorlage.verkauf eq true}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_lbl_geteilt}" width="80">
+                <h:outputText value="#{sprache.ja}" rendered="#{vorlage.tausch eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{vorlage.tausch eq false}"/>                
+              </p:column>
+
+            </p:dataTable>
+
+            <p:dataTable id="tbl_geteilt" var="geteilt" value="#{flugzeugBoerseBean.vorlagenGeteilt}"
+                         rowKey="#{vorlage.idflugzeugboersetemplates}"
+                         scrollable="true"
+                         scrollHeight="200"
+                         emptyMessage="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_geteilt_emptyMessage}" >
+
+              <f:facet name="header">
+                #{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_geteilt_header}
+              </f:facet>
+
+              <p:column width="25">
+                <p:commandButton title="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_btn_uebernehmen}" action="#{flugzeugBoerseBean.loadTemplate()}" icon="fa fa-check" update="frm_Anzeige" oncomplete="PF('wdg_loadtemplate').hide();">
+                  <f:setPropertyActionListener value="#{geteilt}" target="#{flugzeugBoerseBean.importTemplate}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_loadtemplate_tbl_lbl_Bezeichnung}">
+                <h:outputText value="#{geteilt.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Flugzeugboerse_Verwaltung_dlg_template_tbl_lbl_Art}" >
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Leasing}" rendered="#{geteilt.leasing eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Verkauf}" rendered="#{geteilt.verkauf eq true}"/>
+                <h:outputText value=" * #{sprache.Flugzeugboerse_Verwaltung_tbl_Angebote_lbl_Finanzierung}" rendered="#{geteilt.finanzierung eq true}"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+          </h:form>
+        </p:dialog>
+
+
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+      </p:layout>
+
+    </h:body>
+  </f:view>
+
+</html>
+

@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW - Unternehmensentwicklung</title>
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+
+        
+
+        <ui:include src="/users/reports/menueUserReport.xhtml"/>
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.mnu_Unternehmensentwicklung}">
+
+
+          <h:form id="frm_Unternehmensentwicklung">
+
+            <h1>Test-Daten (Modul noch nicht vorhanden)</h1>
+            
+            <p:chart widgetVar="ch_test" type="line" model="#{statistikBean.dataModel}"  style="height:600px;width: 98%;" />
+
+
+          </h:form>
+
+
+
+
+        </p:layoutUnit>
+      </p:layout>
+    </h:body>
+
+  </f:view>
+
+</html>
+

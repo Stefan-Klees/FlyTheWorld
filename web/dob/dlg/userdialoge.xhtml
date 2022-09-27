@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+   <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+        <p:dialog id="dlg_passwort" widgetVar="dlg_passwort" closable="true" header="Password change" >
+          <h:form id="frm_passwort">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{userBean.passwortChange()}" value="Password change" onclick="PF('dlg_passwort').hide()"/>
+                <p:commandButton  value="Exit" icon="ui-icon-pencil" onclick="PF('dlg_passwort').hide()" />
+              </f:facet>
+            </p:toolbar>
+            <p:panelGrid id="matchPanel" columns="2" >
+              <h:outputText value="New Password" />
+              <p:password id="pw1" value="#{userBean.passwort}" required="true" match="pw2" feedback="true" promptLabel="Password input"/>
+              <h:outputText value="Repeat Passwort" />
+              <p:password id="pw2" value="#{userBean.passwort}" required="true" feedback="true" promptLabel="Password input"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_neuerUser" widgetVar="wdg_neuerUser" closable="true" header="Neuer User">
+          <h:form id="frm_neuerUser">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton value="Neuen User erzeugen" action="#{userBean.addUser()}"  update="frm_neuerUser frm_daten"/>
+                <p:commandButton  value="Exit" icon="ui-icon-pencil" onclick="PF('wdg_neuerUser').hide()"/>
+              </f:facet>
+            </p:toolbar>
+            
+            <p:panelGrid id="png_neuerUser" columns="2" >
+              <h:outputText value="Benutzername"/>
+              <h:inputText value="#{userBean.userNameNeu}" size="80" maxlength="250" />
+              <h:outputText value="eMail-Adresse"/>
+              <h:inputText value="#{userBean.userEmailNeu}" size="80" maxlength="250" />
+              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Sprache}" />
+              <p:selectOneMenu id="Sprache"  value="#{userBean.userLanguage}" style="width:150px" disabled="false">
+                <f:selectItem itemValue="de" itemLabel="Deutsch" />
+                <f:selectItem itemValue="en" itemLabel="English" />
+                <f:selectItem itemValue="cz" itemLabel="český" />
+                <f:selectItem itemValue="ru" itemLabel="Pусский" />
+                
+              </p:selectOneMenu>
+
+              <h:outputText value="Passwort"/>
+              <h:inputText value="#{userBean.neuesPasswort}" size="80" maxlength="250" />
+
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_typerating" widgetVar="wdg_typerating" header="Typerating setzen" width="640" height="600" >
+          <h:form id="frm_typerating">
+            <p:toolbar id="tlb_typerating">
+              <p:toolbarGroup id="tbg_typerating">
+                <p:commandButton title="Typrating speichern" action="#{userBean.addTyperating()}" icon="fa fa-save" update="typeratingTable" />
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" oncomplete="PF('wdg_typerating').hide()" />
+                <p:commandButton title="Typeratings einlesen/aktualisieren" icon="fa fa-refresh" update="typeratingTable" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="Typerating"/><h:inputText value="#{userBean.frmTypeRating}"/>
+              <h:outputLabel value="Stunden"/><h:inputText value="#{userBean.frmTyperatingStunden}"/>
+              <h:outputLabel value="Erfüllt"/><p:selectBooleanButton value="#{userBean.frmTypeRatingErfuellt}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            </p:panelGrid>
+
+
+            <p:dataTable id="typeratingTable" 
+                         widgetVar="typeratingTable"
+                         var="types"
+                         value="#{userBean.typeRatings}"
+                         rowKey="#{types.idUserTyperatings}"
+                         scrollable="true">
+
+              <p:column headerText="" width="32">
+                <p:commandButton title="Typerating löschen" action="#{userBean.onDeleteType()}" icon="fa fa-trash"  update="typeratingTable" >
+                  <f:setPropertyActionListener value="#{types}" target="#{userBean.selectedUserTypeRating}" />
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column headerText="ID">
+                <h:outputText value="#{types.idUserTyperatings}"/>
+              </p:column>
+
+              <p:column headerText="U-ID">
+                <h:outputText value="#{types.userID}"/>
+              </p:column>
+
+              <p:column headerText="Type">
+                <h:outputText value="#{types.typeRating}"/>
+              </p:column>
+
+              <p:column headerText="Zeit Std.">
+                <h:outputText value="#{types.minutenGeflogen / 60}" style="text-align: right;">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Erfüllt">
+                <h:outputText value="Ja" rendered="#{types.erfuellt}"/>
+                <h:outputText value="Nein" rendered="#{not types.erfuellt}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+
+
+</html>
