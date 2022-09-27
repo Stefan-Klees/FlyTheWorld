@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  <h:head>
+    
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - Logged Users</title>
+  </h:head>
+  <h:body>
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+      <ui:include src="/users/menueMeldungen.xhtml"/>
+
+      <ui:fragment rendered="#{loginMB.newMenue}">
+        <ui:include src="/users/menue.xhtml" />
+      </ui:fragment>
+
+
+      <p:layoutUnit position="center" closable="false">
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+        <f:view>
+          <h:form>
+            <p:dataTable value="#{loginMB.sessions}" var="item" scrollable="true" scrollHeight="800" sortField="#{item.creationTime}">
+
+              <p:column width="30">
+                <p:commandButton title="Usersession killen (Testfunktion)" action="#{loginMB.onSessionText(item.getAttribute('UserName'))}" icon="fa fa-trash" />
+                
+              </p:column>
+              
+              <p:column headerText="Session ID" width="200">
+                <h:outputLabel value="#{item.getAttribute('session-id')}"/>
+              </p:column>
+
+              <p:column headerText="Name" sortBy="#{item.getAttribute('UserName')}"  >
+                <h:outputLabel value="#{item.getAttribute('UserName')}"/>
+              </p:column>
+
+              <p:column headerText="Eingeloggt seit" style="text-align: right;" sortBy="#{item.creationTime}">
+                <h:outputLabel value="#{item.creationTime}" >
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="Letzte Aktivität" style="text-align: right;" sortBy="#{item.lastAccessedTime}">
+                <h:outputLabel value="#{item.lastAccessedTime}" >
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+              
+              <p:column headerText="Ablauf Minuten" width="60" style="text-align: right;">
+                <h:outputLabel value="#{item.maxInactiveInterval/60}"/>
+              </p:column>
+
+              <p:column headerText="IP-Adresse">
+                <h:outputLabel value="#{item.getAttribute('ip-Adresse')}"/>
+              </p:column>
+
+              <p:column headerText="Agent">
+                <h:outputLabel value="#{item.getAttribute('user-agent')}"/>
+              </p:column>
+
+            </p:dataTable>
+          </h:form>
+        </f:view>
+
+      </p:layoutUnit>
+    </p:layout>
+  </h:body>
+
+
+</html>

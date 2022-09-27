@@ -1,0 +1,203 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW - #{sprache.mnu_Kostenstellenauswertung}</title>
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/reports/menueUserReport.xhtml"/>
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Kostenstellenauswertung_pnl}">
+
+          <h:form id="frm_toolbar">
+
+            <p:ribbon>
+              <p:tab title="Auswahl">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid columns="10">
+
+                    <p:selectOneMenu id="fgselect"  value="#{statistikBean.frmFluggesellschaftBankKonto}" style="width: 250px" filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_cbo_fluggesellschaftWaehlen}"  itemValue="" noSelectionOption="true" />
+                      <f:selectItems var="fg" value="#{statistikBean.fluggesellschaftenFuerKostenstellenAuswertung}" itemLabel="#{fg.fluggesellschaftName}" itemValue="#{fg.fluggesellschaftBankKonto}"/>
+                      <p:ajax event="change" update="frm_toolbar"/>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel value="#{sprache.Kostenstellenauswertung_lbl_vonKostenstelle}"/>
+                    <p:selectOneMenu id="somVonKostenstelle" value="#{statistikBean.frmvonKostenstelle}"  filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_cbo_VonKostenstelleWaehlen}" itemValue="0"/>
+                      <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerKostenstellenAuswertung}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                    </p:selectOneMenu>
+
+                    <h:outputLabel value="#{sprache.Kostenstellenauswertung_lbl_bisKostenstelle}"/>
+                    <p:selectOneMenu id="somBisKostenstelle" value="#{statistikBean.frmbisKostenstelle}"  filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_cbo_BisKostenstelleWaehlen}" itemValue="0"/>
+                      <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerKostenstellenAuswertung}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                    </p:selectOneMenu>
+
+                  </p:panelGrid>
+
+                </p:ribbonGroup>
+              </p:tab>
+
+
+              <p:tab title="Auswertung">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid columns="10">
+
+                    <p:selectOneMenu id="kostenstelleModus" value="#{statistikBean.kostenstellenAuswertungModus}" style="width:150px">
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_mnu_auswahlStandart}" itemValue="-1" noSelectionOption="true"/>
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_mnu_auswahlDetailliert}" itemValue= "1"/>
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_mnu_auswahlMonatlich}" itemValue= "2"/>
+                      <f:selectItem itemLabel="#{sprache.Kostenstellenauswertung_mnu_auswahlQuartal}" itemValue= "3"/>
+                      <f:convertNumber integerOnly="true" />
+                    </p:selectOneMenu>  
+
+                    <h:outputLabel value="#{sprache.Kostenstellenauswertung_lbl_vonDatum}"/> <p:calendar value="#{statistikBean.frmvonDatum}" title="#{sprache.Kostenstellenauswertung_lbl_vonDatum}" id="cal1" pattern="dd.MM.yyyy" size="10"/>
+                    <h:outputLabel value="#{sprache.Kostenstellenauswertung_lbl_bisDatum}"/> <p:calendar value="#{statistikBean.frmbisDatum}" title="#{sprache.Kostenstellenauswertung_lbl_bisDatum}" id="cal2" pattern="dd.MM.yyyy" size="10"/>
+
+
+                    <p:commandButton title="#{sprache.Kostenstellenauswertung_btn_aktualisieren}" icon="fa fa-refresh" update="frm_kostenstellenAuswertung:tbl_kostenTable frm_kostenstellenAuswertung:kostenSumme"/>
+
+                    <h:commandLink >
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" style="margin-top: 5px;" height="32" title="#{sprache.Kostenstellenauswertung_btn_CSVExport}"/>
+                      <p:dataExporter type="csv" target="frm_kostenstellenAuswertung:tbl_kostenTable" fileName="Kostenstellenauswertung_#{loginMB.username}"  pageOnly="false" />
+                    </h:commandLink>
+
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+
+            </p:ribbon>
+
+          </h:form>
+
+          <h:form id="frm_kostenstellenAuswertung">
+
+            <p:dataTable id="tbl_kostenTable" 
+                         var="log" 
+                         widgetVar="wdg_kostenTable" 
+                         value="#{statistikBean.kostenstellenAuswertung}" 
+                         rowKey="#{log.kostenstelle}" 
+                         paginator="true" 
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="20" 
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60" 
+                         sortMode="multiple" 
+                         emptyMessage="Keine Auswahl für Auswertung festgelegt"
+                         >
+
+              <p:column headerText="#{sprache.Kostenstellenauswertung_tbl_datum}" width="15">
+                <h:outputText value="#{log.datumFormatiert}" rendered="#{statistikBean.kostenstellenAuswertungModus eq 1}">
+                  <f:convertDateTime pattern="dd.MM.yyyy"/>
+                </h:outputText>
+                <h:outputText value="#{log.monatlich}" rendered="#{statistikBean.kostenstellenAuswertungModus eq 2}">
+                </h:outputText>
+                <h:outputText value="#{log.quartal}" rendered="#{statistikBean.kostenstellenAuswertungModus eq 3}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Kostenstellenauswertung_tbl_kostenstelle}" width="10">
+                <h:outputText value="#{log.kostenstelle}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Kostenstellenauswertung_tbl_bezeichnung}" width = "35">
+                <h:outputText value="#{log.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Kostenstellenauswertung_tbl_einnahmen}" width="20">
+                <h:outputText value="#{log.betrag}" rendered="#{log.betrag ge 0}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+
+              </p:column>
+
+              <p:column headerText="#{sprache.Kostenstellenauswertung_tbl_ausgaben}" width="20">
+                <h:outputText value="#{log.betrag}" rendered="#{log.betrag le 0}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+            </p:dataTable>
+
+
+            <p:panelGrid id="kostenSumme" columns="2" style="width: 100%">
+
+              <h:outputText value="#{sprache.Kostenstellenauswertung_tbl_ausgabenOderAufwaende}" style="font-weight: bolder"/>
+              <h:outputText value="#{statistikBean.kstSummeAufwaende}" style="float: right; font-weight: bolder">
+                <f:convertNumber pattern="#,##0.00 &euro;"/>
+              </h:outputText>
+
+              <h:outputText value="#{sprache.Kostenstellenauswertung_tbl_einnahmenOderErtraege}" style="font-weight: bolder"/>
+              <h:outputText value="#{statistikBean.kstSummeErtraege}" style="float: right; font-weight: bolder">
+                <f:convertNumber pattern="#,##0.00 &euro;"/>
+              </h:outputText>
+
+              <h:outputText value="#{sprache.Kostenstellenauswertung_tbl_gewinn}" style="font-weight: bolder; font-size: 1.3em"/>
+              <h:outputText value="#{statistikBean.kstErgebnis}" style="float: right; font-weight: bolder; font-size: 1.3em">
+                <f:convertNumber pattern="#,##0.00 &euro;"/>
+              </h:outputText>
+
+            </p:panelGrid>
+
+
+          </h:form>
+
+        </p:layoutUnit>
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+      </p:layout>
+    </h:body>
+
+  </f:view>
+</html>
+

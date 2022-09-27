@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-Routenmap</title>
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+
+      <style type="text/css">
+        html {
+          height: 100%;
+          width: 100%
+        }
+      </style>
+
+
+
+    </h:head>
+
+    <h:body style="height: 100%;">
+
+      <div id="airportMap" style="height: 98%;"></div>
+
+      <script>
+
+        var airportIcon = L.icon({
+          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+          iconSize: [38, 95],
+          popupAnchor: [0, -10]
+        });
+
+        var paxIcon = L.icon({
+          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+          iconSize: [38, 95],
+          popupAnchor: [0, -10]
+        });
+
+        var cargoIcon = L.icon({
+          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+          iconSize: [38, 95],
+          popupAnchor: [0, -10]
+        });
+
+        var mymap = L.map('airportMap').setView([#{mapsBean.flughafenKoordinaten}], 5);
+
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+        }).addTo(mymap);
+
+        #{mapsBean.flughafenAnflugziele}
+
+      </script>
+
+
+    </h:body>
+
+  </f:view>
+
+</html>

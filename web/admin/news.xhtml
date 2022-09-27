@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - Herold Anzeigenverwaltung</title>
+
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.allowNewsEdit}" />
+  <c:if test="${ifAllow==true}" >
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="Newsverwaltung">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_daten">
+
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton value="Neue News" icon="ui-icon-document" onclick="PF('dlg_NewNews').show()"/>
+                <p:commandButton value="News bearbeiten" icon="ui-icon-pencil" onclick="PF('dlg_Edit').show()" rendered="#{not empty newsBean.selectedNews}"/>
+                <p:commandButton value="News löschen" icon="ui-icon-trash" async="true" action="#{newsBean.onDelete()}" update=":frm_daten" rendered="#{not empty newsBean.selectedNews}">
+                  <p:confirm header="delete Record ?" message="Delete Record(s) ?" icon="ui-icon-alert" />
+                </p:commandButton>
+              </f:facet>
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="newsTable"
+                         widgetVar="newsTable"
+                         var="newsItems"
+                         value="#{newsBean.newsList}"
+                         rowKey="#{newsItems.idnews}"
+                         selection="#{newsBean.selectedNews}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         selectionMode="single"
+                         sortMode="single">
+
+
+              <p:ajax listener="#{newsBean.onRowSelect}" event="rowSelect" update=":frm_daten"/>
+              <p:ajax listener="#{newsBean.onRowUnselect}" event="rowUnselect" update=":frm_daten"/>
+
+
+              <p:column headerText="ID" width="10">
+                <h:outputText value="#{newsItems.idnews}"/>
+              </p:column>
+
+              <p:column headerText="Datum" width="80" sortBy="#{newsItems.datum}">
+                <h:outputText value="#{newsItems.datum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Verfasser" width="180" sortBy="#{newsItems.verfasser}">
+                <h:outputText value="#{newsItems.verfasser}"/>
+              </p:column>
+
+              <p:column headerText="Nachrichtentext">
+                <h:outputText escape="false" value="#{newsItems.text}"/>
+              </p:column>
+
+
+            </p:dataTable>
+
+            <p:dialog widgetVar="dlg_Edit" id="dlg_Edit" responsive="true" height="80%" width="80%" position="10,10" maximizable="true" closable="true" rendered="#{not empty newsBean.selectedNews}">
+              <h:form id="frm_NewNewsEdit">
+                <p:toolbar id="tbr1">
+                  <f:facet id="fc1" name="left">
+                    <p:commandButton value="Speichern" action="#{newsBean.onEdit()}" icon="fa fa-save" onclick="PF('dlg_Edit').hide()" update=":frm_daten"/>
+                    <p:commandButton value="Verlassen" icon="fa fa-close" onclick="PF('dlg_Edit').hide()" />
+                  </f:facet>
+                </p:toolbar>
+                <p:panelGrid columns="2" style="width: 100%; height: 95%">
+                  <p:outputLabel value="Idnews:" />     <p:outputLabel value="#{newsBean.selectedNews.idnews}" />
+                  <p:outputLabel value="Verfasser:" />  <p:inputText value="#{newsBean.selectedNews.verfasser}" />
+                  <p:outputLabel value="Text:" />       <p:editor value="#{newsBean.selectedNews.text}" style="width: 100%;" height="800" />
+                  <p:outputLabel value="Datum:"/>       <p:calendar value="#{newsBean.selectedNews.datum}" pattern="dd.MM.yyyy"/>
+                </p:panelGrid>
+              </h:form>
+            </p:dialog>
+
+
+
+          </h:form>
+
+        </p:layoutUnit>
+      </p:layout>
+
+
+      <p:dialog widgetVar="dlg_NewNews" id="dlg_NewNews" responsive="true" height="80%" width="80%" position="10,10" maximizable="true" closable="true">
+        <h:form id="frm_NewNewsCreate">
+          <p:toolbar id="tbr2">
+            <f:facet id="fc2" name="left">
+              <p:commandButton value="Speichern" action="#{newsBean.onCreate()}" icon="ui-icon-disk" onclick="PF('dlg_NewNews').hide()" update=":frm_daten"/>
+              <p:commandButton value="Verlassen" icon="ui-icon-close" onclick="PF('dlg_NewNews').hide()" />
+            </f:facet>
+          </p:toolbar>
+          <p:panelGrid columns="2" style="width: 100%; height: 95%">
+            <p:outputLabel value="Datum:" />      <p:calendar value="#{newsBean.newsDate}" pattern="dd.MM.yyyy"/>
+            <p:outputLabel value="Verfasser:"/>   <p:inputText value="#{newsBean.newsVerfasser}" />
+            <p:outputLabel value="Text:" />       <p:editor value="#{newsBean.newsText}" style="width: 100%;" height="800" />
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>
+
+
+
+
+
+
+
+    </h:body>
+  </c:if>  
+</html>
+

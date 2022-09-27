@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+  <p:dialog id="dlg_Flugzeuglog" widgetVar="wdg_Flugzeuglog" header="#{sprache.Hangar_dlg_Flugzeuglog_Header}" closeOnEscape="true" maximizable="true">
+          <h:form id="frm_Flugzeuglog">
+
+            <p:dataTable id="tbl_Flugzeuglog" value="#{statistikBean.flugzeuglogForAdmin}" var="logItems"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="20"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         emptyMessage="Keine Log-Daten vorhanden">
+
+              <p:column width="15" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_datum}" width="80">
+                <h:outputLabel value="#{logItems.flugDatum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_flugnummer}" width="60" filterBy="#{logItems.acarsFlugNummer}" filterMatchMode="contains" filterStyle="width:50px;">
+                <h:outputLabel value="#{logItems.acarsFlugNummer}"/>
+              </p:column>
+
+              <p:column headerText="Pilot" width="90">
+                <h:outputLabel value="#{logItems.pilotenName}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_vonIcao}" width="250" filterBy="#{logItems.fromicao}" filterMatchMode="contains" filterStyle="width:90px;">
+                <h:outputLabel value="#{logItems.fromicao} (#{logItems.fromIcaoFlughafenName})"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_nachIcao}" width="250">
+                <h:outputLabel value="#{logItems.toicao} (#{logItems.tocaoFlughafenName})"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_passagiere}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.pax}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_cargo}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.cargo}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_meilen}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.miles}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_verbrauch}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.treibstoffverbrauchkg}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluglogbuch_tbl_stunden}" width="90" style="text-align: right">
+                <h:outputLabel value="#{logItems.flugzeitMinuten/60}">
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:rowExpansion>
+
+                <div align="left">
+                  <p style="font-size: 1.2em;">#{flugzeugeMietKaufBean.getFlugzeugBezeichnung(logItems.idaircraft)}</p>
+                </div>
+                
+                
+                <p:panelGrid columns="3"  style="margin-left: 10px; margin-top: 15px; float: left; width: 450px;">
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeit} #{sprache.stunden}"/>
+                  <h:outputLabel value="#{logItems.flugzeitMinuten / 60}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{logItems.flugzeitMinuten}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.minuten}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_meilen}"/>
+                  <h:outputLabel value="#{logItems.miles}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_rueckerstattungTreibstoffkosten}"/>
+                  <h:outputLabel value="#{logItems.treibstoffkosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{logItems.treibstoffverbrauchkg}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_buchungsgebuehr}"/>
+                  <h:outputLabel value="#{logItems.buchungsgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_summeKosten}" />
+                  <h:outputLabel value="#{logItems.summekosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Hangar_dlg_Flugzeuglog_lbl_summeBonus}" />
+                  <h:outputLabel value="#{logItems.bonus1 + logItems.bonus2}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenLandegebuehren}"/>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{logItems.landegebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenStartgebuehr}"/>
+                  <h:outputLabel value=""/>
+
+                  <h:outputLabel value="#{logItems.startgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeugmiete}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.mietgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_bezahlungDerCrew}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.crewgebuehren}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_departureGebuehren}"/>
+                  <h:outputLabel value="#{logItems.betragDepartureTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>            
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_arrivalGebuehren}"/>
+                  <h:outputLabel value="#{logItems.betragAriivalTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="&nbsp;"/>            
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtGebuehrArrivalDeparture}"/>
+                  <h:outputLabel value="&nbsp;"/>            
+                  <h:outputLabel value="#{logItems.betragAriivalTerminal + logItems.betragDepartureTerminal}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtKostenDesFluges}"/>
+                  <h:outputLabel value="&nbsp;"/>
+                  <h:outputLabel value="#{logItems.summekosten}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.Terminal_Abrechnung_provision}"/>
+                  <h:outputLabel value="&nbsp;"/>            
+                  <h:outputLabel value="#{logItems.provision}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                </p:panelGrid>
+
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+  
+  
+  
+  </html>

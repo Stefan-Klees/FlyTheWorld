@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+
+  <p:dialog id="dlg_fluglog" widgetVar="wdg_fluglog" header="Fluglogbuch"  height="900" closable="true" >
+
+    <h:form id="frm_fluglog">
+
+      <p:dataTable id="logbuchTable" var="log" widgetVar="log_table" 
+                   value="#{statistikBean.userFlugLogBuchForAdmin}" 
+                   rowKey="#{log.idfluglogbuch}" 
+                   filteredValue="#{statistikBean.filteredLogs}"
+                   paginator="true" 
+                   paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                   rows="20" rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60"
+                   sortMode="multiple">
+
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_datum}" sortBy="#{log.landedatum}">
+          <h:outputLabel value="#{log.landedatum}">
+            <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_flugnummer}">
+          <h:outputLabel value="#{log.flugnummer}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_kennung}" filterBy="#{log.registrierung}" filterMatchMode="contains" filterStyle="width: 40px;" >
+          <h:outputLabel value="#{log.registrierung}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_modell}" width="300" sortBy="#{log.type}" filterBy="#{log.type}" filterMatchMode="contains" filterStyle="width: 100px;" >
+          <h:outputLabel value="#{log.type}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_vonIcao}" width="200" filterBy="#{log.fromicao}" filterMatchMode="contains" filterStyle="width: 80px;" >
+          <h:outputLabel value="#{log.fromicao} - #{log.fromIcaoFlughafenName}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_nachIcao}" width="200" filterBy="#{log.toicao}" filterMatchMode="contains" filterStyle="width: 80px;" >
+          <h:outputLabel value="#{log.toicao} - #{log.tocaoFlughafenName}"/>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_meilen}" sortBy="#{log.miles}">
+          <h:outputLabel value="#{log.miles}" style="float: right">
+            <f:convertNumber pattern="#,##0"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="Zeit">
+          <h:outputLabel value="#{log.minuten/60}" style="float: right">
+            <f:convertNumber pattern="#,##0.00"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="PAX" sortBy="#{log.pax}">
+          <h:outputLabel value="#{log.pax}" style="float: right">
+            <f:convertNumber pattern="#,##0"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_cargo}" sortBy="#{log.cargo}">
+          <h:outputLabel value="#{log.cargo}" style="float: right">
+            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="#{sprache.Fluglogbuch_tbl_verbrauch}" sortBy="#{log.verbrauch}">
+          <h:outputLabel value="#{log.verbrauch}" style="float: right">
+            <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+          </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="Miete">
+          <h:outputLabel value="#{log.mietgebuehr}" style="float: right">
+            <f:convertNumber pattern="#,##0" />
+          </h:outputLabel>
+        </p:column>
+        
+      </p:dataTable>
+    </h:form>
+
+  </p:dialog>
+</html>
+
+
+
+

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scene Scope="Project" version="2">
+    <Scope Scope="Faces Configuration Only"/>
+    <Scope Scope="Project">
+        <Node id="users/fluggesellschaft_banking.xhtml" x="900" y="450" zoom="true"/>
+        <Node id="users/dialogs/dlgAuftraege.xhtml" x="650" y="1050" zoom="true"/>
+        <Node id="users/flughafen.xhtml" x="150" y="600" zoom="true"/>
+        <Node id="admin/flugzeuge.xhtml" x="650" y="750" zoom="true"/>
+        <Node id="accountgesperrt.xhtml" x="329" y="52" zoom="true"/>
+        <Node id="users/menueNew.xhtml" x="900" y="1050" zoom="true"/>
+        <Node id="admin/jobbeschreibungen.xhtml" x="900" y="750" zoom="true"/>
+        <Node id="users/fluggesellschaft_routen.xhtml" x="400" y="600" zoom="true"/>
+        <Node id="users/fluggesellschaft_piloten.xhtml" x="150" y="450" zoom="true"/>
+        <Node id="users/ftwinformation.xhtml" x="1400" y="450" zoom="true"/>
+        <Node id="users/index.xhtml" x="235" y="170" zoom="true"/>
+        <Node id="users/einstellungen.xhtml" x="650" y="450" zoom="true"/>
+        <Node id="dob/feinabstimmung.xhtml" x="1900" y="300" zoom="true"/>
+        <Node id="dob/fix.xhtml" x="150" y="1350" zoom="true"/>
+        <Node id="users/assignments_meineAuftraege.xhtml" x="1650" y="150" zoom="true"/>
+        <Node id="users/reports/zugehoerigkeitFluggesellschaft.xhtml" x="1150" y="750" zoom="true"/>
+        <Node id="users/forbesliste.xhtml" x="400" y="750" zoom="true"/>
+        <Node id="admin/fboobjekte.xhtml" x="400" y="1050" zoom="true"/>
+        <Node id="admin/flughafen.xhtml" x="150" y="300" zoom="true"/>
+        <Node id="login.xhtml" x="78" y="59" zoom="false"/>
+        <Node id="dob/editTypeSymbol.xhtml" x="1400" y="600" zoom="true"/>
+        <Node id="users/reports/kostenstellenauswertung.xhtml" x="650" y="1200" zoom="true"/>
+        <Node id="users/dialogs/dlgFlughafenLog.xhtml" x="1150" y="900" zoom="true"/>
+        <Node id="admin/rettungsverwaltung.xhtml" x="2150" y="150" zoom="true"/>
+        <Node id="users/reports/statistik.xhtml" x="2400" y="150" zoom="true"/>
+        <Node id="users/fluggesellschaft_manager.xhtml" x="400" y="1200" zoom="true"/>
+        <Node id="users/assignments.xhtml" x="400" y="450" zoom="true"/>
+        <Node id="users/hangar.xhtml" x="1900" y="150" zoom="true"/>
+        <Node id="users/fluggesellschaft_flugzeuge.xhtml" x="1150" y="300" zoom="true"/>
+        <Node id="users/reports/menueUserReport.xhtml" x="1900" y="450" zoom="true"/>
+        <Node id="users/reports/fluglogbuch.xhtml" x="900" y="900" zoom="true"/>
+        <Node id="users/banking.xhtml" x="650" y="300" zoom="true"/>
+        <Node id="users/fboverwaltung.xhtml" x="650" y="900" zoom="true"/>
+        <Node id="users/menue.xhtml" x="1150" y="150" zoom="true"/>
+        <Node id="users/dialogs/dlgFlugzeuge.xhtml" x="1400" y="750" zoom="true"/>
+        <Node id="admin/news.xhtml" x="900" y="600" zoom="true"/>
+        <Node id="logout.xhtml" x="150" y="1200" zoom="true"/>
+        <Node id="admin/storys.xhtml" x="150" y="900" zoom="true"/>
+        <Node id="users/fluggesellschaft.xhtml" x="150" y="750" zoom="true"/>
+        <Node id="users/flugzeugerfassung.xhtml" x="1400" y="150" zoom="true"/>
+        <Node id="users/flughaefen_uebersicht.xhtml" x="650" y="150" zoom="true"/>
+        <Node id="users/menueMeldungen.xhtml" x="150" y="1500" zoom="true"/>
+        <Node id="users/flugzeugboerse.xhtml" x="1150" y="600" zoom="true"/>
+        <Node id="users/herald.xhtml" x="1650" y="450" zoom="true"/>
+        <Node id="logginerror.xhtml" x="150" y="150" zoom="true"/>
+        <Node id="admin/loggedUsers.xhtml" x="400" y="900" zoom="true"/>
+        <Node id="dob/tools.xhtml" x="2150" y="300" zoom="true"/>
+        <Node id="users/handbuch.xhtml" x="650" y="600" zoom="true"/>
+        <Node id="users/reports/unternehmensentwicklung.xhtml" x="1150" y="450" zoom="true"/>
+        <Node id="users/interessantejobs.xhtml" x="1650" y="300" zoom="true"/>
+        <Node id="dob/user.xhtml" x="150" y="1050" zoom="true"/>
+    </Scope>
+    <Scope Scope="All Faces Configurations"/>
+</Scene>

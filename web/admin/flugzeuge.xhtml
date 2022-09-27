@@ -1,0 +1,952 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+  <h:head>
+    
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - Flugzeugverwaltung</title>
+  </h:head>
+
+  <h:body>
+
+    <c:set var="ifAllow" value="#{loginMB.allowFlugzeugEdit}" />
+    <c:if test="${ifAllow==true}">
+
+
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            <p:toolbar id="tlb_navigation">
+              <f:facet name="left">
+                <p:commandButton title="Flugzeug bearbeiten" icon="fa fa-edit" oncomplete="PF('wdg_EditFlugzeug').show();" update="dlg_EditFlugzeug" disabled="#{empty flugzeugBean.selectedFlugzeug}"/>
+                <p:commandButton title="Flugzeug bereitstellen" icon="fa fa-hand-o-up" oncomplete="PF('wdg_bereitstellung').show();" update="dlg_bereitstellung" disabled="#{!flugzeugBean.selectedFlugzeug.auslieferung}"/>
+                <p:commandButton title="Konfiguration" icon="fa fa-wrench" oncomplete="PF('wdg_konfig').show();" update="frm_konfig" disabled="#{empty flugzeugBean.selectedFlugzeug}"/>
+                <p:commandButton title="Flugzeuge in Betrieb"  icon="fa fa-plane" action="#{flugzeugeMietKaufBean.onFlugZeugeInBetrieb()}" oncomplete="PF('wdg_userFlugzeuge').show()" update="frm_userFlugzeuge" disabled="#{empty flugzeugBean.selectedFlugzeug}"/>                
+
+                <p:selectBooleanButton value="#{flugzeugBean.frmNurFuerUmbau}" title="Flugzeug Anzeige" onLabel="Umbau" offLabel="Verteilung"                                        
+                                       onIcon="fa fa-wrench" offIcon="fa fa-plane" style="width:100px"  >
+                  <p:ajax event="change" update="tbl_flugzeuge" listener="#{flugzeugBean.onRefresh()}"/>
+                </p:selectBooleanButton>
+
+                <p:commandButton type="button" icon="fa fa-calculator" title="Umrechner" onclick="PF('wdg_umrechner').show();"/>
+
+                <p:commandButton title="Flugzeug erstellen" icon="fa fa-plane" oncomplete="PF('wdg_NeuesFlugzeug').show();" />
+                <p:commandButton title="Flugzeugtype erfassen" icon="fa fa-paper-plane" oncomplete="PF('wdg_modell').show();" />
+                <p:commandButton title="Flugzeug kopieren" icon="fa fa-copy" action="#{flugzeugBean.onCopy()}" update=":frm_daten" disabled="#{empty flugzeugBean.selectedFlugzeug}"/>                
+                
+                <p:commandButton title="Flugzeug löschen" action="#{flugzeugBean.onDelete()}" icon="fa fa-trash" update="tbl_flugzeuge" disabled="#{empty flugzeugBean.selectedFlugzeug}" rendered="#{loginMB.moduser}">
+                  <p:confirm header="Flugzeug wirklich löschen" message="#{flugzeugBean.selectedFlugzeug.type} Flugzeug wirklich löschen" icon="fa fa-trash" />
+                </p:commandButton>
+
+                
+              </f:facet>
+            </p:toolbar>
+
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="tbl_flugzeuge" var="flugzeugItems" value="#{flugzeugBean.flugzeuge}"
+                         rowKey="#{flugzeugItems.idFlugzeug}"
+                         selection="#{flugzeugBean.selectedFlugzeug}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="20"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         lazy="false"
+                         selectionMode="single">
+
+              <f:facet name="header">
+                FTW Flugzeug-Hangar
+              </f:facet>
+
+              <p:ajax listener="#{flugzeugBean.onRowSelect}" event="rowSelect" update=":frm_daten frm_EditFlugzeug"/>
+              <p:ajax listener="#{flugzeugBean.onRowUnselect}" event="rowUnselect" update=":frm_daten frm_EditFlugzeug"/>
+
+
+              <p:column width="20" headerText="" style="text-align: center;">
+                <h:outputText value="#{flugzeugBean.getAnzahlFreigabe(flugzeugItems.idFlugzeug)}"/>
+              </p:column>
+
+              <p:column width="40" headerText="ID" style="text-align: center;">
+                <h:outputText value="#{flugzeugItems.idFlugzeug}"/>
+              </p:column>
+
+              <p:column headerText="Bezeichnung" style="text-align: center;" width="250" filterBy="#{flugzeugItems.type}" filterMatchMode="contains" filterStyle="width:150px" sortBy="#{flugzeugItems.type}">
+                <h:outputText value="#{flugzeugItems.type}"/>
+              </p:column>
+
+              <p:column headerText="Type" style="text-align: center;" width="80" filterBy="#{flugzeugItems.flugzeugArt}" filterMatchMode="contains" filterStyle="width:80px"  sortBy="#{flugzeugItems.flugzeugArt}">
+                <h:outputText value="#{flugzeugItems.flugzeugArt}"/>
+              </p:column>
+
+              <p:column headerText="in Prod" width="60" style="text-align: center;" sortBy="#{flugzeugItems.inProduktion}">
+                <h:outputText value="Ja" rendered="#{flugzeugItems.inProduktion == true}"/>
+                <h:outputText value="Nein" rendered="#{flugzeugItems.inProduktion == false}"/>
+              </p:column>
+
+              <p:column headerText="Erstflug" width="30" style="text-align: right;">
+                <h:outputText value="#{flugzeugItems.erstflug}"/>
+              </p:column>
+
+              <p:column headerText="Prod. bis" width="30" style="text-align: right;">
+                <h:outputText value="#{flugzeugItems.produziertBis}"/>
+              </p:column>
+
+              <p:column headerText="Lizenz" width="50" style="text-align: right;" filterBy="#{flugzeugItems.lizenz}" filterStyle="width : 50px;" filterMatchMode="contains" sortBy="#{flugzeugItems.lizenz}">
+                <h:outputText value="#{flugzeugItems.lizenz}"/>
+              </p:column>
+
+              <p:column headerText="VK-Preis" width="90" style="text-align: right;" sortBy="#{flugzeugItems.verkaufspreis}">
+                <h:outputText value="#{flugzeugItems.verkaufspreis}">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Kalk.Std.Satz" width="90" style="text-align: right;" sortBy="#{flugzeugItems.kalkulatorischerStundensatz}">
+                <h:outputText value="#{flugzeugItems.kalkulatorischerStundensatz}">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Std. Mietpreis" width="70" style="text-align: right;">
+                <h:outputText value="#{flugzeugItems.standardMietpreis}">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+            </p:dataTable>
+
+
+          </h:form>          
+
+
+          <p:dialog id="id_NeuesFlugzeug" widgetVar="wdg_NeuesFlugzeug" closable="true" maximizable="true" responsive="true" height="800" header="FTW - Flugzeugerfassung"  >
+            <h:form id="frm_NeuesFlugzeug" >
+              <p:toolbar id="tlb_NeuesFlugzeug" >
+                <f:facet name="left">
+                  <p:commandButton value="Speichern" icon="fa fa-save" action="#{flugzeugBean.onCreate()}" update=":frm_daten" oncomplete="PF('wdg_NeuesFlugzeug').hide();" title="Speichert die Daten und lässt das Fenster für weitere Bearbeitung offen"/>
+                  <p:commandButton value="Abbruch" icon="ui-icon-close" oncomplete="PF('wdg_NeuesFlugzeug').hide();" title="Schließt das Fenster ohne das Flugzeug anzulegen" />
+                  <p:commandButton icon="fa fa-eraser" action="#{flugzeugBean.onClean()}" update="frm_NeuesFlugzeug" title="Säubert das Eingabefenster" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Allgemeine Daten zu Flugzeug und Hersteller
+                </f:facet>
+
+                <h:outputLabel value="Modell :" />
+                <p:selectOneMenu value="#{flugzeugBean.frmflugzeugTyp}" style="width:200px"  filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="Flugzeugmodell auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItems value="#{flugzeugBean.flugzeugModell}" var="modellItems" itemValue="#{modellItems.modellName}" itemLabel="#{modellItems.modellName}"   />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="Art :" />
+                <p:selectOneMenu value="#{flugzeugBean.frmFlugzeugArt}" style="width:200px"  filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="Art des Flugzeuges auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Geschäftsflugzeug" itemValue="Geschäftsflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Cargo" itemValue="Cargo" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Passagierflugzeug" itemValue="Passagierflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Military" itemValue="Military" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Hubschrauber" itemValue="Hubschrauber" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Wasserflugzeug" itemValue="Wasserflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Amphibienflugzeug" itemValue="Amphibienflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Sportflugzeug" itemValue="Sportflugzeug" noSelectionOption="true" />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="Langstreckenflugzeug : "/> <p:selectBooleanButton id="blbLangstrecke" value="#{flugzeugBean.frmLangstreckenflugzeug}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>                
+                <h:outputLabel value="Erstflug: "/><p:inputText value="#{flugzeugBean.frmerstflug}" size="8"/>
+                <h:outputLabel value="Hersteller : "/><p:inputText value="#{flugzeugBean.frmflugzeugHersteller}"/>
+                <h:outputLabel value="Produziert bis: "/><p:inputText value="#{flugzeugBean.frmproduziertBis}" size="8"/>   
+                <h:outputLabel value="In Produktion : "/><p:selectBooleanButton id="blb1" value="#{flugzeugBean.frminProduktion}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>                
+                <h:outputLabel value="Flugzeug-ICAO-Code : "/><p:inputText value="#{flugzeugBean.frmIcaoFlugzeugcode}" size="10" maxlength="40"/>
+                <h:outputLabel value="Hersteller Standort-ICAO : "/><p:inputText value="#{flugzeugBean.frmherstellerICAO}" size="8"/>
+
+                <p:outputLabel value="Antriebsart :" />
+                <p:selectOneMenu id="sel_Antriebsart" value="#{flugzeugBean.frmantriebsart}" style="width:150px">
+                  <f:selectItem itemLabel="Antriebsart wählen ..." itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{flugzeugBean.antriebsArt}" />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="Anzahl Triebwerke/Motoren : "/><p:inputText value="#{flugzeugBean.frmanzahltriebwerke}" size="8"/>
+
+                <h:outputLabel value="Lizenz : "/>
+                <p:selectOneMenu  value="#{flugzeugBean.frmlizenz}"   style="width:250px">
+                  <f:selectItem itemValue="PPL-A" itemLabel="PPL-A" noSelectionOption="false" />
+                  <f:selectItem itemValue="CPL" itemLabel="CPL" noSelectionOption="false" />
+                  <f:selectItem itemValue="MPL" itemLabel="MPL" noSelectionOption="false" />
+                  <f:selectItem itemValue="ATPL" itemLabel="ATPL" noSelectionOption="false" />
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Auslieferung :" />
+                <p:selectBooleanButton id="blb2" value="#{flugzeugBean.frmauslieferung}" onLabel="ausliefern" offLabel="gestoppt" onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                       disabled="#{!loginMB.moduser}"/>
+
+                <h:outputLabel value="Typerating: "/><p:inputText value="#{flugzeugBean.frmtypeRating}" size="25"/>
+                <h:outputLabel value=""/><h:outputLabel value=""/>
+                <h:outputLabel value="Kosten pro Stunde: "/><p:inputText value="#{flugzeugBean.frmTypeRatingKostenStd}" size="25"/>
+                <h:outputLabel value=""/><h:outputLabel value=""/>
+                <h:outputLabel value="Flugstunden: "/><p:inputText value="#{flugzeugBean.frmTypeRatingMinStd}" size="25"/>
+
+
+              </p:panelGrid>
+
+              <p:panelGrid id="pnl1" columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Preise
+                </f:facet>
+
+                <h:outputLabel value="Standard-Mietpreis : "/><p:inputText value="#{flugzeugBean.frmstandardMietpreis}" size="10"/>
+                <h:outputLabel value="Nur Modell für einen Umbau: "/><p:selectBooleanButton value="#{flugzeugBean.frmNurFuerUmbau}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" 
+                                                                               onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" >
+                  <p:ajax event="change" update="pnl1" />
+                </p:selectBooleanButton>
+
+                <h:outputLabel value="FTW - Neupreis  : "/><p:inputText value="#{flugzeugBean.frmverkaufspreis}" size="10"/>
+                <h:outputLabel value="ID Umbau Modell: "/><p:inputText id='txtfrmidUmbauModel' value="#{flugzeugBean.frmidUmbauModel}" size="10" disabled="#{not flugzeugBean.frmNurFuerUmbau}"/>
+
+                <h:outputLabel value="Motor-, / Triebwerkspreis : "/><p:inputText value="#{flugzeugBean.frmtriebwerkspreis}" size="10"/>                
+                <h:outputLabel value="Umbauzeit in Minuten:"/><p:inputText id="txtfrmUmbauzeit" value="#{flugzeugBean.frmUmbauzeit}" size="10" disabled="#{not flugzeugBean.frmNurFuerUmbau}"/>
+
+                <h:outputLabel value="Fixkosten: "/><p:inputText value="#{flugzeugBean.frmtriebwerkspreis}" size="10"/>                
+                <h:outputLabel value="Umbaukosten:"/><p:inputText id="txtfrmUmbaukosten" value="#{flugzeugBean.frmUmbaukosten}" size="10" disabled="#{not flugzeugBean.frmNurFuerUmbau}"/>
+
+                <h:outputLabel value="Kalk.Std.Satz: "/><p:inputText value="#{flugzeugBean.frmKalkulatorischerStundensatz}" size="10"/>
+
+              </p:panelGrid>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Preise
+                </f:facet>
+
+                <p:outputLabel value="Treibstoffart :" />
+                <p:selectOneMenu id="sel_Treibstoff" value="#{flugzeugBean.frmtreibstoffArt}" style="width:150px">
+                  <f:selectItem itemLabel="Treibstoff wählen ..." itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{flugzeugBean.treibstoffArt}" />
+                </p:selectOneMenu>
+                <h:outputLabel value="Max. Tankkapazität (kg): "/><p:inputText value="#{flugzeugBean.frmtreibstoffkapazitaet}" size="8" />
+                <h:outputLabel value="Verbrauch pro Stunde (kg) : "/><p:inputText value="#{flugzeugBean.frmverbrauchStunde}" size="8" />
+
+              </p:panelGrid>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Gewichte und Limitationen (alle Gewichtsangaben in (kg)
+                </f:facet>
+
+
+                <h:outputLabel value="Dry Operationg Weight DOW (kg) : "/><p:inputText value="#{flugzeugBean.frmleergewicht}" size="8"/>
+                <h:outputLabel value="Maximum Zero Fuel Weight MZFW (kg) : "/><p:inputText value="#{flugzeugBean.frmMaximumZeroFullWeight}" size="8"/>
+                <h:outputLabel value="Cargo (kg) : "/><p:inputText value="#{flugzeugBean.frmcargo}" size="8"/>
+                <h:outputLabel value="Max. Payload (kg) : "/><p:inputText value="#{flugzeugBean.frmpayload}" size="8"/>
+                <h:outputLabel value="Höchstabfluggewicht MTOW (kg): "/><p:inputText value="#{flugzeugBean.frmhoechstAbfluggewicht}" title="Angaben in Kilogramm " size="8"/>
+                <h:outputLabel value="Maximales Landegewicht MLW (kg) : "/><p:inputText value="#{flugzeugBean.frmmaxLandegewicht}" size="8"/>
+                <h:outputLabel value="Startrollstrecke bei MTOW (m): "/><p:inputText value="#{flugzeugBean.frmstartstreckeBeiMTOW}" size="8" title="in Metern" />
+                <h:outputLabel value="Mindest Landebahnlänge (m) : "/><p:inputText value="#{flugzeugBean.frmmindestLandebahnLaenge}" size="8" title="in Metern"/>
+
+
+
+              </p:panelGrid>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Sitzplätze
+                </f:facet>
+
+                <h:outputLabel value="Sitze Economy-Class : "/><p:inputText value="#{flugzeugBean.frmsitzeEconomy}" size="8"/>                
+                <h:outputLabel value="Besatzung : "/><p:inputText value="#{flugzeugBean.frmbesatzung}" size="8"/>
+                <h:outputLabel value="Flugbegleiter : "/><p:inputText value="#{flugzeugBean.frmflugbegleiter}" size="8"/>
+                <h:outputLabel value="Sitze Bussines-Class : "/><p:inputText value="#{flugzeugBean.frmsitzeBusinessClass}" size="8"/>
+                <h:outputLabel value="Max. Belegbare Sitze : "/><p:inputText value="#{flugzeugBean.frmmaxAnzahlAnZuBelegendenSitzen}" size="8" title="Die maximale Anzahl an möglichen Sitzen in diesem Flugzeug durch Umbau"/>  
+
+              </p:panelGrid>
+
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Geschwindigkeiten
+                </f:facet>
+
+                <h:outputLabel value="Reisegeschwindigkeit TAS Knoten : "/><p:inputText value="#{flugzeugBean.frmreisegeschwindigkeitTAS}" title="in Knoten" size="8"/>              
+                <h:outputLabel value="Höchstgeschwindigkeit TAS Knoten : "/><p:inputText value="#{flugzeugBean.frmhoechstgeschwindigkeitTAS}" title="Angaben in Knoten" size="8"/>
+
+              </p:panelGrid>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+
+                <f:facet name="header">
+                  Sonstige Daten
+                </f:facet>
+
+                <p:outputLabel value="Flugzeugsymbol (ACARS-Live) :" />
+                <p:selectOneMenu value="#{flugzeugBean.frmsymbolUrl}" style="width:200px"  filter="true" filterMatchMode="startsWith">
+                  <f:selectItem itemLabel="Flugzeugsymbol auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItems value="#{flugzeugBean.flugzeugSymbole}" var="symbolItems" itemValue="#{symbolItems.urlFlugzeugsymbol}" itemLabel="#{symbolItems.flugzeugModell}"   />
+                </p:selectOneMenu>
+              </p:panelGrid>
+
+
+
+
+              <p:panelGrid columns="8" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Nur Infofelder</h3>
+                </f:facet>
+                <h:outputLabel value="Flugzeuglänge (cm) : "/><p:inputText value="#{flugzeugBean.frmlaenge}" size="8" title="nur zur Info"/>
+                <h:outputLabel value="Dienstgipfelhöhe (ft) : "/><p:inputText value="#{flugzeugBean.frmmaxFlughoehe}" size="8" title="nur zur Info, Angabe in Fuss"/>
+                <h:outputLabel value="Maximale Reichweite Meilen : "/><p:inputText value="#{flugzeugBean.frmmaxReichweite}" size="8" title="nur zur Info, Angabe in Meilen"/>
+                <h:outputLabel value="Spannweite (cm): "/><p:inputText value="#{flugzeugBean.frmspannweite}" size="8" title="nur zur Info"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="1" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Bemerkungen</h3>
+                </f:facet>
+                <p:editor  id="id_bemerkung1" value="#{flugzeugBean.frmBemerkung}"/>
+              </p:panelGrid>
+
+
+              <p:panelGrid columns="2" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Links zu Freien- und Payware-Modellen</h3>
+                </f:facet>
+                <h:outputLabel value="FS9 Freeware Modell : "/><p:inputText value="#{flugzeugBean.frmfs9FreeDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="FSX Freeware Modell : "/><p:inputText value="#{flugzeugBean.frmfsxFreeDownloadUrl}" maxlength="250" size="100"/>
+
+                <h:outputLabel value="FS9 Payware Modell : "/><p:inputText value="#{flugzeugBean.frmfs9PaywareDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="FSX Payware Modell : "/><p:inputText value="#{flugzeugBean.frmfsxPaywareDownloadUrl}" maxlength="250" size="100"/>
+
+                <h:outputLabel value="P3D Freeware Modell : "/><p:inputText value="#{flugzeugBean.frmp3dFreeDownloadUrl}" maxlength="250" size="100"/>              
+                <h:outputLabel value="P3D Payware Modell : "/><p:inputText value="#{flugzeugBean.frmp3dPayware3DownloadUrl}" maxlength="250" size="100"/>              
+
+                <h:outputLabel value="X-Plane Freeware Modell : "/><p:inputText value="#{flugzeugBean.frmxplaneFreeDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="X-Plane Payware Modell : "/><p:inputText value="#{flugzeugBean.frmxplanePaywareDownloadUrl}" maxlength="250" size="100"/>
+
+                <h:outputLabel value="Links zu Bildern : "/><p:inputTextarea rows="3" value="#{flugzeugBean.frmbilderUrl}" scrollHeight="3" autoResize="false" cols="100" title="Einzelne Bilder sind durch ein ; zu trennen"/>
+              </p:panelGrid>
+
+            </h:form>
+
+          </p:dialog>
+
+          <p:dialog id="dlg_EditFlugzeug" widgetVar="wdg_EditFlugzeug" height="800" header="FTW - Flugzeugerfassung (Bearbeitungsmodus)" closable="false">
+            <h:form id="frm_EditFlugzeug" >
+              <p:toolbar id="tlb_EditFlugzeug" >
+                <f:facet name="left">
+                  <p:commandButton value="Speichern" icon="fa fa-save" action="#{flugzeugBean.onSaveAdmin()}" update="frm_EditFlugzeug" title="Speichert die Daten und lässt das Fenster für weitere Bearbeitung offen"/>
+                  <p:commandButton value="Schließen" icon="ui-icon-close" oncomplete="PF('wdg_EditFlugzeug').hide();" title="Schließt das Fenster ohne zu speichern" update="frm_daten"/>
+                </f:facet>
+              </p:toolbar>
+              <p:sticky target="tlb_EditFlugzeug"/>
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Allgemeine Daten zu Flugzeug und Hersteller
+                </f:facet>
+                <h:outputLabel value="Modell :" />
+                <p:selectOneMenu value="#{flugzeugBean.selectedFlugzeug.type}" style="width:200px"  filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="Flugzeugmodell auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItems value="#{flugzeugBean.flugzeugModell}" var="modellItems" itemValue="#{modellItems.modellName}" itemLabel="#{modellItems.modellName}"   />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="Art :" />
+                <p:selectOneMenu value="#{flugzeugBean.selectedFlugzeug.flugzeugArt}" style="width:200px"  filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="Art des Flugzeuges auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Geschäftsflugzeug" itemValue="Geschäftsflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Cargo" itemValue="Cargo" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Passagierflugzeug" itemValue="Passagierflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Military" itemValue="Military" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Hubschrauber" itemValue="Hubschrauber" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Wasserflugzeug" itemValue="Wasserflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Amphibienflugzeug" itemValue="Amphibienflugzeug" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Sportflugzeug" itemValue="Sportflugzeug" noSelectionOption="true" />
+                </p:selectOneMenu>
+
+
+                <h:outputLabel value="Langstreckenflugzeug : "/> <p:selectBooleanButton id="blbLangstrecke" value="#{flugzeugBean.selectedFlugzeug.langstreckenflugzeug}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>                                
+                <h:outputLabel value="Erstflug : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.erstflug}" size="8"/>
+                <h:outputLabel value="Hersteller : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.hersteller}"/>                
+                <h:outputLabel value="In Produktion : "/><p:selectBooleanButton id="blb1" value="#{flugzeugBean.selectedFlugzeug.inProduktion}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>                                
+                <h:outputLabel value="Produziert bis : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.produziertBis}" size="8"/>
+                <h:outputLabel value="Flugzeug-ICAO Code : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.icaoFlugzeugcode}" size="10" maxlength="250"/>
+                <h:outputLabel value="Hersteller Standort-ICAO : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.herstellerICAO}" size="8"/>
+
+                <p:outputLabel value="Antriebsart :" />
+                <p:selectOneMenu id="sel_Antriebsart" value="#{flugzeugBean.selectedFlugzeug.antriebsart}" style="width:150px">
+                  <f:selectItem itemLabel="Antriebsart wählen ..." itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{flugzeugBean.antriebsArt}" />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="Anzahl Triebwerk / Motoren : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.anzahltriebwerke}" size="8" style="text-align: right"/>
+
+                <h:outputLabel value="Lizenz : "/>
+                <p:selectOneMenu  value="#{flugzeugBean.selectedFlugzeug.lizenz}">
+                  <f:selectItem itemValue="PPL-A" itemLabel="PPL-A" noSelectionOption="false" />
+                  <f:selectItem itemValue="CPL" itemLabel="CPL" noSelectionOption="false" />
+                  <f:selectItem itemValue="MPL" itemLabel="MPL" noSelectionOption="false" />
+                  <f:selectItem itemValue="ATPL" itemLabel="ATPL" noSelectionOption="false" />
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Auslieferung :" />
+                <p:selectBooleanButton id="blb2" value="#{flugzeugBean.selectedFlugzeug.auslieferung}" onLabel="ausliefern" offLabel="gestoppt" onIcon="ui-icon-check" offIcon="ui-icon-close" 
+                                       disabled="#{!loginMB.moduser}"/>
+
+                <h:outputLabel value="Typerating : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.typeRating}" size="25"/>
+
+                <h:outputLabel value="Flugzeugklasse : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.flugzeugklasse}" size="25"/>
+
+                <h:outputLabel value="Kosten pro Stunde: "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.typeRatingKostenStd}" size="25"/>
+                <h:outputLabel value=""/><h:outputLabel value=""/>
+                <h:outputLabel value="Min. Flugstunden: "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.typeRatingMinStd}" size="25"/>
+
+
+              </p:panelGrid>
+
+
+              <p:panelGrid id="pnl1_edit" columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Preise
+                </f:facet>
+                <h:outputLabel value="Standard-Mietpreis : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.standardMietpreis}" size="10" style="text-align: right">
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+                <h:outputLabel value="Nur Modell für einen Umbau: "/><p:selectBooleanButton value="#{flugzeugBean.selectedFlugzeug.nurFuerUmbau}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" 
+                                                                               onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" >
+                <p:ajax event="change" update="pnl1_edit"/>
+                </p:selectBooleanButton>
+
+
+                <h:outputLabel value="FTW - Neupreis  : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.verkaufspreis}" size="10" style="text-align: right">
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+                <h:outputLabel value="ID Umbau Modell: "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.idUmbauModel}" size="10" disabled="#{flugzeugBean.selectedFlugzeug.nurFuerUmbau}"/>
+
+                <h:outputLabel value="Motor-, / Triebwerkspreis : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.triebwerkspreis}" size="10" style="text-align: right">
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+                <h:outputLabel value="Umbauzeit in Minuten:"/><p:inputText value="#{flugzeugBean.selectedFlugzeug.umbauzeit}" size="10"  disabled="#{not flugzeugBean.selectedFlugzeug.nurFuerUmbau}">
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+
+
+                <h:outputLabel value="Fixkosten : "/><p:inputText id="id_fixkosten" value="#{flugzeugBean.selectedFlugzeug.fixkosten}" size="10" style="text-align: right">
+                  <f:convertNumber pattern="#0"/>
+                  <p:commandButton title="Fixkosten ermitteln" icon="fa fa-calculator" action="#{flugzeugBean.berechneFixKosten()}" update="frm_EditFlugzeug" />
+                </p:inputText>
+                <h:outputLabel value="Umbaukosten:"/><p:inputText value="#{flugzeugBean.selectedFlugzeug.umbaukosten}" size="10" disabled="#{not flugzeugBean.selectedFlugzeug.nurFuerUmbau}">
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+
+
+
+                <h:outputLabel value="Kalk.Std.Satz: "/>
+                <p:inputText id="frm_KalkStundenSatz" value="#{flugzeugBean.selectedFlugzeug.kalkulatorischerStundensatz}" size="10" style="text-align: right">
+                  <f:convertNumber pattern="#0"/>
+                  <p:commandButton title="Kalkulatorischer Stundensatz ermitteln" icon="fa fa-calculator" action="#{flugzeugBean.berechneKalkulatorischerStundensatz}" update="frm_EditFlugzeug" />
+                </p:inputText>
+
+              </p:panelGrid>              
+
+
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Treibstoff
+                </f:facet>
+                <p:outputLabel value="Treibstoffart :" />
+                <p:selectOneMenu id="sel_Treibstoff" value="#{flugzeugBean.selectedFlugzeug.treibstoffArt}" style="width:150px">
+                  <f:selectItem itemLabel="Treibstoff wählen ..." itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{flugzeugBean.treibstoffArt}" />
+                </p:selectOneMenu>
+                <h:outputLabel value="Maximale Tankkapazität (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.treibstoffkapazitaet}" size="8" style="text-align: right" />
+                <h:outputLabel value="Verbrauch pro Stunde (kg) : "/><p:inputText id="MaxVerbrauch" value="#{flugzeugBean.selectedFlugzeug.verbrauchStunde}" size="8"  style="text-align: right">
+                  <p:commandButton title="Treibstoffverbrauch ermitteln" icon="fa fa-calculator" onclick="PF('wdg_verbrauch').show();" update="frm_verbrauch" />
+                </p:inputText>
+
+              </p:panelGrid>              
+
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Gewichte und Limitationen (alle Gewichtsangaben in (kg)
+                </f:facet>
+                <h:outputLabel value="Dry Operationg Weight DOW (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.leergewicht}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Maximum Zero Fuel Weight MZFW (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.maximumZeroFullWeight}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Cargo (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.cargo}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Max. Payload (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.payload}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Höchst Abfluggewicht MTOW (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.hoechstAbfluggewicht}"  style="text-align: right" title="Angaben in Knoten" size="8"/>
+                <h:outputLabel value="Maximales Landegewicht (kg) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.maxLandegewicht}" style="text-align: right" size="8"/>
+                <h:outputLabel value="Startstrecke bei MTOW (m) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.startstreckeBeiMTOW}" style="text-align: right" size="8" title="in Metern"/>
+                <h:outputLabel value="Mindest Landebahnlänge (m) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.mindestLandebahnLaenge}" style="text-align: right" size="8" title="in Metern"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Sitzplätze
+                </f:facet>
+                <h:outputLabel value="Besatzung : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.besatzung}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Saftschubsen : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.flugBegleiter}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Sitze Bussines-Class : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.sitzeBusinessClass}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Sitze Economy-Class : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.sitzeEconomy}" size="8" style="text-align: right"/>
+                <h:outputLabel value="Maximal belegbare Sitze : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.maxAnzahlZuBelgenderSitze}" size="8" style="text-align: right" title="Die maximale Anzahl an möglichen Sitzen in diesem Flugzeug durch Umbau"/>
+              </p:panelGrid>
+
+
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Geschwindigkeiten
+                </f:facet>
+                <h:outputLabel value="Reisegeschwindigkeit TAS Knoten : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.reisegeschwindigkeitTAS}" style="text-align: right" title="in Knoten" size="8"/>              
+                <h:outputLabel value="Höchstgeschwindigkeit TAS Knoten : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.hoechstgeschwindigkeitTAS}" style="text-align: right" title="Angaben in Knoten" size="8"/>
+              </p:panelGrid>
+
+
+              <p:panelGrid columns="4" style="width: 100%;">
+                <f:facet name="header">
+                  Sonstige Daten
+                </f:facet>
+
+                <p:outputLabel value="Flugzeugsymbol (ACARS-Live) :" />
+                <p:selectOneMenu value="#{flugzeugBean.selectedFlugzeug.symbolUrl}" style="width:200px"  filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="Flugzeugsymbol auswählen" itemValue="" noSelectionOption="true" />
+                  <f:selectItems value="#{flugzeugBean.flugzeugSymbole}" var="symbolItems" itemValue="#{symbolItems.urlFlugzeugsymbol}" itemLabel="#{symbolItems.flugzeugModell}"   />
+                </p:selectOneMenu>
+
+              </p:panelGrid>
+
+              <p:panelGrid columns="8" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Nur Infofelder</h3>
+                </f:facet>
+                <h:outputLabel value="Flugzeuglänge (cm) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.laenge}" style="text-align: right" size="8" title="nur zur Info"/>
+                <h:outputLabel value="Dienstgipfelhöhe (ft) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.maxFlughoehe}" style="text-align: right" size="8" title="in Fuss"/>
+                <h:outputLabel value="Maximale Reichweite Meilen : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.maxReichweite}" style="text-align: right" size="8" title="nur zur Info"/>
+                <h:outputLabel value="Spannweite (cm) : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.spannweite}" size="8" style="text-align: right" title="nur zur Info"/>
+              </p:panelGrid>
+
+              <p:panelGrid columns="8" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Bemerkungen</h3>
+                </f:facet>
+                <p:editor id="id_bemerkung"  value="#{flugzeugBean.selectedFlugzeug.bemerkungen}"/>
+              </p:panelGrid>
+
+
+              <p:panelGrid columns="2" style="width: 100%;">
+                <f:facet name="header">
+                  <h3>Links zu Freien- und Payware-Modellen</h3>
+                </f:facet>
+                <h:outputLabel value="FSX freies Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.fsxFreeDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="FS9 freies Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.fs9FreeDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="FSX Payware Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.fsxPaywareDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="FS9 Payware Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.fs9PaywareDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="P3D freies Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.p3dFreeDownloadUrl}" maxlength="250" size="100"/>              
+                <h:outputLabel value="P3D Payware Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.p3dPayware3DownloadUrl}" maxlength="250" size="100"/>              
+                <h:outputLabel value="X-Plane freies Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.xplaneFreeDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="X-Plane Payware Modell : "/><p:inputText value="#{flugzeugBean.selectedFlugzeug.xplanePaywareDownloadUrl}" maxlength="250" size="100"/>
+                <h:outputLabel value="Links zu Bildern : "/><p:inputTextarea rows="3" value="#{flugzeugBean.selectedFlugzeug.bilderUrl}" scrollHeight="3" autoResize="false" cols="100" title="Einzelne Bilder sind durch ein ; zu trennen"/>
+              </p:panelGrid>
+
+            </h:form>
+
+          </p:dialog>
+
+
+          <p:dialog id="dlg_bereitstellung" widgetVar="wdg_bereitstellung" closable="true" maximizable="true" responsive="true" header="Flugzeug zum Verkauf oder Mieten bereitstellen" >
+            <h:form id="frm_bereitstellung" >
+              <p:toolbar id="tlb_bereitstellung" >
+                <f:facet name="left">
+                  <p:commandButton value="Bereitstellen" action="#{flugzeugBean.onBereitstellung()}" title="Stellt das Flugzeug für alle User bereit">
+                    <p:confirm header="Bereitstellung abschließen" message="Soll das Flugzeug wirklich bereitgestellt werden" icon="ui-icon-alert" />
+                  </p:commandButton>
+                  <p:commandButton value="Schließen" oncomplete="PF('wdg_bereitstellung').hide();" title="Schließt das Fenster ohne Bereitstellung des Flugzeuges"/>
+                  <p:commandButton value="Berechnen" update="frm_bereitstellung" action="#{flugzeugBean.onFlugzeugWert()}" title="Berechnung durchführen und Aktualisierung des Forumlars"/>
+                </f:facet>
+              </p:toolbar>
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Anzahl" /> <p:inputText value="#{flugzeugBean.brtAnzahl}" style="text-align: right" size="8" title="Flugzeuganzahl die Bereitgestellt werden soll" />
+                <h:outputLabel value="Standort-ICAO" /> <p:inputText value="#{flugzeugBean.brtStehtInIcao}" style="text-align: left" size="15" title="Wo soll das Flugzeug stehen ICAO" />
+                <h:outputLabel value="Kennung / Registrierung" /> <p:inputText value="#{flugzeugBean.brtKennung}" style="text-align: left" size="15" maxlength="10" title="Registrierung des Flugzeuges, geht nur wenn Anzahl = 1" />
+
+                <h:outputLabel value="Baujahr" /> <p:inputText value="#{flugzeugBean.brtBaujahr}" style="text-align: right" size="15" title="Baujahr des Flugzeuges" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+                <h:outputLabel value="Zellenstunden" /> <p:inputText value="#{flugzeugBean.brtZellenstunden}" style="text-align: right" size="15" title="Zellenstunden werden automatisch in Minuten umgerechnet" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+                <h:outputLabel value="Zustand" /> <p:inputText value="#{flugzeugBean.brtZustand}" style="text-align: right" size="15" title="Zustand des Flugzeuges" >
+                  <f:convertNumber pattern="#0.00"/>
+                </p:inputText>
+
+                <h:outputLabel value="Tankfüllung (kg)" /> <p:inputText value="#{flugzeugBean.brtTankfuellung}" style="text-align: right" size="15" title="Tankfüllung" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+
+                <h:outputLabel value="Preis" /> <p:inputText value="#{flugzeugBean.brtVerkaufspreis}" style="text-align: right" size="15" title="Flugzeugpreis fals abweichend" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+                <h:outputLabel value="Trockenmiete" /> <p:inputText value="#{flugzeugBean.brtTrockenMiete}" style="text-align: right" size="15" title="Tockenmiete"  >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+                <h:outputLabel value="Max. Mietzeit Min." /> <p:inputText value="#{flugzeugBean.brtMietzeit}" style="text-align: right" size="15" title="Mietzeit" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+                <h:outputLabel value="zu Mieten"/><p:selectBooleanButton value="#{flugzeugBean.brtMietbar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+                <h:outputLabel value="zu Kaufen"/><p:selectBooleanButton value="#{flugzeugBean.brtKaufbar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+
+                <h:outputLabel value="Pfand" /> <p:inputText value="#{flugzeugBean.brtPfand}" style="text-align: right" size="15" title="Pfandbetrag" >
+                  <f:convertNumber pattern="#0"/>
+                </p:inputText>
+
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+          <p:dialog id="dlg_modell" widgetVar="wdg_modell" header="Neuanlage Modell" closable="false">
+            <h:form id="frm_modell" >
+              <p:toolbar id="tlb_modell" >
+                <f:facet name="left">
+                  <p:commandButton value="Speichern" icon="fa fa-save" action="#{flugzeugBean.onCreateModell()}" oncomplete="PF('wdg_modell').hide();" update="frm_NeuesFlugzeug" title="Modell speichern"/>
+                  <p:commandButton value="Schließen" icon="ui-icon-close" oncomplete="PF('wdg_modell').hide();" title="Schließt das Fenster ohne Speicherung der Daten"/>
+                </f:facet>
+              </p:toolbar>
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Neues Modell, Bezeichnung" /> <p:inputText value="#{flugzeugBean.mdlModellbezeichnung}" size="80" maxlength="250" title="Modell-Bezeichnung" />
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+
+
+      </p:layout>
+
+
+      <p:dialog id="id_umrechner" widgetVar="wdg_umrechner" header="Umrechner" closable="true" responsive="true">
+        <h:form id="frm_umrechner">
+          <p:toolbar id="tlb_umrechner" >
+            <f:facet name="left">
+              <p:commandButton value="Umrechnen" icon="fa fa-calculator" update="frm_umrechner" title="Werte Umrechnen"/>
+              <p:commandButton value="Schließen" icon="ui-icon-close" oncomplete="PF('wdg_umrechner').hide();" title="Schließt das Fenster"/>
+            </f:facet>
+          </p:toolbar>
+          <p:panelGrid columns="4">
+
+            <h:outputLabel value="Eingabe Meilen/h : "/><p:inputText value="#{umRechner.frmMph2KtsIn}" size="7"/><h:outputLabel value=" > Wert KTS "/><h:outputText style="float: right" value="#{umRechner.mph2kts}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe KM/h "/><p:inputText value="#{umRechner.frmkmh2ktsIn}" size="7"/><h:outputLabel value=" > Wert KTS"/><h:outputText style="float: right" value="#{umRechner.kmh2kts}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe Meter "/><p:inputText value="#{umRechner.frmmeter2fussIn}" size="7"/><h:outputLabel value=" > Wert Fuss"/><h:outputText style="float: right" value="#{umRechner.meter2fuss}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe Fuss "/><p:inputText value="#{umRechner.frmfuss2meterIn}" size="7"/><h:outputLabel value=" > Wert Meter"/><h:outputText style="float: right" value="#{umRechner.fuss2meter}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe Landmeile "/><p:inputText value="#{umRechner.frmmilen2nautmilenIn}" size="7"/><h:outputLabel value=" > Wert nautische Meile"/><h:outputText style="float: right" value="#{umRechner.milen2nautmilen}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe Kilometer "/><p:inputText value="#{umRechner.frmkm2nautmilenIn}" size="7"/><h:outputLabel value=" > Wert nautische Meile"/><h:outputText style="float: right" value="#{umRechner.km2nautmilen}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe lbs (Pound) "/><p:inputText value="#{umRechner.frmlbs2kgIn}" size="7"/><h:outputLabel value=" > Wert Kilogramm"/><h:outputText style="float: right" value="#{umRechner.lbs2kg}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value="Eingabe US-Gallone "/><p:inputText value="#{umRechner.frmusg2kgIn}" size="7"/><h:outputLabel value=" > Wert Kilogramm 100LL"/><h:outputText style="float: right" value="#{umRechner.usg2kg100LL}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+            <h:outputLabel value=""/><h:outputLabel value=""/><h:outputLabel value=" > Wert Kilogramm JET A"/><h:outputText style="float: right" value="#{umRechner.usg2kgJetA}">
+              <f:convertNumber pattern="#0"/>
+            </h:outputText>
+
+
+          </p:panelGrid>
+
+
+        </h:form>
+
+      </p:dialog>
+
+
+
+      <p:dialog id="id_userFlugzeuge" widgetVar="wdg_userFlugzeuge" header="Flugzeuge in Betrieb" closeOnEscape="true">
+
+        <h:form id="frm_userFlugzeuge">
+
+          <p:toolbar id="tlb_userFlugzeuge" >
+            <p:toolbarGroup align="left">
+              <p:commandButton value="Löschen" action="#{flugzeugeMietKaufBean.onDeleteUserFlugzeug()}" icon="fa fa-trash" update="frm_userFlugzeuge" disabled="#{not loginMB.moduser}">
+                <p:confirm header="Wirlich löschen" message="#{flugzeugeMietKaufBean.selectedFlugzeug.type} Wirlich löschen" icon="fa fa-warning" />
+              </p:commandButton>
+
+              <p:commandButton value="Aktualisieren" icon="fa fa-refresh" update="frm_userFlugzeuge" disabled="#{not loginMB.moduser}"/>
+
+            </p:toolbarGroup>
+
+          </p:toolbar>
+
+
+
+          <p:dataTable id="tbl_flugzeuge" var="flugzeugItemsLive" value="#{flugzeugeMietKaufBean.inBetrieb}"
+                       rowKey="#{flugzeugItemsLive.idMietKauf}" 
+                       selection="#{flugzeugeMietKaufBean.selectedFlugzeug}"
+                       paginator="true"
+                       paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                       rows="20"
+                       scrollable="true"
+                       rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                       lazy="false"
+                       selectionMode="single">
+
+            <p:ajax listener="#{flugzeugeMietKaufBean.onRowSelect}" event="rowSelect" update="frm_userFlugzeuge"/>
+            <p:ajax listener="#{flugzeugeMietKaufBean.onRowUnselect}" event="rowUnselect" update="frm_userFlugzeuge"/>
+
+
+            <p:column headerText="" width="32">
+              <p:commandButton title="Flugzeug löschen" icon="fa fa-trash" disabled="#{not loginMB.moduser}"  action="#{flugzeugeMietKaufBean.onDeleteUserFlugzeug()}" update="frm_userFlugzeuge tbl_flugzeuge" >
+                <f:setPropertyActionListener value="#{flugzeugItemsLive}" target="#{flugzeugeMietKaufBean.selectedFlugzeug}"  />
+              </p:commandButton>
+            </p:column>
+
+            <p:column headerText="ID"   style="text-align: center;">
+              <h:outputText value="#{flugzeugItemsLive.idMietKauf}"/>
+            </p:column>
+
+            <p:column headerText="Kennung"   style="text-align: center;" sortBy="#{flugzeugItemsLive.registrierung}">
+              <h:outputText value="#{flugzeugItemsLive.registrierung}"/>
+            </p:column>
+
+            <p:column headerText="Standort"   style="text-align: center;" sortBy="#{flugzeugItemsLive.aktuellePositionICAO}">
+              <h:outputText value="#{flugzeugItemsLive.aktuellePositionICAO}"/>
+            </p:column>
+
+            <p:column headerText="Modell/Type" width="200" style="text-align: center;" sortBy="#{flugzeugItemsLive.type}">
+              <h:outputText value="#{flugzeugItemsLive.type}"/>
+            </p:column>
+
+            <p:column headerText="Baujahr" width="60" style="text-align: center;" sortBy="#{flugzeugItemsLive.baujahr}">
+              <h:outputText value="#{flugzeugItemsLive.baujahr}"/>
+            </p:column>
+
+
+            <p:column headerText="Airframe"  style="text-align: right;" sortBy="#{flugzeugItemsLive.gesamtAlterDesFlugzeugsMinuten}">
+              <h:outputText value="#{flugzeugItemsLive.gesamtAlterDesFlugzeugsMinuten/60}">
+                <f:convertNumber pattern="#,##0" />
+              </h:outputText>
+            </p:column>
+
+            <p:column headerText="Mietpreis"   style="text-align: right;" sortBy="#{flugzeugItemsLive.mietpreisTrocken}">
+              <h:outputText value="#{flugzeugItemsLive.mietpreisTrocken}">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputText>
+            </p:column>
+
+            <p:column headerText="Verkaufspreis" style="text-align: right;" sortBy="#{flugzeugItemsLive.verkaufsPreis}">
+              <h:outputText value="#{flugzeugItemsLive.verkaufsPreis}">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputText>
+            </p:column>
+
+            <p:column headerText="Besitzer" width="200" style="text-align: center;">
+              <h:outputText value="#{flugzeugItemsLive.userName} #{flugzeugItemsLive.fluggesellschaftName} " />
+            </p:column>
+
+          </p:dataTable>
+
+        </h:form>
+
+      </p:dialog>
+
+
+      <p:dialog id="dlg_konfig" widgetVar="wdg_konfig" responsive="true" width="1024" header="Konfiguration" >
+        <h:form id="frm_konfig">
+          <p:toolbar id="tlb_konfig">
+            <p:toolbarGroup id="tgp" align="left">
+              <p:commandButton id="cmdk1" value="Exit" onclick="PF('wdg_konfig').hide()" icon="fa fa-close" title="Schiessen"/>
+              <p:commandButton id="cmdk2" value="Neu" action="#{flugzeugBean.onNeueSitzKonfig()}" update=":frm_konfig" icon="fa fa-plus" title="Neuen Datensatz für Konfiguration anlegen"/>
+            </p:toolbarGroup>
+
+          </p:toolbar>
+
+          <p:dataTable value="#{flugzeugBean.sitzKonfiguration}" var="konfig" >
+
+            <p:column style="width:32px;text-align: center">
+              <p:commandButton icon="fa fa-pencil" title="Konfiguration bearbeiten" oncomplete="PF('wdg_konfigBearbeiten').show()" update="frm_konfigBearbeiten" >
+                <f:setPropertyActionListener value="#{konfig}" target="#{flugzeugBean.selectedKonfig}"  />
+              </p:commandButton>
+            </p:column>                
+
+
+            <p:column headerText="Bezeichnung" width="250">
+              <h:outputLabel value="#{konfig.bezeichnung}"/>
+            </p:column>
+
+            <p:column headerText="Business">
+              <h:outputLabel value="#{konfig.sitzeBusiness}"/>
+            </p:column>
+
+            <p:column headerText="Economy">
+              <h:outputLabel value="#{konfig.sitzeEconomy}"/>
+            </p:column>
+
+            <p:column headerText="Preis">
+              <h:outputLabel value="#{konfig.preis}">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Umbauzeit">
+              <h:outputLabel value="#{konfig.umbauzeitMinuten}">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="DOW">
+              <h:outputLabel value="#{konfig.dow}">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Tankkapazität">
+              <h:outputLabel value="#{konfig.tankkapazitaet}">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+            </p:column>
+
+            <p:column headerText="Faktor">
+              <h:outputLabel value="#{konfig.faktor}">
+                <f:convertNumber pattern="#,##0.00"/>
+              </h:outputLabel>
+            </p:column>
+
+
+          </p:dataTable>
+
+
+        </h:form>
+
+
+      </p:dialog>
+
+
+      <p:dialog id="dlg_konfigBearbeiten" widgetVar="wdg_konfigBearbeiten" width="900">
+        <h:form id="frm_konfigBearbeiten">
+          <p:toolbar id="tlb_konfigBearbeiten">
+            <p:toolbarGroup id="tbg_konfigBearbeiten" align="left">
+              <p:commandButton id="cmdk10" value="Exit" onclick="PF('wdg_konfigBearbeiten').hide()" icon="fa fa-close" title="Schliessen" update="frm_konfig"/>
+              <p:commandButton action="#{flugzeugBean.onSaveSitzKonfig()}" value="Speichern" icon="fa fa-save" />
+              <p:commandButton action="#{flugzeugBean.onDeletSitzKonfig()}" value="Löschen" icon="fa fa-trash" update="frm_konfig" oncomplete="PF('wdg_konfigBearbeiten').hide()">
+                <p:confirm header="Konfiguration wirklich löschen" message="Konfiguration wirklich löschen" icon="fa fa-warning" />
+              </p:commandButton>
+              <p:commandButton title="Automatische Berechnung für KMP" icon="fa fa-calculator" action="#{flugzeugBean.onKMPBerechnung()}" update="kmpFaktor"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:panelGrid columns="2" style="width: 100%">
+
+
+            <h:outputLabel value="Beschreibung"/><h:inputText value="#{flugzeugBean.selectedKonfig.bezeichnung}" size="100" maxlength="250"/>
+            <h:outputLabel value="ECO Sitze"/><h:inputText value="#{flugzeugBean.selectedKonfig.sitzeEconomy}" size="10"/>
+            <h:outputLabel value="BC Sitze"/><h:inputText value="#{flugzeugBean.selectedKonfig.sitzeBusiness}" size="10"/>          
+            <h:outputLabel value="Cargo (kg)"/><h:inputText value="#{flugzeugBean.selectedKonfig.cargo}" size="10"/>          
+            <h:outputLabel value="Max. Payload"/><h:inputText value="#{flugzeugBean.selectedKonfig.maxPayload}" size="10"/>          
+            <h:outputLabel value="Besatzung"/><h:inputText value="#{flugzeugBean.selectedKonfig.crew}" size="10"/>          
+            <h:outputLabel value="Saftschubsen"/><h:inputText value="#{flugzeugBean.selectedKonfig.flugbegleiter}" size="10"/>          
+            <h:outputLabel value="Umbauzeit Min."/><h:inputText value="#{flugzeugBean.selectedKonfig.umbauzeitMinuten}" size="10"/>          
+            <h:outputLabel value="Preis:"/><h:inputText value="#{flugzeugBean.selectedKonfig.preis}" size="10"/>                    
+            <h:outputLabel value="DOW"/><h:inputText value="#{flugzeugBean.selectedKonfig.dow}" size="10"/>          
+            <h:outputLabel value="Tankkapizität"/><h:inputText value="#{flugzeugBean.selectedKonfig.tankkapazitaet}" size="10"/>          
+            <h:outputLabel value="Komfortmultiplikator"/><h:inputText id="kmpFaktor" value="#{flugzeugBean.selectedKonfig.faktor}" size="10"/>          
+
+            <h:outputLabel value="Bild der Konfig (Optional)"/><h:inputText value="#{flugzeugBean.selectedKonfig.bildURL}" size="100" maxlength="250"/>          
+
+          </p:panelGrid>
+
+        </h:form>
+      </p:dialog>
+
+
+      <p:dialog id="dlg_verbrauch" widgetVar="wdg_verbrauch" header="Verbrauchsermittlung" responsive="true" >
+        <h:form id="frm_verbrauch">
+          <p:toolbar id="tlb__verbrauch">
+            <p:toolbarGroup id="tbg_verbrauch">
+              <p:commandButton title="Verbrauch übernehmen" icon="fa fa-check" action="#{flugzeugBean.onVerbrauchUebernehmen()}" update="frm_EditFlugzeug" oncomplete="PF('wdg_verbrauch').hide();"/>
+            </p:toolbarGroup>
+          </p:toolbar>
+          <p:panelGrid columns="2" style="width: 100%">
+            <h:outputLabel value="Treibstoffverbrauch pro Stunde :"/>
+            <h:outputLabel value="#{flugzeugBean.verbrauch}">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>
+
+
+    </c:if>
+  </h:body>
+
+
+</html>
+

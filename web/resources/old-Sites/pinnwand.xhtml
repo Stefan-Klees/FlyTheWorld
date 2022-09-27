@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  
+<f:view locale="#{loginMB.locale}">
+  
+  <h:head>
+    <title>FTW-#{sprache.mnu_Pinnwand}</title>
+  </h:head>
+  <h:body>
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+
+
+
+      <ui:include src="/users/menueMeldungen.xhtml"/>
+
+      <ui:fragment rendered="#{loginMB.newMenue}">
+        <ui:include src="/users/menue.xhtml" />
+      </ui:fragment>
+
+
+
+      <p:layoutUnit position="center" closable="false" header="#{sprache.Pinnwand_header}">
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+
+        <h:form id="frm_daten">
+
+
+
+          <p:toolbar>
+            <f:facet name="left">
+              <p:commandButton title="#{sprache.Pinnwand_btn_NeuerPin}" onclick="PF('dlg_NewMessage').show()" icon="ui-icon-pencil" />
+              <p:commandButton title="#{sprache.Pinnwand_btn_Antworten}" action="#{pinnwandBean.onReplay()}" oncomplete="PF('dlg_NewMessage').show()" update="frm_daten" icon="ui-icon-arrowreturnthick-1-w" rendered="#{not empty pinnwandBean.selectedMessage}"/>
+              <p:commandButton title="#{sprache.Pinnwand_btn_MarkierenAlsUngelesen}" action="#{pinnwandBean.markUnread()}" update=":frm_daten" icon="ui-icon-pin-s" rendered="#{not empty pinnwandBean.selectedMessage}"/>
+              <p:commandButton title="#{sprache.Pinnwand_btn_PinLoeschen}" action="#{pinnwandBean.onDeleteAll()}" icon="ui-icon-trash" update="frm_daten">
+                <p:confirm header="#{sprache.Pinnwand_Warnung_PinLoeschen}" message="#{sprache.Pinnwand_Warnung_PinLoeschen}" icon="ui-icon-alert" />
+              </p:commandButton>
+
+            </f:facet>
+          </p:toolbar>
+
+
+          <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+          </p:confirmDialog>
+
+
+
+          <p:dataTable id="messageTable"
+                       widgetVar="messageTable"
+                       var="messageItems"
+                       value="#{pinnwandBean.pinnwandItems}"
+                       rowKey="#{messageItems.idpinnwand}"
+                       selection="#{pinnwandBean.selectedMessage}"
+                       paginator="true"
+                       paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                       rows="15"
+                       scrollable="true"
+                       rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                       lazy="false"
+                       selectionMode="single">
+
+            <p:ajax listener="#{pinnwandBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+            <p:ajax listener="#{pinnwandBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+
+            <p:column headerText="" width="32">
+              <p:commandButton title="#{sprache.Pinnwand_btn_PinLoeschen}" icon="fa fa-trash"  action="#{pinnwandBean.onDelete()}" update="frm_daten" >
+                <f:setPropertyActionListener value="#{messageItems}" target="#{pinnwandBean.selectedMessage}" />
+              </p:commandButton>
+            </p:column>
+
+            <p:column width="10">
+              <p:rowToggler />
+            </p:column>
+
+            <p:column headerText="#{sprache.Pinnwand_tbl_Absender}" width="110" style="text-align: center;" >
+              <h:outputText value='#{messageItems.vonUser}'/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Pinnwand_tbl_Empfaenger}" width="110" style="text-align: center;" >
+              <h:outputText value='#{messageItems.anUser}'/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Pinnwand_tbl_Betreff}" style="text-align: center;">
+              <h:outputText value='#{messageItems.betreff}' style="font-style: italic;font-weight: bolder" rendered="#{not messageItems.gelesen}"/>
+              <h:outputText value='#{messageItems.betreff}' rendered="#{messageItems.gelesen}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Pinnwand_tbl_Datum}" width="120" style="text-align: right;" >
+              <h:outputText value='#{messageItems.datumZeit}'>
+                <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+              </h:outputText>
+            </p:column>
+
+            <p:rowExpansion>
+              <p:panelGrid columns="2" layout="grid">
+                <h:outputText value="#{messageItems.nachrichtText}" escape="false"/>
+              </p:panelGrid>
+            </p:rowExpansion>
+
+          </p:dataTable>
+
+          <p:dialog id="dlg_NewMessage" widgetVar="dlg_NewMessage" header="#{sprache.Pinnwand_NeuerPin_dlg_header}" closable="true" >
+
+            <h:form id="frm_EditMessage">
+
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton value="#{sprache.Pinnwand_NeuerPin_btn_Senden}" action="#{pinnwandBean.onSend()}" icon="ui-icon-check" update=":frm_daten" />
+                  <p:commandButton value="#{sprache.Pinnwand_NeuerPin_btn_Schliessen}" icon="ui-icon-close" oncomplete="PF('dlg_NewMessage').hide()" update=":frm_daten"/>
+                </f:facet>
+              </p:toolbar>
+
+
+
+              <p:panelGrid columns="2" >
+                <p:outputLabel value="#{sprache.Pinnwand_NeuerPin_lbl_Absender}" />
+                <p:outputLabel value="#{pinnwandBean.vonUser}" />
+                <p:outputLabel value="#{sprache.Pinnwand_NeuerPin_lbl_Empfaenger}" />
+                <p:selectOneMenu id="ToUser" value="#{pinnwandBean.zuUser}" style="width:150px" filter="true"  filterMatchMode="contains" disabled="#{pinnwandBean.replay}">
+                  <f:selectItem itemLabel="#{sprache.Pinnwand_NeuerPin_cbo_WaehleEinenEmpfaenger}" itemValue="-1" noSelectionOption="false"  />
+                  <f:selectItems value="#{pinnwandBean.userList}" var="ul1" itemLabel="#{ul1.name}" itemValue="#{ul1.name}"  />
+                </p:selectOneMenu>
+                <p:outputLabel value="#{sprache.Pinnwand_NeuerPin_lbl_Betreff}" />
+                <p:inputText value="#{pinnwandBean.subjectText}" size="80" maxlength="250"/>
+                <p:outputLabel value="" />
+                <p:editor  id="editor1" widgetVar="editorWidget" value="#{pinnwandBean.messageText}" />
+              </p:panelGrid>
+
+            </h:form>
+
+          </p:dialog> 
+
+        </h:form>
+
+      </p:layoutUnit>
+    </p:layout>
+  </h:body>
+
+</f:view>
+</html>
+

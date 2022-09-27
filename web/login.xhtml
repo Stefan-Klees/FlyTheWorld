@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <h:outputStylesheet library="css" name="default.css" />
+    <title>Fly the World - Login</title>
+  </h:head>
+
+
+
+  <h:body>  
+
+
+
+    <p:graphicImage value="#{configBean.picHintergrund}" style="width: 100%" alt=" #{image}" title="#{image}"/>
+
+    <p:growl id="growl" autoUpdate="true" life="5000" sticky="true" /> 
+
+    <p:dialog id="Loggin" position="center" visible="true" header="#{sprache.Login_dlg_header}" widgetVar="dlgLoggin" closable="false">
+      <p:panel> 
+        <h:form id="j_security_check">
+
+          <h:panelGrid columns="2">
+            <h:graphicImage value="http://www.ftw-sim.de/images/FTW/images/FTW-Logo.png" height="250" title="Logo created by FTW-User: TEKiJIA"/>
+          <h:panelGrid columns="2" cellpadding="2">
+            <h:outputLabel for="j_username" value="#{sprache.Login_lbl_BenutzerName} : "/>
+            <p:inputText id="j_username" value="#{loginMB.username}" maxlength="80"/>
+            <h:outputLabel for="j_password" value="#{sprache.Login_lbl_Passwort} : "/>
+            <p:password id="j_password" value="#{loginMB.password}" maxlength="200"/>
+            <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Sprache}" />
+            <p:selectOneMenu id="Sprache"  value="#{loginMB.language}" onchange="submit()" style="width:150px" disabled="false">
+              <f:selectItem itemValue="de" itemLabel="Deutsch" />
+              <f:selectItem itemValue="en" itemLabel="English" />
+              <f:selectItem itemValue="ru" itemLabel="Pусский" />
+              <f:selectItem itemValue="cz" itemLabel="český" />
+            </p:selectOneMenu>
+          </h:panelGrid> 
+          
+          </h:panelGrid>
+          
+          <h:panelGrid columns="3" cellpadding="2">
+            <p:commandButton value="#{sprache.Login_btn_Anmelden}" icon="ui-icon-unlocked" action="#{loginMB.login()}" disabled="#{loginMB.eingeloggt}" />
+            <p:commandButton value="#{sprache.Login_btn_Abmelden}" icon="ui-icon-locked" action="#{loginMB.logout()}" disabled="true" />
+            <p:commandButton value="#{sprache.Login_btn_Zurueck}"  action="#{loginMB.willBack()}" rendered="#{not empty loginMB.username}" />
+          </h:panelGrid>
+        </h:form>  
+      </p:panel>
+    </p:dialog>
+
+
+    <p:dialog id="dlg_meldung" widgetVar="wdg_meldung" visible="#{loginMB.systemMeldung}" header="Systemmeldung - Achtung" closable="false" modal="true" width="1024" height="768">
+      <h:form id="frm_meldung">
+        <h:outputLabel id="lbl_meldung" value="#{loginMB.systemmeldungText}" escape="false"/>
+        <pe:timer singleRun="false"  visible="false" timeout="1" update="dlg_meldung"/>
+      </h:form>
+    </p:dialog>
+
+
+  </h:body>
+
+</html>

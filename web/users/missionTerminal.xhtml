@@ -1,0 +1,494 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Missionen_Seitentitel}</title>
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+      <style type="text/css">
+        .ui-accordion .ui-accordion-content {
+          padding: 0px;
+        }
+        .pnlAlignTop.ui-panelgrid .ui-panelgrid-cell {
+          vertical-align: top;
+          padding: 5px;
+        }
+        .ui-tabs .ui-tabs-panel {
+          padding: 5;
+        }
+        .pnlAlignMiddle.ui-panelgrid .ui-panelgrid-cell {
+          vertical-align: middle;
+          padding: 5px;
+        }
+
+      </style>
+
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          if (!Notification) {
+            alert('Desktop notifications not available in your browser.');
+            return;
+          }
+
+          if (Notification.permission !== "granted")
+            Notification.requestPermission();
+        });
+
+        function benachrichtige(meldungstext) {
+
+          if (Notification.permission !== "granted")
+            Notification.requestPermission();
+          else {
+
+            var meldung = meldungstext;
+
+            if (meldung !== "") {
+              var notification = new Notification('FTW-Luftrettung (Air-Rescue)', {icon: "http://www.ftw-sim.de/images/FTW/icons/helikopter.png", body: meldung});
+            }
+          }
+
+        }
+      </script>
+
+
+
+    </h:head>
+
+    <h:body>
+
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" >
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_mission">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+
+
+            <p:toolbar id="tlb_mission">
+              <p:toolbarGroup id="tbg_mission">
+                <p:commandButton title="#{sprache.Missionen_btn_start}" icon="fa fa-plane" action="#{terminalMissionenBean.onMissionStarten()}" 
+                                 disabled="#{empty terminalMissionenBean.selectedMission}" rendered="#{not terminalMissionenBean.laufendeMission}" oncomplete="location.reload();" />
+                
+                <p:commandButton title="#{sprache.Missionen_btn_abbruch}" icon="fa fa-trash" action="#{terminalMissionenBean.onMissionAbbrechen()}" 
+                                 rendered="#{terminalMissionenBean.laufendeMission}" oncomplete="location.reload();">
+                  
+                  <p:confirm header="#{sprache.Missionen_btn_confirm_header}" icon="fa fa-info" message="#{sprache.Missionen_btn_confirm_message}" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Missionen_btn_MissionsKarte}" icon="fa fa-map" onclick="PF('wdg_WayPoints').show();" 
+                                 rendered="#{terminalMissionenBean.laufendeMission}" update="frm_WayPoints" />                
+
+
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_missionen"
+                         widgetVar="wdg_tbl_missionen"
+                         var="missionenList" 
+                         value="#{terminalMissionenBean.missionen}" 
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="5"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60,100,500"
+                         rowKey="#{missionenList.idmissionen}"
+                         selection="#{terminalMissionenBean.selectedMission}"
+                         selectionMode="single"
+                         scrollable="true"
+                         emptyMessage="#{sprache.Missionen_tbl_missionen_emptyMessage}"
+                         rendered="#{not terminalMissionenBean.laufendeMission}" >
+
+              <p:ajax listener="#{terminalMissionenBean.onRowSelect}" event="rowSelect" update="frm_mission" />
+              <p:ajax listener="#{terminalMissionenBean.onRowUnselect}" event="rowUnselect" update="frm_mission" />
+
+              <p:column width="10" exportable="false">
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Missionen_tbl_missionen_lbl_autor}" width="100" filterBy="#{missionenList.ersteller}" filterMatchMode="contains" filterStyle="width:100px">
+                <h:outputText value="#{missionenList.ersteller}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Missionen_tbl_missionen_lbl_bez}" width="500" filterBy="#{missionenList.kurzbezeichnung}" filterMatchMode="contains" filterStyle="width:250px">
+                <h:outputText value="#{missionenList.kurzbezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Missionen_tbl_missionen_lbl_land}" width="100" filterBy="#{missionenList.land}" filterMatchMode="contains" filterStyle="width:100px">
+                <h:outputText value="#{missionenList.land}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Missionen_tbl_missionen_lbl_flz}" width="150">
+                <div align="center">
+                  <img src="#{missionenBean.getFlugzeugBild(missionenList.idflugzeug)}" width="150" /><br></br>
+                    #{missionenBean.getFlugzeugType(missionenList.idflugzeug)}
+                </div>
+              </p:column>
+
+              <p:rowExpansion>
+                <div align="center">
+                  <h:outputLabel escape="false" value="#{missionenList.missionstext}"/>
+                </div>
+              </p:rowExpansion>
+
+
+            </p:dataTable>
+
+
+            <div align="center">
+              <h:outputText escape="false" value="#{terminalMissionenBean.selectedMission.missionstext}" rendered="#{terminalMissionenBean.laufendeMission}"/>
+
+              <h1 align="center"><h:outputText value="#{sprache.Missionen_tbl_missionen_lbl_einweisung}" rendered="#{terminalMissionenBean.laufendeMission}"/></h1>
+
+              <ui:repeat var="ways" value="#{terminalMissionenBean.mapWayPoints}" rendered="#{terminalMissionenBean.selectedMission.briefingkomplettanzeigen}">
+                <p><h:outputLabel escape="false" value="#{ways.waypointtext}"  /> </p>
+              </ui:repeat>
+
+              <h2><h:outputLabel value="#{sprache.Missionen_tbl_missionen_lbl_bezahlung}" rendered="#{terminalMissionenBean.laufendeMission and terminalMissionenBean.selectedMission.briefingkomplettanzeigen}" />
+                <h:outputLabel value="#{terminalMissionenBean.missionsBetrag}" rendered="#{terminalMissionenBean.laufendeMission and terminalMissionenBean.selectedMission.briefingkomplettanzeigen}" >
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputLabel> </h2>
+
+
+
+              <h2 align="center"><h:outputText value="#{sprache.Missionen_tbl_missionen_lbl_info}" rendered="#{terminalMissionenBean.laufendeMission}"/></h2>
+
+
+              <div align="center">
+                <p:commandButton title="#{sprache.Missionen_tbl_missionen_btn_abrechnen}" icon="fa fa-calculator" action="#{terminalMissionenBean.onMissionAbrechnen()}" oncomplete="location.reload();" rendered="#{terminalMissionenBean.yaacarsFlugBeendet}">
+                  <p:confirm header="#{sprache.Missionen_tbl_missionen_btn_abrechnen_confirm_header}" icon="fa fa-info" message="#{sprache.Missionen_tbl_missionen_btn_abrechnen_confirm_message}" />
+                </p:commandButton>
+              </div>
+
+
+            </div>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+      </p:layout>
+
+
+      <p:dialog id="dlg_WayPoints" widgetVar="wdg_WayPoints" header="#{sprache.Missionen_dlg_WayPoints_header}" resizable="false" closable="false" width="1400" height="900">
+
+        <h:form id="frm_WayPoints">
+          <p:toolbar id="tlb_WayPoints">
+            <p:toolbarGroup id="tbg_WayPoints">
+              <p:panelGrid columns="12" styleClass="pnlAlignMiddle">
+
+                <h:outputLabel value="Zoom" style="vertical-align: bottom;"/>
+                <p:selectOneMenu value="#{terminalMissionenBean.zoom}"  >
+                  <f:selectItem itemLabel="3" itemValue="3" noSelectionOption="true" />
+                  <f:selectItem itemLabel="4" itemValue="4" noSelectionOption="true" />
+                  <f:selectItem itemLabel="5" itemValue="5" noSelectionOption="true" />
+                  <f:selectItem itemLabel="6" itemValue="6" noSelectionOption="true" />
+                  <f:selectItem itemLabel="7" itemValue="7" noSelectionOption="true" />
+                  <f:selectItem itemLabel="8" itemValue="8" noSelectionOption="true" />
+                  <f:selectItem itemLabel="9" itemValue="9" noSelectionOption="true" />
+                  <f:selectItem itemLabel="10" itemValue="10" noSelectionOption="true" />
+                  <f:selectItem itemLabel="11" itemValue="11" noSelectionOption="true" />
+                  <f:selectItem itemLabel="12" itemValue="12" noSelectionOption="true" />
+                  <f:selectItem itemLabel="13" itemValue="13" noSelectionOption="true" />
+                  <f:selectItem itemLabel="14" itemValue="14" noSelectionOption="true" />
+                  <f:selectItem itemLabel="15" itemValue="15" noSelectionOption="true" />
+                  <f:selectItem itemLabel="16" itemValue="16" noSelectionOption="true" />
+                  <f:selectItem itemLabel="17" itemValue="17" noSelectionOption="true" />
+                  <f:selectItem itemLabel="18" itemValue="18" noSelectionOption="true" />
+                  <f:selectItem itemLabel="19" itemValue="19" noSelectionOption="true" />
+                  <p:ajax event="change" update="frm_WayPoints"/>
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.Missionen_dlg_WayPoints_lbl_Kartendarstellung}" style="vertical-align: bottom;"/>
+                <p:selectOneMenu value="#{loginMB.mapLayer}"  filter="true" filterMatchMode="contains" style="width: 180px;" >
+                  <f:selectItem itemLabel="OpenStreetMap Mapnik" itemValue="OpenStreetMap.Mapnik" noSelectionOption="true" />
+                  <f:selectItem itemLabel="OpenStreetMap topografische Ansicht" itemValue="OpenTopoMap" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Stamen Terrain" itemValue="Stamen.Terrain" noSelectionOption="true" />
+                  <f:selectItem itemLabel="Stamen Toner Lite" itemValue="Stamen.TonerLite" noSelectionOption="true" />
+                  <p:ajax event="change" update="pnl_map"/>
+                </p:selectOneMenu>
+
+                <p:commandButton title="#{sprache.Heliport_dlg_Start_btn_Tanken}" icon="fa fa-fire-extinguisher" oncomplete="PF('wdg_tankstelle').show()" 
+                                 disabled="#{terminalMissionenBean.tankstelleGesperrt}" update="frm_tankstelle frm_summe"/>
+
+                <h:outputLabel value="Timer"  style="vertical-align: bottom;"/>
+                <p:selectOneMenu value="#{terminalMissionenBean.timerIntervall}"  >
+                  <f:selectItem itemLabel="5" itemValue="5" noSelectionOption="true" />
+                  <f:selectItem itemLabel="10" itemValue="10" noSelectionOption="true" />
+                  <f:selectItem itemLabel="15" itemValue="15" noSelectionOption="true" />
+                  <f:selectItem itemLabel="20" itemValue="20" noSelectionOption="true" />
+                  <f:selectItem itemLabel="25" itemValue="25" noSelectionOption="true" />
+                  <f:selectItem itemLabel="30" itemValue="30" noSelectionOption="true" />
+                  <f:selectItem itemLabel="45" itemValue="45" noSelectionOption="true" />
+                  <f:selectItem itemLabel="60" itemValue="60" noSelectionOption="true" />
+                  <p:ajax event="change" update="frm_WayPoints"/>
+                </p:selectOneMenu>
+
+                <p:commandButton title="refresh" icon="fa fa-refresh" update="frm_WayPoints" />
+                <p:commandButton title="Fenster schließen" icon="fa fa-close" action="#{terminalMissionenBean.refresh()}" oncomplete="location.reload();" />
+              </p:panelGrid>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+
+          <pe:timer autoStart="true" listener="#{terminalMissionenBean.onAktuellePositionErmitteln()}" singleRun="false" visible="false" update="pnl_map"  timeout="#{terminalMissionenBean.timerIntervall}" rendered="#{terminalMissionenBean.yaacarsFlugInUse}"/>
+
+
+
+          <p:panelGrid id="pnl_map" columns="2" style="width:100%; height:100%;" styleClass="pnlAlignTop">
+
+            <p:column>
+
+              <div id="WayPointMap" style="width: 950px; height: 800px;">
+
+                <script type="text/javascript">
+
+                  var WayIcon = L.icon({
+                    iconUrl: 'http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_0.png',
+                    iconSize: [48, 48],
+                    popupAnchor: [0, -10]
+                  });
+
+                  var heli = L.icon({
+                    iconUrl: '#{terminalMissionenBean.iconFuerAircraft}',
+                    iconSize: [96, 96],
+                    popupAnchor: [0, -10]
+                  });
+
+                  var FahneIcon = L.icon({
+                    iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_rot_32px.png',
+                    iconSize: [32, 32],
+                    popupAnchor: [0, -10]
+                  });
+
+                  var grueneFahne = L.icon({
+                    iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_ende_32px.png',
+                    iconSize: [32, 32],
+                    popupAnchor: [0, -10]
+                  });
+
+                  var MapWayPoint = L.map('WayPointMap').setView(new L.LatLng(#{terminalMissionenBean.aktuellerStandort}), #{terminalMissionenBean.zoom});
+                  var scale = L.control.scale().addTo(MapWayPoint);
+
+                  L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'}).addTo(MapWayPoint);
+
+                  #{terminalMissionenBean.wayPointMap}
+
+
+                  MapWayPoint.setView(new L.LatLng(#{terminalMissionenBean.aktuellerStandort}), #{terminalMissionenBean.zoom});
+                  MapWayPoint.invalidateSize(true);
+
+
+                </script>
+
+              </div>
+
+              <p:panelGrid columns="18" styleClass="pnlAlignMiddle">
+                <h:outputLabel value="HDG" /><h:outputLabel value="#{terminalMissionenBean.txtKurs}"/>
+                <h:outputLabel value="Distance" /><h:outputLabel value="#{terminalMissionenBean.txtEntfernung}"/>
+                <h:outputLabel value="Current HDG" /><h:outputLabel value="#{terminalMissionenBean.txtAktuellerKurs}"/>
+                <h:outputLabel value="Time remaining " /><h:outputLabel value="#{terminalMissionenBean.txtRestzeit}"/>
+                <h:outputLabel value="Height ASL (ft) " /><h:outputLabel value="#{terminalMissionenBean.txtHoehe}"/>
+                <h:outputLabel value="Height AGL (ft) " /><h:outputLabel value="#{terminalMissionenBean.txtHoeheAGL}"/>
+              </p:panelGrid>
+
+
+            </p:column>
+
+
+            <p:column style="vertical-align: top; width: 450px;" rendered="#{not terminalMissionenBean.yaacarsFlugBeendet}">
+
+              <div style="width: 370px;">
+
+                <h2>#{sprache.Missionen_dlg_WayPoints_lbl_naechstesZiel}</h2>
+                <p><h:outputLabel escape="false" value="#{terminalMissionenBean.selectedFlugWayPoint.waypointtext}"/></p>
+                <p>#{sprache.Missionen_dlg_WayPoints_lbl_landen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.selectedFlugWayPoint.landen}"/>
+                  <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.selectedFlugWayPoint.landen}"/></p>
+                <p>#{sprache.Missionen_dlg_WayPoints_lbl_einladen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.selectedFlugWayPoint.einladen}"/>
+                  <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.selectedFlugWayPoint.einladen}"/></p>
+                <p>#{sprache.Missionen_dlg_WayPoints_lbl_ausladen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.selectedFlugWayPoint.ausladen}"/>
+                  <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.selectedFlugWayPoint.ausladen}"/></p>
+                <p style="font-size: 1.2em">Bezahlung <h:outputLabel value="#{terminalMissionenBean.selectedFlugWayPoint.verguetung}">
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputLabel> </p>
+
+                <h2>#{sprache.Missionen_dlg_WayPoints_lbl_danach}</h2>
+                <h:outputLabel escape="false"  value="#{terminalMissionenBean.nextFlugWayPoint.waypointtext}"/>
+                <p>#{sprache.Missionen_dlg_WayPoints_lbl_landen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.nextFlugWayPoint.landen}"/>
+                  <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.nextFlugWayPoint.landen}"/></p>
+                  <p>#{sprache.Missionen_dlg_WayPoints_lbl_einladen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.nextFlugWayPoint.einladen}"/>
+                    <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.nextFlugWayPoint.einladen}"/></p>
+                    <p>#{sprache.Missionen_dlg_WayPoints_lbl_ausladen}<h:outputLabel value="#{sprache.ja}" rendered="#{terminalMissionenBean.nextFlugWayPoint.ausladen}"/>
+                      <h:outputLabel value="#{sprache.nein}" rendered="#{!terminalMissionenBean.nextFlugWayPoint.ausladen}"/></p>
+                      <p style="font-size: 1.2em">#{sprache.Missionen_dlg_WayPoints_lbl_bezahlung} <h:outputLabel value="#{terminalMissionenBean.nextFlugWayPoint.verguetung}">
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputLabel> </p>
+
+                <h2>#{sprache.Missionen_dlg_WayPoints_lbl_summe}<h:outputLabel value="#{terminalMissionenBean.missionsBetrag}">
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputLabel> </h2>
+              </div>
+
+
+            </p:column>
+
+            <p:column style="vertical-align: top; width: 450px;" rendered="#{terminalMissionenBean.yaacarsFlugBeendet}">
+              <h2>Mission beendet, Missionskarte schließen um abzurechnen!</h2>
+            </p:column>
+
+
+          </p:panelGrid>            
+
+        </h:form>
+      </p:dialog>      
+
+
+
+      <p:dialog id="dlg_tankstelle" widgetVar="wdg_tankstelle" header="#{sprache.Terminal_Tankstelle_dlg_header}"  width="1024" height="600">
+
+        <h:form id="frm_tankstelle">
+
+          <div id="div_grafik" align="center" style="padding: 0px; ">
+            <p:graphicImage value="#{terminalMissionenBean.tankstellenGrafik}" width="640"  alt=" #{image}" title="#{image}"/>
+          </div>
+
+        </h:form>
+
+        <div id="div_summe" align="center" style="padding-left: 0px; padding-top: 40px; ">
+
+          <h:form id="frm_summe">
+
+            <p:panelGrid columns="3" style="width: 60%" >
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_aktuelleTankfuellung}" style="font-size: 1.2em; width: 150px;"/>
+              <h:outputLabel value="#{terminalMissionenBean.aktuelleTankfuellung}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+              </h:outputLabel>
+              <h:outputLabel value=""/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TanksFuellenBisMax} #{terminalMissionenBean.maxTankkapazitaet} #{sprache.kg}" style="font-size: 1.2em; width: 150px;"/>
+              <h:inputText value="#{terminalMissionenBean.tankBisFuellstandKG}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{terminalMissionenBean.onTankenBerechneBisFüllstandKg()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankMengeEinfuellen} #{sprache.kg} " style="font-size: 1.2em; width: 150px;" />
+              <h:inputText value="#{terminalMissionenBean.tankMengeKilo}" style="text-align: right"  >
+                <f:convertNumber pattern="#,##0"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{terminalMissionenBean.onTankenBerechneKilo()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankFuellenBisProzent}" style="font-size: 1.2em;"/>
+              <h:inputText value="#{terminalMissionenBean.tankMengeProzent}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0.00"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{terminalMissionenBean.onTankenBerechneProzentTankfüllung()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_Betrag}" style="font-size: 1.2em;"/>
+
+              <h:outputLabel value="#{terminalMissionenBean.tankstelleSumme}" style="font-size: 1.2em; float: right">
+                <f:convertNumber pattern="#,##0.00 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value=""/>
+
+            </p:panelGrid>
+
+            <p></p>
+
+            <p:commandButton id="cmd5" value="#{sprache.Heliport_dlg_Tankstelle_btn_Auftanken}" action="#{terminalMissionenBean.onTankenBezahlen()}" update="frm_summe"/>
+            <p:commandButton value="#{sprache.Terminal_Tankstelle_btn_schliessen}" oncomplete="PF('wdg_tankstelle').hide();"/>
+
+          </h:form>
+
+        </div>
+
+      </p:dialog>      
+
+
+      <p:dialog id="dlg_YAACARSInfo" widgetVar="wdg_YAACARSInfo" header="Missionsterminal" modal="true" visible="true" closable="false" rendered="#{terminalMissionenBean.otherYaacarsFlightInUse}">
+        <h:form id="_YAACARSInfo">
+          <div align="center">
+            <p style="font-size: 1.2em"><h:outputText value="#{sprache.Missionen_dlg_YAACARSInfo_lbl_info}"/></p>
+            <p style="font-size: 1.4em">Missionsterminal wird nicht geöffnet!</p>
+            <br></br>
+            <p:commandButton value="#{sprache.Missionen_dlg_YAACARSInfo_btn_schliessen}" icon="fa fa-info" action="/users/index.xhtml" />
+          </div>
+        </h:form>
+      </p:dialog>
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+  </f:view>
+</html>

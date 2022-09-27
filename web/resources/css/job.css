@@ -1,0 +1,45 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 20.06.2016, 17:17:46
+    Author     : Stefan Klees
+*/
+
+.job {
+  background-color: white;
+  color: black;
+}
+
+
+.ui-editor * {
+  background-color: white;
+  color: black;
+}
+
+.job a:link{
+  color:blue;
+  text-decoration: none;
+}
+
+.job a:hover{
+  color:black;
+  text-decoration: underline;
+}
+
+.job a:visited{
+  color:blueviolet;
+  text-decoration: none;
+}
+
+.ui-datatable tbody  {
+  border: hidden;
+  
+}
+
+.ui-datatable tbody td{
+  background-color: white;
+  color: black;
+}

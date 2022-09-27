@@ -1,0 +1,526 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{sprache.mnu_Top20}</title>
+
+      <style type="text/css">
+        .ui-panelgrid td, .ui-panelgrid tr{
+          border-style: none !important
+        }
+
+        .ui-accordion .ui-accordion-content {
+          padding: 0px;
+        }
+
+      </style>
+
+
+
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <f:facet name="header">
+            <h:outputText escape="false" value="#{sprache.Top20_header}"/>
+          </f:facet>
+
+
+
+
+          <h:form>
+
+
+            <p:accordionPanel id="acp_piloteninfo" activeIndex="-1">
+
+              <p:tab id="tab_piloteninfo" title="Top Piloten" >
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;" >
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_ErfolgreichsterPilotMeilen_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.bestUserNachMeilen}" var="fgvm">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotMeilen_name}</f:facet>
+                        <h:outputLabel value="#{fgvm.name1}"/>
+                      </p:column>
+
+                      <h:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotMeilen_meilen}</f:facet>
+                        <h:outputLabel value="#{fgvm.flightmiles}" style="float: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                      </h:column>
+                    </h:dataTable>
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; border: hidden;">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_ErfolgreichsterPilotPassagiere_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.bestUserNachPax}" var="fgvm">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotPassagiere_name}</f:facet>
+                        <h:outputLabel value="#{fgvm.name1}"/>
+                      </p:column>
+
+                      <h:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotPassagiere_passagiere}</f:facet>
+                        <h:outputLabel value="#{fgvm.flightpaxes}" style="float: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                      </h:column>
+                    </h:dataTable>
+
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_ErfolgreichsterPilotCargo_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.bestUserNachCargo}" var="fgvm">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotCargo_name}</f:facet>
+                        <h:outputLabel value="#{fgvm.name1}"/>
+                      </p:column>
+
+                      <h:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotCargo_cargo}</f:facet>
+                        <h:outputLabel value="#{fgvm.flightcargo}" style="float: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                      </h:column>
+                    </h:dataTable>
+
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_ErfolgreichsterPilotFluege_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.bestUserNachFluegen}" var="fgvm">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotFluege_name}</f:facet>
+                        <h:outputLabel value="#{fgvm.name1}"/>
+                      </p:column>
+
+                      <h:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotFluege_fluege}</f:facet>
+                        <h:outputLabel value="#{fgvm.flights}" style="float: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                      </h:column>
+                    </h:dataTable>
+
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_ErfolgreichsterPilotFlugzeit_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.bestUserNachZeit}" var="fgvm">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotFlugzeit_name}</f:facet>
+                        <h:outputLabel value="#{fgvm.name1}"/>
+                      </p:column>
+
+                      <h:column>
+                        <f:facet name="header">#{sprache.Top20_ErfolgreichsterPilotFlugzeit_flugzeitStd} #{sprache.h}</f:facet>
+                        <h:outputLabel value="#{fgvm.flighttime / 60}" style="float: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                      </h:column>
+                    </h:dataTable>
+
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 180px">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_PilotenNachFluegenLetzte30Tage_header}"/></h2>
+                      <center>#{sprache.Top20_PilotenNachFluegenLetzte30Tage_subtext}</center>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.userTop20Fluege}" var="Top20Fluege" >
+
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <h:outputLabel value="#{Top20Fluege[0]}" style="display: block;width: 80px"/>
+                      </p:column>
+
+                      <p:column >
+                        <h:outputLabel value="#{Top20Fluege[1]}" style="display: block; text-align: right;width: 50px"/>
+                      </p:column>
+
+                    </h:dataTable>
+
+                  </p:panelGrid>
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 180px">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_PilotenNachFluegenLetzte30Flugzeit_header}"/></h2>
+                      <center>#{sprache.Top20_PilotenNachFluegenLetzte30Tage_subtext}</center>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.userTop20FluegeNachZeit}" var="Top20Fluege" >
+
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                      </p:column>
+
+                      <p:column>
+                        <h:outputLabel value="#{Top20Fluege[0]}" style="display: block;width: 80px"/>
+                      </p:column>
+
+                      <p:column >
+                        <h:outputLabel value="#{Top20Fluege[3]/60}" style="display: block; text-align: right;width: 50px">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+
+                      </p:column>
+
+                    </h:dataTable>
+
+                  </p:panelGrid>
+
+
+
+
+              </p:tab>
+
+
+
+
+              <p:tab id="tab_topFlughaefen" title="100 Top Flughäfen" >
+
+                <p:panelGrid columns="4" style="border: hidden; ">
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;"  >
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_Erfolgreichste_FlughafenNachPax_header}"/></h2>
+                    </f:facet>
+
+                    <h:dataTable value="#{statistikBean.flughaefenNachStartsLandungenNachPax}" var="flugDetail">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 30px"/>
+                      </p:column>
+
+
+                      <p:column>
+                        <h:outputLabel value="#{flugDetail.icao} #{flugDetail.name} - #{flugDetail.land}" style="display: block; width: 450px"/>
+                      </p:column>
+                      <p:column>
+                        <h:outputLabel value="#{flugDetail.pax}" style="display: block; width: 100px; text-align: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+
+                      </p:column>              
+
+                    </h:dataTable>
+
+
+                  </p:panelGrid>
+
+
+                  <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px;">
+                    <f:facet name="header">
+                      <h2><h:outputLabel escape="false" value="#{sprache.Top20_Erfolgreichste_FlughafenNachLandungen_header}"/></h2>
+                    </f:facet>            
+
+                    <h:dataTable value="#{statistikBean.flughaefenNachStartsLandungen}" var="flugDetail">
+
+                      <p:column>
+                        <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 30px"/>
+                      </p:column>
+
+                      <p:column>
+                        <h:outputLabel value="#{flugDetail.icao} #{flugDetail.name} - #{flugDetail.land}" style="display: block; width: 450px"/>
+                      </p:column>
+                      <p:column>
+                        <h:outputLabel value="#{flugDetail.startsLandungen}" style="display: block; width: 100px; text-align: right">
+                          <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+
+                      </p:column>              
+
+                    </h:dataTable>
+
+                  </p:panelGrid>
+
+
+
+
+                </p:panelGrid>              
+
+              </p:tab>
+
+
+
+              <p:tab id="tab_topFluggesellschaften" title="Top 100 Fluggesellschaften" >
+
+                <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 400px">
+                  <f:facet name="header">
+                    <h2><h:outputLabel escape="false" value="Nach Passagieren"/></h2>
+                    <center>Die letzten 30 Tage</center>
+                  </f:facet>            
+
+                  <h:dataTable value="#{statistikBean.fluggesellschaftTop100NachPax}" var="fgTop100Pax">
+
+                    <h:column>
+                      <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                    </h:column>
+
+                    <h:column>
+                      <h:outputLabel value="#{fgTop100Pax[1]}" style="display: block;width: 320px"/>
+                    </h:column>
+                    <h:column>
+                      <h:outputLabel value="#{fgTop100Pax[2]}" style="display: block;width: 100px; text-align: right">
+                        <f:convertNumber pattern="#,##0"/>
+                      </h:outputLabel>
+
+                    </h:column>              
+
+                  </h:dataTable>
+
+                </p:panelGrid>
+
+
+                <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 400px">
+                  <f:facet name="header">
+                    <h2><h:outputLabel escape="false" value="Nach Cargo"/></h2>
+                    <center>Die letzten 30 Tage</center>
+                  </f:facet>            
+
+                  <h:dataTable value="#{statistikBean.fluggesellschaftTop100NachCargo}" var="fgTop100Cargo">
+
+                    <h:column >
+                      <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                    </h:column>
+
+                    <h:column >
+                      <h:outputLabel value="#{fgTop100Cargo[1]}" style="display: block;width: 320px"/>
+                    </h:column>
+
+                    <h:column >
+                      <h:outputLabel value="#{fgTop100Cargo[3]}" style="display: block;width: 120px; text-align: right">
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputLabel>
+
+                    </h:column>              
+
+                  </h:dataTable>
+
+                </p:panelGrid>
+                
+                
+                <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 400px">
+                  <f:facet name="header">
+                    <h2><h:outputLabel escape="false" value="Nach Passagieren"/></h2>
+                    <center>Die letzten 7 Tage</center>
+                  </f:facet>            
+
+                  <h:dataTable value="#{statistikBean.fluggesellschaftTop100NachPax7Tage}" var="fgTop100Pax">
+
+                    <h:column>
+                      <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                    </h:column>
+
+                    <h:column>
+                      <h:outputLabel value="#{fgTop100Pax[1]}" style="display: block;width: 320px"/>
+                    </h:column>
+                    <h:column>
+                      <h:outputLabel value="#{fgTop100Pax[2]}" style="display: block;width: 100px; text-align: right">
+                        <f:convertNumber pattern="#,##0"/>
+                      </h:outputLabel>
+
+                    </h:column>              
+
+                  </h:dataTable>
+
+                </p:panelGrid>
+                
+
+
+                <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 400px">
+                  <f:facet name="header">
+                    <h2><h:outputLabel escape="false" value="Nach Cargo"/></h2>
+                    <center>Die letzten 7 Tage</center>
+                  </f:facet>            
+
+                  <h:dataTable value="#{statistikBean.fluggesellschaftTop100NachCargo7Tage}" var="fgTop100Cargo">
+
+                    <h:column >
+                      <h:outputLabel value="#{statistikBean.platzierung}" style="display: block;width: 20px"/>
+                    </h:column>
+
+                    <h:column >
+                      <h:outputLabel value="#{fgTop100Cargo[1]}" style="display: block;width: 320px"/>
+                    </h:column>
+
+                    <h:column >
+                      <h:outputLabel value="#{fgTop100Cargo[3]}" style="display: block;width: 120px; text-align: right">
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputLabel>
+
+                    </h:column>              
+
+                  </h:dataTable>
+
+                </p:panelGrid>
+
+
+
+              </p:tab>
+
+
+
+            </p:accordionPanel>     
+
+
+            <p:panelGrid columns="2" style="vertical-align: top;float: left; margin: 20px; width: 450px">
+              <f:facet name="header">
+                <h2><h:outputLabel escape="false" value="#{sprache.Top20_DieLetzten20Fluege_header}"/></h2>
+              </f:facet>
+
+              <p:dataTable value="#{statistikBean.last20Logbuch}" var="fgvm">
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_datum}" width="100">
+                  <h:outputLabel value="#{fgvm.datum}" >
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_flugzeit}" width="100">
+                  <h:outputLabel value="#{fgvm.minuten / 60}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.h}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_treibstoff}" width="100">
+                  <h:outputLabel value="#{fgvm.treibstoff}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_passagiere}" width="80">
+                  <h:outputLabel value="#{fgvm.pax}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_cargo}" width="100">
+                  <h:outputLabel value="#{fgvm.cargo}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Top20_DieLetzten20Fluege_gebuehr}" width="100">
+                  <h:outputLabel value="#{fgvm.buchungsgebuehr}" style="float: right">
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputLabel>
+                </p:column>
+
+
+              </p:dataTable>
+
+
+            </p:panelGrid>
+
+
+          </h:form>
+
+
+        </p:layoutUnit>
+      </p:layout>
+
+
+
+
+
+
+
+    </h:body>
+
+  </f:view>
+</html>

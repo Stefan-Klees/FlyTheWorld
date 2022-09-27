@@ -1,0 +1,438 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Userverwaltung</title>
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.allowBenutzerEdit}" />
+  <c:if test="${ifAllow==true}" >
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" header="Administration - Users">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_tools">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:ribbon id="rib_1">
+              <p:tab id="tab_neu" title="Userdaten">
+                <p:ribbonGroup id="rbgr_1" style="height: 50px;">
+
+                  <p:panelGrid columns="12" style="height: 46px;" >
+
+                    <p:commandButton value="Neu" async="true"  onclick="PF('wdg_neuerUser').show();" icon="ui-icon-document"/>
+                    <p:commandButton  value="Edit" icon="ui-icon-pencil" action="#{userBean.onEditUser()}" oncomplete="PF('dlg_BenutzerEdit').show()" rendered="#{not empty userBean.selectedUser}"/>
+                    <p:commandButton  value="Password ändern" icon="ui-icon-pencil" onclick="PF('dlg_passwort').show()" rendered="#{not empty userBean.selectedUser}"/>
+
+
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="Extras">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid columns="12" style="height: 46px;" >
+
+                    <p:commandButton title="Letzter Login ist gleich Anlagedatum" value="Login check 1" action="#{userBean.onUserLastLoginGleichCreated()}" icon="fa fa-check" update="frm_daten:userTable"/>
+
+                    <p:commandButton title="Letzter Login ist gleiner gleich 14 Tage nach dem Anlagedatum" value="Login check 2" action="#{userBean.onUserLastLogin2Pruefung()}" icon="fa fa-check" update="frm_daten:userTable"/>
+
+
+                    <p:commandButton value="Banksalden" action="#{dobBanking.bankSaldenErmitteln()}"  oncomplete="PF('wdg_userBanksaldo').show()" update="frm_userBanksaldo" icon="fa fa-money" />
+
+                    <p:commandButton disabled="#{not loginMB.moduser}" value="Delete"  icon="ui-icon-trash" action="#{userBean.onDeletUsers()}" 
+                                     rendered="#{not empty userBean.selectedUsers}" update="frm_daten:userTable">
+
+                      <p:confirm header="User löschen" message="Ausgewählte User wirklich löschen, die Aktion kann nicht rückgängig gemacht werden" icon="ui-icon-alert" />
+
+                    </p:commandButton>
+
+
+                  </p:panelGrid>
+                </p:ribbonGroup>
+              </p:tab>
+
+
+
+            </p:ribbon>
+          </h:form>
+
+
+          <h:form id="frm_daten">
+
+            <p:dataTable id="userTable" 
+                         widgetVar="userTable"
+                         var="userItems"
+                         value="#{userBean.user}"
+                         rowKey="#{userItems.idUser}"
+                         selection="#{userBean.selectedUsers}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="25"
+                         scrollable="true"
+                         lazy="false"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         sortMode="multiple">
+
+
+              <p:ajax event="rowSelectCheckbox"   listener="#{userBean.onEditUser()}" update="frm_daten frm_tools"/>
+              <p:ajax event="rowUnselectCheckbox"  listener="#{userBean.onEditUser()}" update="frm_daten frm_tools"/>
+              <p:ajax event="toggleSelect"  listener="#{userBean.onEditUser()}" update="frm_daten frm_tools"/>
+
+
+
+              <p:ajax listener="#{userBean.onRowSelect}" event="rowSelect" update="frm_daten frm_tools"/>
+              <p:ajax listener="#{userBean.onRowUnselect}" event="rowUnselect" update="frm_daten frm_tools"/>
+
+
+
+              <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false">
+
+              </p:column>
+
+
+              <p:column headerText="ID" width="30" style="text-align: center;" sortBy="#{userItems.idUser}">
+                <h:outputText value='#{userItems.idUser}'/>
+              </p:column>
+
+              <p:column headerText="Gesperrt" width="30" style="text-align: center;" sortBy="#{userItems.gesperrt}">
+                <h:outputText value='#{sprache.ja}' rendered="#{userItems.gesperrt}"/>
+                <h:outputText value='#{sprache.nein}' rendered="#{not userItems.gesperrt}"/>
+              </p:column>
+
+
+              <p:column headerText="Bankkonto">
+                <h:outputText value='#{userItems.bankKonto}'/>
+              </p:column>
+
+              <p:column headerText="Name" sortBy="#{userItems.name1}" filterBy="#{userItems.name1}" filterMatchMode="contains">
+                <h:outputText value='#{userItems.name1}' />
+              </p:column>
+
+              <p:column headerText="Lizenz" width="60" sortBy="#{userItems.lizenz}">
+                <h:outputText value='#{userItems.lizenz}'/>
+              </p:column>
+
+              <p:column headerText="Date of Creation" sortBy="#{userItems.created}">
+                <h:outputText value='#{userItems.created}'>
+                  <f:convertDateTime pattern="dd.MM.yyyy H:mm:ss" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Last Login" style="text-align: right" sortBy="#{userItems.lastlogon}">
+                <h:outputText value='#{userItems.lastlogon}'>
+                  <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="eMail" sortBy="#{userItems.email}" filterBy="#{userItems.email}" filterMatchMode="contains">
+                <h:outputText value='#{userItems.email}'/>
+              </p:column>
+
+              <p:column headerText="Language">
+                <h:outputText value='#{userItems.sprache}'/>
+              </p:column>
+
+              <p:column headerText="Role" filterBy="#{userItems.rolle}" filterMatchMode="contains">
+                <h:outputText value='#{userItems.rolle}'/>
+              </p:column>
+
+              <p:column headerText="Zeitzone">
+                <h:outputText value='#{userItems.zeitZone}'/>
+              </p:column>
+
+            </p:dataTable>
+
+            <p:contextMenu id="cnt_userTableMenue" style="width: auto;"  rendered="#{not empty userBean.selectedUser}">
+              <p:menuitem value="Bankbuchungen anzeigen" icon="fa fa-search" oncomplete="PF('wdg_banking').show();" action="#{dobBanking.onBankkontoUser()}"  update="frm_banking">
+                <f:setPropertyActionListener value="#{userBean.selectedUser}" target="#{dobBanking.selectedUser}"/>
+              </p:menuitem>
+              <p:menuitem value="Fluglogbuch anzeigen" icon="fa fa-search" oncomplete="PF('wdg_Flugzeuglog').show();" update="frm_Flugzeuglog">
+                <f:setPropertyActionListener value="#{userBean.selectedUser.idUser}" target="#{statistikBean.userIDForAdmin}"/>
+              </p:menuitem>
+
+              <p:menuitem value="User Löschen"  icon="ui-icon-trash" action="#{userBean.deletUser()}" rendered="#{not empty userBean.selectedUsers}" update="frm_daten:userTable">
+                <p:confirm header="User löschen" message="User #{userBean.selectedUser.name1} wirklich löschen, die Aktion kann nicht rückgängig gemacht werden" icon="ui-icon-alert" />
+              </p:menuitem>
+
+
+              <p:menuitem value="Login check 1 (Letzter Login ist gleich Anlagedatum)" action="#{userBean.onUserLastLoginGleichCreated()}"  icon="fa fa-check" update="frm_daten:userTable"/>
+
+              <p:menuitem  value="Login check 2 (Letzter Login ist gleiner gleich 14 Tage nach dem Anlagedatum)" action="#{userBean.onUserLastLogin2Pruefung()}" icon="fa fa-check" style="width: auto;" update="frm_daten:userTable"/>
+
+
+
+            </p:contextMenu>
+
+
+
+            <p:dialog id="dlg_BenutzerEdit" widgetVar="dlg_BenutzerEdit" header="User Settings" closable="true" visible="#{userBean.showUserEdit}" >
+
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{userBean.saveUser()}" value="Save" icon="ui-icon-disk" update=":frm_daten"/>
+                  <p:commandButton  value="Exit" icon="ui-icon-pencil" onclick="PF('dlg_BenutzerEdit').hide()" />
+
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="4">
+
+                <p:outputLabel value="User gesperrt" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.gesperrt}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="User aktiv" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.isActive}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="User ID:" />
+                <p:outputLabel value="#{userBean.selectedUser.idUser}" />
+
+                <p:outputLabel value="Manager ID:" />
+                <p:inputText value="#{userBean.selectedUser.fluggesellschaftManagerID}" />
+
+                <p:outputLabel value="Date of Creation:"  />
+                <p:inputText value="#{userBean.selectedUser.created}" >
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+                </p:inputText>
+                <p:outputLabel value="Last Login:" />
+                <p:inputText value="#{userBean.selectedUser.lastlogon}" >
+                  <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+                </p:inputText>
+
+                <p:outputLabel value="Name:" />
+                <p:inputText value="#{userBean.selectedUser.name1}" />
+
+                <p:outputLabel value="Email:" />
+                <p:inputText value="#{userBean.selectedUser.email}" />
+
+                <p:outputLabel value="Role" />
+                <p:selectOneMenu id="Rolle" value="#{userBean.selectedUser.rolle}" style="width:150px">
+                  <f:selectItem itemLabel="Select Rolle" itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{userBean.rollen}" />
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Funktion:" />
+                <p:selectOneMenu id="frmFunktion"  value="#{userBean.selectedUser.funktion}" style="width:150px" disabled="false">
+                  <f:selectItem itemValue="" itemLabel="User" />
+                  <f:selectItem itemValue="Support" itemLabel="Support" />
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Sprache :" />
+                <p:selectOneMenu id="Sprache"  value="#{userBean.selectedUser.sprache}" style="width:150px" disabled="false">
+                  <f:selectItem itemValue="de" itemLabel="Deutsch" />
+                  <f:selectItem itemValue="en" itemLabel="English" />
+                  <f:selectItem itemValue="ru" itemLabel="Pусский" />
+                  <f:selectItem itemValue="cz" itemLabel="český" />                  
+                </p:selectOneMenu>
+
+
+                <p:outputLabel value="Zeitzone :" />
+                <p:selectOneMenu value="#{userBean.selectedUser.zeitZone}" style="width:150px" disabled="false" filterMatchMode="contains" filter="true">
+                  <f:selectItems value="#{loginMB.zeitZonen}" />
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Lizenz:" />
+                <p:inputText value="#{userBean.selectedUser.lizenz}" />
+                <p:outputLabel value="Date Format:" />
+                <p:inputText value="#{userBean.selectedUser.dateformat}" />
+                <p:outputLabel value="Readaccesskey:" />
+                <p:inputText value="#{userBean.selectedUser.readaccesskey}" />
+                <p:outputLabel value="Writeaccesskey:" />
+                <p:inputText value="#{userBean.selectedUser.writeaccesskey}" />
+
+
+
+                <p:outputLabel value="Theme" />
+                <p:selectOneMenu value="#{userBean.selectedUser.theme}">
+                  <f:selectItem itemLabel="Afterdark" itemValue="afterdark"/>
+                  <f:selectItem itemLabel="Afternoon" itemValue="afternoon"/>
+                  <f:selectItem itemLabel="Afterwork" itemValue="afterwork"/>
+                  <f:selectItem itemLabel="Black-TIE" itemValue="black-tie"/>
+                  <f:selectItem itemLabel="Blitzer" itemValue="blitzer"/>
+                  <f:selectItem itemLabel="Blue Sky" itemValue="bluesky"/>
+                  <f:selectItem itemLabel="Bootstrap" itemValue="bootstrap"/>
+                  <f:selectItem itemLabel="Casablanka" itemValue="casablanca"/>
+                  <f:selectItem itemLabel="Cruze" itemValue="cruze"/>
+                  <f:selectItem itemLabel="Cuptertino" itemValue="cupertino"/>                  
+                  <f:selectItem itemLabel="Dark Hive" itemValue="dark-hive"/>                  
+                  <f:selectItem itemLabel="Dot LUV" itemValue="dot-luv"/>
+                  <f:selectItem itemLabel="Eggplant" itemValue="eggplant"/>
+                  <f:selectItem itemLabel="Excite Bike" itemValue="excite-bike"/>
+                  <f:selectItem itemLabel="flick" itemValue="flick"/>
+                  <f:selectItem itemLabel="X Glass" itemValue="glass-x"/>
+                  <f:selectItem itemLabel="Home" itemValue="home"/>
+                  <f:selectItem itemLabel="Hot Sneaks" itemValue="hot-sneaks"/>
+                  <f:selectItem itemLabel="Humanity" itemValue="humanity"/>
+                  <f:selectItem itemLabel="Le Frog" itemValue="le-frog"/>
+                  <f:selectItem itemLabel="Midnight" itemValue="midnight"/>
+                  <f:selectItem itemLabel="Mint Choc" itemValue="mint-choc"/>
+                  <f:selectItem itemLabel="Overcast" itemValue="overcast"/>
+                  <f:selectItem itemLabel="Pepper Grinder" itemValue="pepper-grinder"/>
+                  <f:selectItem itemLabel="Redmond" itemValue="redmond"/>
+                  <f:selectItem itemLabel="Rocket" itemValue="rocket"/>
+                  <f:selectItem itemLabel="Sam" itemValue="sam"/>
+                  <f:selectItem itemLabel="Smoothness" itemValue="smoothness"/>
+                  <f:selectItem itemLabel="South Street" itemValue="south-street"/>
+                  <f:selectItem itemLabel="Start" itemValue="start"/>
+                  <f:selectItem itemLabel="Sunny" itemValue="sunny"/>
+                  <f:selectItem itemLabel="Swanky Pursy" itemValue="swanky-purse"/>
+                  <f:selectItem itemLabel="Trontastic" itemValue="trontastic"/>
+                  <f:selectItem itemLabel="UI Darkness" itemValue="ui-darkness"/>
+                  <f:selectItem itemLabel="UI Lightness" itemValue="ui-lightness"/>
+                  <f:selectItem itemLabel="Vader" itemValue="vader"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Transportierte Cargo:" />
+                <p:inputText value="#{userBean.selectedUser.flightcargo}" />
+
+                <p:outputLabel value="Geflogene Meilen:" />
+                <p:inputText value="#{userBean.selectedUser.flightmiles}" />
+
+                <p:outputLabel value="Transportierte Passagiere:" />
+                <p:inputText value="#{userBean.selectedUser.flightpaxes}" />
+
+                <p:outputLabel value="Flüge gesamt:" />
+                <p:inputText value="#{userBean.selectedUser.flights}" />
+
+                <p:outputLabel value="Flugzeit / Minuten" />
+                <p:inputText value="#{userBean.selectedUser.flighttime}" />
+
+                <p:outputLabel value="Flugzeit FG / Minuten" />
+                <p:inputText value="#{userBean.selectedUser.flugzeitenFG}" />
+
+
+                <p:outputLabel value="" />
+                <p:outputLabel value="" />
+
+
+                <p:outputLabel value="Tools - Öffnen" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowToolsOpen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Administration - Öffnen" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowAdminOpen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Geschichten - Ändern" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowGeschichtenEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="News - Ändern" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowNewsEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Benutzer - Ändern" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowBenutzerEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Flughäfen - Ändern" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowFlughafenEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Flugzeuge - Ändern" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowFlugzeugeEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Rettungsstationen Verwalten" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowRettungsstationEdit}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Flughafen Dispatcher" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowAirportDispatcher}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+                <p:outputLabel value="Testuser" />
+                <p:selectBooleanButton value="#{userBean.selectedUser.allowTestUser}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>              
+
+              </p:panelGrid>
+
+              <div align="center">
+                <p align="center">Displayname</p>
+                <p:inputTextarea value="#{userBean.selectedUser.displayname}" rows="5" cols="80" maxlength="250"/>
+
+
+                <p align="center">Banner URL</p>  
+                <p:inputTextarea value="#{userBean.selectedUser.banner}" rows="2" cols="80" maxlength="250"/>
+
+
+              </div>
+
+            </p:dialog> 
+
+          </h:form>        
+
+        </p:layoutUnit>
+
+        <ui:include src="dlg/modBanking.xhtml"/>
+
+        <ui:include src="dlg/userdialoge.xhtml"/>
+
+        <ui:include src="dlg/flugzeuglog.xhtml"/>
+
+
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </c:if>
+</html>
+

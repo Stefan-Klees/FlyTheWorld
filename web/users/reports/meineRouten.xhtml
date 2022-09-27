@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW - #{sprache.MeineReserviertenRoutenTitel}</title>
+
+      <style>
+        .myClass .ui-layout-unit-content{
+          background: transparent;
+          background-image: URL('#{configBean.picHintergrund}');
+          background-size: cover;
+        }
+      </style>
+
+
+    </h:head>
+
+    <h:body id="Body">
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/reports/menueUserReport.xhtml"/>
+
+        <p:layoutUnit position="center" closable="false" styleClass="myClass" >
+
+
+          <h:form id="frm_Pilot">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="routenTable" 
+                         widgetVar="routenTable"
+                         var="routItems"
+                         value="#{airrouteBean.meineFlugrouten}"
+                         rowKey="#{routItems.idFlugrouten}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         rows="15"
+                         lazy="false" 
+                         sortMode="multiple"
+                         emptyMessage="Keine Routen vorhanden">
+
+              <p:column width="10" exportable="false">
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_name}" width="260" style="text-align: center;" >
+                <h:outputText escape="false" value="#{routItems.name}#{configBean.BR}#{airrouteBean.getFlugzeugType(routItems.idFlugzeugMietKauf)}"/>
+                <h:outputText escape="false" value="#{configBean.BR}" rendered="#{routItems.ausfuehrungPerDatum}"/>
+                <h:outputText escape="false" value="#{routItems.ausfuehrungAm}" rendered="#{routItems.ausfuehrungPerDatum}" style="font-size: 1.2em">
+                  <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+                <br></br>
+                <h:outputText escape="false" value=" *Mo " rendered="#{routItems.mo}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Di " rendered="#{routItems.di}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Mi " rendered="#{routItems.mi}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Do " rendered="#{routItems.don}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Fr " rendered="#{routItems.fr}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Sa " rendered="#{routItems.sa}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *So " rendered="#{routItems.so}" style="font-size: 1.2em"/>
+              </p:column>
+
+
+              <p:column id="fromIcao" headerText="#{sprache.Fluggesellschaften_Routen_tbl_vonIcao}" width="50"  style="text-align: center;" sortBy="#{routItems.vonIcao}">
+                <h:outputText value="#{routItems.vonIcao}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_nachIcao}" width="50" style="text-align: center;" sortBy="#{routItems.nachicao}">
+                <h:outputText value="#{routItems.nachicao}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_meilen}" width="50" style="text-align: center;">
+                <h:outputText value="#{routItems.distance}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_kurs}" width="40" style="text-align: center;" >
+                <h:outputText value='#{routItems.direct}'/>
+                <h:outputText value=' NO' rendered="#{routItems.direct gt assignementBean.nullPunkt and routItems.direct lt assignementBean.osten }"/>
+                <h:outputText value=' O' rendered="#{routItems.direct==assignementBean.osten }"/>
+                <h:outputText value=' S' rendered="#{routItems.direct==assignementBean.sueden }"/>
+                <h:outputText value=' SO' rendered="#{routItems.direct gt assignementBean.osten and routItems.direct lt assignementBean.sueden }"/>              
+                <h:outputText value=' W' rendered="#{routItems.direct==assignementBean.westen }"/>
+                <h:outputText value=' SW' rendered="#{routItems.direct gt assignementBean.sueden and routItems.direct lt assignementBean.westen }"/>              
+                <h:outputText value=' N' rendered="#{routItems.direct==assignementBean.norden }"/>
+                <h:outputText value=' NW' rendered="#{routItems.direct gt assignementBean.westen and routItems.direct lt assignementBean.norden }"/>                            
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_oeffentlich}" width="40" style="text-align: right;" >
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.oeffentlich}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.oeffentlich}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_bussinesKlasse}" width="40" style="text-align: right;" sortBy="#{routItems.useBusinessLounge}">
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.useBusinessLounge}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.useBusinessLounge}" />
+              </p:column>
+
+              <p:column width="10" style="text-align: right;" sortBy="#{routItems.routenArt}" exportable="false">
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_istRouteAktiv}" width="40" style="text-align: right;" sortBy="#{routItems.aktiv}" >
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.aktiv}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.aktiv}" />
+              </p:column>
+
+              <p:column headerText="" width="25" exportable="false">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_RoutenAktivieren}"  icon="fa fa-power-off"  
+                                 action="#{airrouteBean.onRouteAktivierenDeaktivierenDurchPilot()}" update="routenTable" >
+                  <p:confirm header="Route aktivieren/deaktivieren" message="Route wirklich aktivieren/deaktivieren?" icon="fa fa-alert" />
+                  <f:setPropertyActionListener value="#{routItems}" target="#{airrouteBean.selectedFlugrouten}" />
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_letzterFlug}" width="80" style="text-align: center;" sortBy="#{routItems.letzterFlug}">
+                <h:outputText value='#{routItems.letzteAusfuehrungAm}' rendered="#{not routItems.ausfuehrungPerDatum}">
+                  <f:convertDateTime   pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_umsatz}" visible="false">
+                <h:outputText value="#{routItems.umsatz}" >
+                  <f:convertNumber  pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_menge}" visible="false">
+                <h:outputText value="#{routItems.umsatzmenge}" >
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Repeat" width="50" style="text-align: center;">
+                <h:outputText value="#{routItems.ausfuehrungsZaehler} - #{routItems.wiederholungen}"/>
+              </p:column>
+
+
+
+              <p:rowExpansion>
+                <p:panelGrid columns="2" style="width: 50%">
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_ID}"/>
+                  <h:outputText value="#{routItems.idFlugrouten}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_AbflugHafen} :"/>
+                  <h:outputText value="#{routItems.vonIcao}  #{routItems.fromName} - #{routItems.fromAirportLandCity}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_ZielHafen} :"/>
+                  <h:outputText value="#{routItems.nachicao}  #{routItems.toName} - #{routItems.toAirportLandCity} "/>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerJedenPiloten}"  style="text-align: right;" />
+                  <h:outputText value="#{routItems.bonusFuerPiloten / 100}">
+                    <f:convertNumber pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerPilotDerFluggesellschaft}" style="text-align: right;" />
+                  <h:outputText value="#{routItems.bonusFuerAirlinePiloten / 100}">
+                    <f:convertNumber  pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_provision}" style="text-align: right;"/>
+                  <h:outputText value="#{routItems.provision / 100}">
+                    <f:convertNumber  pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_umsatz}" />
+                  <h:outputText value="#{routItems.umsatz}" >
+                    <f:convertNumber  pattern="#,##0 &euro;"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_menge}" />
+                  <h:outputText value="#{routItems.umsatzmenge}" >
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputText>
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_tbl_EcoAktiv}" style="text-align: right;" />
+
+                  <h:outputText value="#{sprache.ja}" rendered="#{routItems.ecoAktiv}" />
+                  <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.ecoAktiv}" />
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_tbl_Langstrecke}" style="text-align: right;" />
+
+                  <h:outputText value="#{sprache.ja}" rendered="#{routItems.langstrecke}" />
+                  <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.langstrecke}" />
+
+                </p:panelGrid>
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+      </p:layout>
+
+    </h:body>
+
+  </f:view>
+</html>
+

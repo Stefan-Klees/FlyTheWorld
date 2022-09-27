@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+      
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      
+      <title>#{sprache.Flugzeugboerse_Seitentitel}</title>
+      <h:outputStylesheet library="css" name="job.css" />
+    </h:head>
+
+    <h:body id="Body" >
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+
+        <p:layoutUnit id="layCenter" position="center" closable="false" styleClass="job" >
+
+          <f:facet name="header">
+            <h:form id="frm_toolbar">
+              <p:toolbar id="tlb_AngebotAnsicht">
+                <p:toolbarGroup id="tbg_AngebotAnsicht" align="left">
+                  <p:panelGrid columns="8" style="padding: 1px">
+                    <p:commandButton icon="fa fa-refresh" title="#{sprache.btn_aktualisieren}" update="frm_Angebote" style="vertical-align: middle"/>
+                    <p:commandButton icon="fa fa-youtube-play" title="FTW Musicplayer" onclick="PF('wdg_radio').show()" style="vertical-align: middle"/>
+                  </p:panelGrid>
+                </p:toolbarGroup>
+
+                <p:toolbarGroup id="tbg_AngebotAnsicht_right" align="right">
+                  <p:panelGrid columns="8">
+
+                    <h:outputLabel value="Aircraft  " style="vertical-align: middle"/>
+                    <p:selectOneMenu value="#{flugzeugBoerseBean.flugzeugType}" style="width: 150px;vertical-align: middle" filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="Alle anzeigen"  itemValue="" noSelectionOption="true" />
+                      <f:selectItems value="#{flugzeugBoerseBean.flugzeugtypen}" var="fav" itemValue="#{fav.flugzeugtyp}" itemLabel="#{fav.flugzeugtyp}" />
+                      <p:ajax event="change" update="frm_Angebote"/>
+                    </p:selectOneMenu>
+                    
+                    
+                    <h:outputLabel value="Angebote" style="vertical-align: middle"/>
+                    <p:selectOneMenu value="#{flugzeugBoerseBean.angebotArt}" style="width: 150px;vertical-align: middle" filter="true" filterMatchMode="contains" >
+                      <f:selectItem itemLabel="#{sprache.Flugzeugboerse_toolbar_lbl_Angebote_alle}"  itemValue="-1" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Flugzeugboerse_toolbar_lbl_Angebote_Verkauf}"  itemValue="1" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Flugzeugboerse_toolbar_lbl_Angebote_Leasing}"  itemValue="2" noSelectionOption="true" />
+                      <f:selectItem itemLabel="#{sprache.Flugzeugboerse_toolbar_lbl_Angebote_Finanzierung}"  itemValue="3" noSelectionOption="true" />
+                      <p:ajax event="change" update="frm_Angebote"/>
+                    </p:selectOneMenu>
+
+                  </p:panelGrid>
+                </p:toolbarGroup>
+
+
+              </p:toolbar>
+            </h:form>
+          </f:facet>
+
+
+
+          <p:dialog id="dlg_radio" widgetVar="wdg_radio" width="550" header="FTW-Musicplayer">
+            <div style="width: 100%"  align="center">				
+              <audio src="http://stream-tx4.radioparadise.com:9000/rp_96.ogg" preload="auto" controls="controls"></audio>
+            </div>					
+            <!-- Radio Paradise -->
+            <div style="width: 100%" align="center">
+              <iframe style="overflow: hidden; width: 90%" src="https://www.radioparadise.com/mini_playlist.php" seamless="" ></iframe>
+            </div>
+          </p:dialog>
+
+          <h:form id="frm_Angebote" styleClass="job">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <ui:repeat id="Angebote" var="AngebotItems" value="#{flugzeugBoerseBean.angebote}">
+              <h:outputLabel escape="false" value="#{AngebotItems.text}"/>
+              <br></br>
+              <hr></hr>
+              <br></br>
+            </ui:repeat>
+
+          </h:form>
+
+        </p:layoutUnit>
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+
+
+      </p:layout>
+
+    </h:body>
+
+  </f:view>
+</html>
+

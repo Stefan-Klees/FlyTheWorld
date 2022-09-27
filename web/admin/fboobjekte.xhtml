@@ -1,0 +1,292 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+  <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW - Admin - FBO Objektverwaltung</title>
+
+  
+  <!--
+    
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+    
+    -->
+    
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.moduser}" />
+  <c:if test="${ifAllow==true}" >
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="FBO - Objektverwaltung">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            <p:toolbar>
+              <p:toolbarGroup id="tbg_fboHeader">
+                <p:panelGrid columns="8">
+                  <p:commandButton value="Neues Objekt" icon="ui-icon-document" onclick="PF('dlg_NewFboObjekt').show()"/>
+                  <p:commandButton value="Objekt bearbeiten" icon="ui-icon-pencil" onclick="PF('dlg_Edit').show()" rendered="#{not empty fboObjektBean.selectedFboObjekt}"/>
+                  <p:commandButton value="Objekt kopieren" icon="ui-icon-copy" action="#{fboObjektBean.onKopie()}" update="frm_daten" rendered="#{not empty fboObjektBean.selectedFboObjekt}" />
+
+                  <p:commandButton value="Objekt löschen" icon="ui-icon-trash" async="true" action="#{fboObjektBean.onDelete()}" update="frm_daten" rendered="#{not empty fboObjektBean.selectedFboObjekt}">
+                    <p:confirm header="delete Record ?" message="Delete Record(s) ?" icon="ui-icon-alert" />
+                  </p:commandButton>
+                  <p:commandButton value="Aktualisieren" icon="ui-icon-refresh" oncomplete="location.reload();"/>
+
+                  <p:selectOneMenu  value="#{fboObjektBean.frmKlasse}"   style="width:250px" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="Bitte Klasse wählen" itemValue="0" />
+                    <f:selectItems value="#{airportBean.airportKlassen}" var="fgklasse" itemValue="#{fgklasse.klasseNummer}" itemLabel="#{fgklasse.bezeichnung}" />
+                    <p:ajax event="change" listener="#{fboObjektBean.onChangeKlasse()}" update="frm_daten"/>
+                  </p:selectOneMenu>
+                </p:panelGrid>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="objektTable"
+                         widgetVar="objektTable"
+                         var="objektItems"
+                         value="#{fboObjektBean.FBOObjekte}"
+                         rowKey="#{objektItems.idObjekt}"
+                         selection="#{fboObjektBean.selectedFboObjekt}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         selectionMode="single"
+                         sortMode="single">
+
+
+              <p:ajax listener="#{fboObjektBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{fboObjektBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column headerText="ID" width="10">
+                <h:outputText value="#{objektItems.idObjekt}"/>
+              </p:column>
+
+              <p:column headerText="Objektname" width="180" sortBy="#{objektItems.objektName}" >
+                <h:outputText value="#{objektItems.objektName}"/>
+              </p:column>
+
+              <p:column headerText="Klasse" style="text-align: center;" width="120" sortBy="#{objektItems.klasse}" >
+                <h:outputText value='Alter Datensatz' rendered="#{objektItems.klasse eq 0}"/>
+                <h:outputText value='Class 1 - Primary Hub' rendered="#{objektItems.klasse eq 1}"/>
+                <h:outputText value='Class 2 - Secondary Hub' rendered="#{objektItems.klasse eq 2}"/>
+                <h:outputText value='Class 3 - Major International Airport' rendered="#{objektItems.klasse eq 3}"/>
+                <h:outputText value='Class 4 - Minor International Airport' rendered="#{objektItems.klasse eq 4}"/>
+                <h:outputText value='Class 5 - Regional Airport' rendered="#{objektItems.klasse eq 5}"/>
+                <h:outputText value='Class 6 - Large GA-Airport' rendered="#{objektItems.klasse eq 6}"/>
+                <h:outputText value='Class 7 - Small GA-Airport' rendered="#{objektItems.klasse eq 7}"/>
+                <h:outputText value='Class 8 - Airstrip' rendered="#{objektItems.klasse eq 8}"/>
+                <h:outputText value='Class 9 - Unclassified' rendered="#{objektItems.klasse eq 9}"/>
+                <h:outputText value='Class M1 - Major Military Airport' rendered="#{objektItems.klasse eq 10}"/>
+                <h:outputText value='Class M2 - Minor Military Airport' rendered="#{objektItems.klasse eq 11}"/>
+                <h:outputText value='Class 12 - Drop-Off' rendered="#{objektItems.klasse eq 12}"/>
+                <h:outputText value='Class 13 - Closed ((partially) intact structure)' rendered="#{objektItems.klasse eq 13}"/>
+                <h:outputText value='Class 14 - Closed (tore off, demolished' rendered="#{objektItems.klasse eq 14}"/>
+              </p:column>
+
+              <p:column headerText="Mietpreis" width="80" sortBy="#{objektItems.mietPreis}">
+                <h:outputText value="#{objektItems.mietPreis}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Routen" width="80" sortBy="#{objektItems.anzahlRouten}">
+                <h:outputText value="#{objektItems.anzahlRouten}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Personal" width="80" sortBy="#{objektItems.anzahlPersonal}">
+                <h:outputText value="#{objektItems.anzahlPersonal}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Stellpl." width="80" sortBy="#{objektItems.anzahlStellplaetze}">
+                <h:outputText value="#{objektItems.anzahlStellplaetze}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Tankstelle" width="80" sortBy="#{objektItems.tankstelle}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.tankstelle}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.tankstelle}"/>
+              </p:column>
+
+              <p:column headerText="Spritlager" width="80" sortBy="#{objektItems.spritlager}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.spritlager}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.spritlager}"/>
+              </p:column>
+
+              <p:column headerText="FBO" width="80" sortBy="#{objektItems.fbo}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.fbo}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.fbo}"/>
+              </p:column>
+
+              <p:column headerText="Serv.Hangar" width="80" sortBy="#{objektItems.servicehangar}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.servicehangar}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.servicehangar}"/>
+              </p:column>
+
+              <p:column headerText="BC Lounge" width="80" sortBy="#{objektItems.businessLounge}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.businessLounge}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.businessLounge}"/>
+              </p:column>
+
+              <p:column headerText="Terminal" width="80" sortBy="#{objektItems.abfertigungsTerminal}">
+                <h:outputText value="#{sprache.ja}" rendered="#{objektItems.abfertigungsTerminal}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{not objektItems.abfertigungsTerminal}"/>
+              </p:column>
+
+            </p:dataTable>
+
+            <p:dialog widgetVar="dlg_Edit" id="id_Edit" responsive="true" rendered="#{not empty fboObjektBean.selectedFboObjekt}">
+              <h:form id="frm_Edit">
+                <p:toolbar id="tbr1">
+                  <f:facet id="fc1" name="left">
+                    <p:commandButton value="Speichern" action="#{fboObjektBean.onSave()}" icon="ui-icon-disk" onclick="PF('dlg_Edit').hide()" update="frm_daten"/>
+                  </f:facet>
+                </p:toolbar>
+                <p:panelGrid columns="2">
+                  <p:outputLabel value="Objektname:" /><p:inputText value="#{fboObjektBean.selectedFboObjekt.objektName}" />
+                  <p:outputLabel value="Klasse:" />
+                  <p:selectOneMenu  value="#{fboObjektBean.selectedFboObjekt.klasse}"   style="width:250px" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="Klasse auswählen" noSelectionOption="false" />
+                    <f:selectItems value="#{airportBean.airportKlassen}" var="fgklasse" itemValue="#{fgklasse.klasseNummer}" itemLabel="#{fgklasse.bezeichnung}" />
+                  </p:selectOneMenu>
+                  <p:outputLabel value="Mietpreis €:"/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.mietPreis}" />
+                  <p:outputLabel value="Anzahl Routen:"/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.anzahlRouten}" />
+                  <p:outputLabel value="Anzahl Stellplätze:"/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.anzahlStellplaetze}" />
+                  <p:outputLabel value="Anzahl Personal:"/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.anzahlPersonal}" />
+                  <h:outputLabel value="ist FBO:"/><p:selectBooleanButton id="blb1" value="#{fboObjektBean.selectedFboObjekt.fbo}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+                  <h:outputLabel value="ist Tankstelle:"/><p:selectBooleanButton id="blb2" value="#{fboObjektBean.selectedFboObjekt.tankstelle}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+                  <h:outputLabel value="ist Spritlager"/><p:selectBooleanButton id="blb21" value="#{fboObjektBean.selectedFboObjekt.spritlager}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>                  
+                  <p:outputLabel value="Max. Füllmenge: "/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.tankstelleMaxFuelKG}" />
+                  <h:outputLabel value="ist Service-Hangar:"/><p:selectBooleanButton id="blb3" value="#{fboObjektBean.selectedFboObjekt.servicehangar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+                  <h:outputLabel value="ist Business-Lounge:"/><p:selectBooleanButton id="blb4" value="#{fboObjektBean.selectedFboObjekt.businessLounge}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+                  <h:outputLabel value="ist Abfertigungsterminal:"/><p:selectBooleanButton id="blb5" value="#{fboObjektBean.selectedFboObjekt.abfertigungsTerminal}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+                  <p:outputLabel value="Maximale Passagiere: "/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.terminalMaxPax}" />
+                  <p:outputLabel value="Service-Hangar m²: "/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.servicehangarQM}" />
+                  <p:outputLabel value="Service-Hangar m² Preis: "/>  <p:inputText value="#{fboObjektBean.selectedFboObjekt.servicehangarQMPreis}" />
+                </p:panelGrid>
+              </h:form>
+            </p:dialog>
+
+
+
+          </h:form>
+
+        </p:layoutUnit>
+      </p:layout>
+
+
+      <p:dialog widgetVar="dlg_NewFboObjekt" id="id_NewFboObjekt" responsive="true">
+        <h:form id="frm_Create">
+          <p:toolbar id="tbr2">
+            <f:facet id="fc2" name="left">
+              <p:commandButton value="Speichern" action="#{fboObjektBean.onCreate()}" icon="ui-icon-disk" onclick="PF('dlg_NewFboObjekt').hide()" update=":frm_daten"/>
+            </f:facet>
+          </p:toolbar>
+          <p:panelGrid columns="2">
+            <p:outputLabel value="Objektname:" /><p:inputText value="#{fboObjektBean.frmFboObjektName}" />
+            <p:outputLabel value="Klasse:" />
+            <p:selectOneMenu  value="#{fboObjektBean.frmKlasse}"   style="width:250px" filter="true" filterMatchMode="contains" >
+              <f:selectItem itemLabel="Klasse auswählen" noSelectionOption="false" />
+              <f:selectItems value="#{airportBean.airportKlassen}" var="fgklasse" itemValue="#{fgklasse.klasseNummer}" itemLabel="#{fgklasse.bezeichnung}" />
+            </p:selectOneMenu>
+            <p:outputLabel value="Mietpreis €:"/>  <p:inputText value="#{fboObjektBean.frmMietPreis}" />
+            <p:outputLabel value="Anzahl Routen:"/>  <p:inputText value="#{fboObjektBean.frmAnzahlRouten}" />
+            <p:outputLabel value="Anzahl Stellplätze:"/>  <p:inputText value="#{fboObjektBean.frmAnzahlStellplaetze}" />
+            <p:outputLabel value="Anzahl Personal:"/>  <p:inputText value="#{fboObjektBean.frmAnzahlPersonal}" />
+            <h:outputLabel value="ist FBO:"/><p:selectBooleanButton id="blb1" value="#{fboObjektBean.frmFBO}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            <h:outputLabel value="ist Tankstelle:"/><p:selectBooleanButton id="blb2" value="#{fboObjektBean.frmTankstelle}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            <h:outputLabel value="ist Spritlager:"/><p:selectBooleanButton id="blb211" value="#{fboObjektBean.frmSpritlager}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>            
+            <p:outputLabel value="Max. Füllmenge: " />  <p:inputText value="#{fboObjektBean.frmTankstelleMaxFuelKG}" />
+            <h:outputLabel value="ist Service-Hangar:"/><p:selectBooleanButton id="blb3" value="#{fboObjektBean.frmServiceHangar}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            <h:outputLabel value="ist Business-Lounge:"/><p:selectBooleanButton id="blb4" value="#{fboObjektBean.frmBusinessLounge}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            <h:outputLabel value="ist Abfertigungsterminal:"/><p:selectBooleanButton id="blb5" value="#{fboObjektBean.frmAbfertigungsTerminal}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+            <p:outputLabel value="Maximale Passagiere: " />  <p:inputText value="#{fboObjektBean.frmTerminalMaxPax}" />
+            <p:outputLabel value="Service Hangar m²: " />  <p:inputText value="#{fboObjektBean.frmServiceHangarQM}" />
+            <p:outputLabel value="Service Hangar m² Preis: " />  <p:inputText value="#{fboObjektBean.frmServiceHangarPreisQM}" />
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>
+
+
+
+
+
+
+
+    </h:body>
+  </c:if>  
+</html>
+

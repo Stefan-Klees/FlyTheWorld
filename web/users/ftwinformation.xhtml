@@ -1,0 +1,738 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+
+      <title>FTW-#{sprache.UnternehmenFTW_pnl}</title>
+
+      <script>
+        function mapFenster() {
+          var parameter = "toolbar=no;location=no;status=no;menubar=no,";
+          parameter += "width=" + screen.width + ",height=" + screen.height;
+          window.open("dialogs/routenmap.xhtml", "Routenanzeige", parameter);
+        }
+        ;
+
+      </script>
+
+      <style type="text/css">
+        .ui-accordion .ui-accordion-content {
+          padding: 0px;
+        }
+        html {
+          height: 100%;
+          width: 100%
+        }
+        .ui-dialog { z-index: 1000 !important ;}
+
+      </style>
+
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.UnternehmenFTW_pnl}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+
+          <h:form id="frm_unternehmen">
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+
+            <p:accordionPanel id="acp_unternemen" activeIndex="-1">
+
+              <p:tab id="tab_betriebsstoffe" title="#{sprache.UnternehmenFTW_Tankstellenuebersicht_header}">
+
+                <p:panelGrid columns="1" style="vertical-align: top;float: left; margin: 20px; " >
+
+                  <p:panelGrid columns="5" style="vertical-align: top;float: left; width: 100% ">
+                    <f:facet name="header">
+                      <font size="2em">#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_header}</font>
+                    </f:facet>
+                    <h:outputLabel value="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_anbieter}"/>
+                    <h:outputLabel value="AV GAS #{sprache.kg}" style="float: right"/>
+                    <h:outputLabel value="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_bestand}"/>
+                    <h:outputLabel value="JET A #{sprache.kg}" style="float: right"/>
+                    <h:outputLabel value="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_bestand}"/>
+
+                    <h:outputLabel value="*** FTW Oil *** "/>
+                    <h:outputLabel value="#{configBean.config.preisAVGASkg}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 €"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_unbegrenzt}"/>
+
+                    <h:outputLabel value="#{configBean.config.preisJETAkg}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 €"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_unbegrenzt}"/>
+                  </p:panelGrid>
+
+                  <p:dataTable id="ftwTankstellen" 
+                               widgetVar="ftwTankstellen"
+                               var="tankst"
+                               value="#{fboUserObjekteBean.FTWTankstellen}"
+                               rowKey="#{tankst.iduserfbo}"
+                               paginator="true"
+                               paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                               rows="25" rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                               scrollable="true" lazy="false">
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_flughafen}" style="text-align: left;" filterBy="#{tankst.flughafen}" filterMatchMode="contains">
+                      <h:outputText value='#{tankst.flughafen}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_tankstellenName}" 
+                              style="text-align: left;" filterBy="#{tankst.name}" filterMatchMode="contains" filterStyle="width: 180px;">
+                      <h:outputText value='#{tankst.name}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_avgasr}" width="80" style="text-align: right;">
+                      <h:outputText value='#{tankst.preisAVGAS}'>
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_bestand}" width="80" style="text-align: right;">
+                      <h:outputText value='#{tankst.bestandAVGASkg}'>
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_jeta}" width="80" style="text-align: right;">
+                      <h:outputText value='#{tankst.preisJETA}'>
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_Tankstellenuebersicht_tbl_bestand}" width="80" style="text-align: right;">
+                      <h:outputText value='#{tankst.bestandJETAkg}'>
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column style="text-align: center;">
+                      <h:outputText value='Class 1 - Primary Hub' rendered="#{tankst.flughaftenKlasse eq 1}"/>
+                      <h:outputText value='Class 2 - Secondary Hub' rendered="#{tankst.flughaftenKlasse eq 2}"/>
+                      <h:outputText value='Class 3 - Major International Airport' rendered="#{tankst.flughaftenKlasse eq 3}"/>
+                      <h:outputText value='Class 4 - Minor International Airport' rendered="#{tankst.flughaftenKlasse eq 4}"/>
+                      <h:outputText value='Class 5 - Regional Airport' rendered="#{tankst.flughaftenKlasse eq 5}"/>
+                      <h:outputText value='Class 6 - Large GA-Airport' rendered="#{tankst.flughaftenKlasse eq 6}"/>
+                      <h:outputText value='Class 7 - Small GA-Airport' rendered="#{tankst.flughaftenKlasse eq 7}"/>
+                      <h:outputText value='Class 8 - Airstrip' rendered="#{tankst.flughaftenKlasse eq 8}"/>
+                      <h:outputText value='Class 9 - Unclassified' rendered="#{tankst.flughaftenKlasse eq 9}"/>
+                      <h:outputText value='Class M1 - Major Military Airport' rendered="#{tankst.flughaftenKlasse eq 10}"/>
+                      <h:outputText value='Class M2 - Minor Military Airport' rendered="#{tankst.flughaftenKlasse eq 11}"/>
+                      <h:outputText value='Class 12 - Drop-Off' rendered="#{tankst.flughaftenKlasse eq 12}"/>
+                      <h:outputText value='Class 13 - Closed ((partially) intact structure)' rendered="#{tankst.flughaftenKlasse eq 13}"/>
+                      <h:outputText value='Class 14 - Closed (tore off, demolished' rendered="#{tankst.flughaftenKlasse eq 14}"/>
+                    </p:column>
+
+                  </p:dataTable>
+
+                </p:panelGrid>              
+
+              </p:tab>
+
+              <p:tab id="tab_ServiceHangars" title="#{sprache.UnternehmenFTW_ServiceHangars_TabTitel}">
+                <p:panelGrid columns="1" style="vertical-align: top;float: left; margin: 20px; " >
+                  <p:dataTable id="tbl_ServiceHangars" var="hg" value="#{fboUserObjekteBean.infoListServiceHangars}"
+                               scrollable="true"
+                               scrollHeight="450"
+                               rowKey="#{hg.iduserfbo}"
+                               emptyMessage="#{sprache.UnternehmenFTW_ServiceHangars_tbl_emptyMessage}">
+
+                    <p:column headerText="ICAO" width="80" filterBy="#{hg.icao}" filterMatchMode="contains" filterStyle="width: 40px;">
+                      <h:outputText value="#{hg.icao}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_ServiceHangars_tbl_lbl_Betreiber}">
+                      <h:outputText value="#{hg.betreiber}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_ServiceHangars_tbl_lbl_name}">
+                      <h:outputText value="#{hg.hangarName}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_ServiceHangars_tbl_lbl_land}" width="100" style="text-align: center;" filterBy="#{hg.land}" filterMatchMode="contains" filterStyle="width: 60px;">
+                      <h:outputText value="#{hg.land}" />
+                    </p:column>
+
+                    <p:column headerText="m²" style="text-align: right;" width="100" filterBy="#{hg.servicehangarQM}" filterMatchMode="contains" filterStyle="width: 60px;">
+                      <h:outputText value="#{hg.servicehangarQM}"  >
+                        <f:convertNumber pattern="#,##0 m&sup2;"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_ServiceHangars_tbl_lbl_Kontakt}" width="150" style="text-align: center;">
+                      <h:outputText value="#{hg.besitzerName}" />
+                    </p:column>
+
+                  </p:dataTable>
+                </p:panelGrid>
+              </p:tab>
+
+              <p:tab id="tab_fluggesellschaften" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_header}">
+
+                <p:panelGrid columns="1" style="vertical-align: top;float: left; margin: 20px; " >
+
+                  <p:dataTable id="airlineTable" 
+                               widgetVar="airlineTable"
+                               var="airlineItems"
+                               value="#{statistikBean.allFluggesellschaften}"
+                               rowKey="#{airlineItems.idFluggesellschaft}"
+                               selection="#{statistikBean.selectedAllFluggesellschaft}"
+                               paginator="true"
+                               paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                               rows="15"
+                               scrollable="true"
+                               rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                               lazy="false">
+
+
+
+                    
+                    <p:column headerText="MOD" rendered="#{loginMB.moduser}" width="80">
+                      <p:commandButton title="Fluggesellschaft löschen" icon="fa fa-trash" update="airlineTable" action="#{airlineBean.deleteAirlineDurchMOD()}">
+                        <p:confirm icon="fa fa-trash" header="MOD Fluggesellschaft löschen" message="Fluggesellschaft #{airlineItems.name} wirklich löschen?" />
+                        <f:setPropertyActionListener value="#{airlineItems}" target="#{airlineBean.selectedAirline}"/>
+                      </p:commandButton>
+
+                      <p:commandButton title="Bankbuchungen anzeigen" icon="fa fa-money" oncomplete="PF('wdg_banking').show();" action="#{dobBanking.onBankkontoAirline()}"  update="frm_banking">
+                        <f:setPropertyActionListener value="#{airlineItems.bankKonto}" target="#{dobBanking.ktoNummer}"/>
+                        <f:setPropertyActionListener value="#{airlineItems.bankKontoName}" target="#{dobBanking.ktoName}"/>
+                      </p:commandButton>
+
+                    </p:column>
+
+                    <p:column headerText="FG ID" rendered="#{loginMB.moduser}" width="40">
+                      <h:outputText value='#{airlineItems.idFluggesellschaft}'/>
+                    </p:column>
+
+                    <p:column headerText="" width="64" style="text-align: center;">
+                      <p:graphicImage id="logo" url="#{airlineItems.logoURL}" width="64">
+                        <p:tooltip for="logo">
+                          <p:graphicImage  url="#{airlineItems.logoURL}"/>
+                        </p:tooltip>
+                      </p:graphicImage>
+                    </p:column>
+
+                    <p:column headerText="" width="32">
+                      <p:commandButton title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_btn_info}" icon="fa fa-info" oncomplete="PF('wdg_info').show();" 
+                                       action="#{statistikBean.onReadFlugzeuge()}" update="frm_info" >
+                        <f:setPropertyActionListener target="#{statistikBean.selectedAllFluggesellschaft}" value="#{airlineItems}" />
+                        <f:setPropertyActionListener target="#{mapsBean.idFG}" value="#{airlineItems.idFluggesellschaft}" />
+                        <f:setPropertyActionListener target="#{mapsBean.fgIcao}" value="#{airlineItems.icao}" />
+                      </p:commandButton>
+                    </p:column>
+
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_name}" style="text-align: center;" filterBy="#{airlineItems.name}" filterMatchMode="contains">
+                      <h:outputText value='#{airlineItems.name}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_ansprechpartner}" style="text-align: center;" filterBy="#{airlineItems.besitzerName}" filterMatchMode="contains">
+                      <h:outputText value='#{airlineItems.besitzerName}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_icaocode}" style="text-align: center;">
+                      <h:outputText value='#{airlineItems.icaoCode}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_land}" style="text-align: center;" filterBy="#{airlineItems.land}" filterMatchMode="contains">
+                      <h:outputText value='#{airlineItems.land}'/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_stadt}" style="text-align: center;">
+                      <h:outputText value='#{airlineItems.stadt}'/>
+                    </p:column>
+
+                  </p:dataTable>
+                </p:panelGrid>
+
+              </p:tab>              
+            </p:accordionPanel>
+
+
+          </h:form>
+
+          <p:dialog id="dlg_info" widgetVar="wdg_info" header="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_dlg_header} #{statistikBean.selectedAllFluggesellschaft.name}" 
+                    width="1200" position="top">
+            <h:form id="frm_info">
+              <p:toolbar id="tlb_info">
+                <p:toolbarGroup id="tbg_info" align="left">
+                  <p:commandButton icon="fa fa-close" onclick="PF('wdg_info').hide()"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:accordionPanel id="acp_info">
+
+                <p:tab id="tab_zahlen" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_header_Unternehmenszahlen} : #{statistikBean.selectedAllFluggesellschaft.name}">
+                  <p:panelGrid columns="2">
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_VermoegenswertBank}"/>
+                    <h:outputText value="#{statistikBean.bankSaldo}" style="float: right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_VermoegenswertFlotte}"/>
+                    <h:outputText value="#{statistikBean.FGSummen[1]}" style="float: right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_FlottenZustand}" />
+                    <p:progressBar value="#{statistikBean.FGSummen[0]}" style="width: 150px" labelTemplate="{value}%"/>
+
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_Gesamtvermoegen}"/>
+                    <h:outputText value="#{statistikBean.bankSaldo + statistikBean.FGSummen[1]}" style="float: right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_AufwendungenFBO}"/>
+                    <h:outputText value="" style="float: right">
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_TPIPax}"/>
+                    <h:outputText  value="#{statistikBean.traffikIndexPax/100}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 %"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_PaxeTransport}"/>
+
+                    <h:outputText  value="#{statistikBean.umsatzPax}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_TPICargo}"/>
+                    <h:outputText  value="#{statistikBean.traffikIndexCargo/100}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 %"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_CargoTransport}"/>
+                    <h:outputText value="#{statistikBean.umsatzCaro}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText>
+
+                  </p:panelGrid>
+
+
+                  <div align="center">
+                    <p style="font-weight: bolder; font-style: italic">#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_lbl_BETAHinweis}</p>
+                  </div> 
+
+                  #{statistikBean.onReadFluggesellschaftManager()}                
+
+                  <div align="center">
+                    <p style="font-size: 2em; font-style: italic">#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Manager_Ueberschrift}</p>
+                  </div> 
+
+
+                  <p:dataTable id="tbl_manger" value="#{statistikBean.fluggesellschaftManager}" var="fgManager" rowKey="#{fgpiloten.idUser}" scrollable="true" scrollHeight="150"
+                               emptyMessage="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Manager_EmptyMessage}">
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Manager_Geschaeftsfuehrer}" style="text-align: center" width="120">
+                      <h:outputText value="#{sprache.ja}" rendered="#{fgManager.geschaeftsfuehrer}"/>
+                      <h:outputText value="#{sprache.nein}" rendered="#{not fgManager.geschaeftsfuehrer}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Manager_Bezeichnung}" style="text-align: center">
+                      <h:outputText value="#{fgManager.bezeichnung}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Manager_Name}" style="text-align: center">
+                      <h:outputText value="#{fgManager.benutzerName}"/>
+                    </p:column>
+
+
+                  </p:dataTable>
+
+
+                </p:tab>
+
+
+                <p:tab id="tab_flugzeuge" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_header_FlugzeugeDerFluggesellschaft} #{statistikBean.selectedAllFluggesellschaft.name}">
+
+                  #{statistikBean.onReadFlugzeuge()}
+
+                  <p:dataTable id="fgflg" value="#{statistikBean.fluggesellschaftFlugzeuge}" var="fgflg" rowKey="#{fgflg.idMietKauf}"
+                               scrollable="true" scrollHeight="400">
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_Standort}" width="80">
+                      <h:outputText value="#{fgflg.aktuellePositionICAO}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_Type}">
+                      <h:outputText escape="false" value="* L/F * #{fgflg.type} #{configBean.BR} #{flugzeugeMietKaufBean.getUserName(fgflg.idflugzeugBesitzer)}" rendered="#{fgflg.leasingAnUserID gt 0}"/>
+                      <h:outputText value="#{fgflg.type}" rendered="#{fgflg.leasingAnUserID eq -1}"/>
+                    </p:column>
+
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_Zustand}" style="text-align: center" width="150">
+                      <p:progressBar value="#{fgflg.zustand}"  labelTemplate="{value} %"/>
+
+                      <h:outputText value="#{fgflg.naechsterTerminCcheck}" style="text-align: center">
+                        <f:convertDateTime pattern="MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputText>
+
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_gesperrt}" width="50" style="text-align: center">
+                      <h:outputText value="#{sprache.ja}" rendered="#{fgflg.istGesperrt}" />
+                      <h:outputText value="#{sprache.nein}" rendered="#{not fgflg.istGesperrt}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_Fliegt}" width="50" style="text-align: center">
+                      <h:outputText value="#{sprache.ja}" rendered="#{fgflg.istInDerLuft}" />
+                      <h:outputText value="#{sprache.nein}" rendered="#{not fgflg.istInDerLuft}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_zuMieten}" width="50" style="text-align: center">
+                      <h:outputText value="#{sprache.ja}" rendered="#{fgflg.istMietbar}"/>
+                      <h:outputText value="#{sprache.nein}" rendered="#{not fgflg.istMietbar}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FZ_Mietpreis}" width="90" style="text-align: right">
+                      <h:outputText value="#{fgflg.mietpreisTrocken}" >
+                        <f:convertNumber pattern="#,##0 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                  </p:dataTable>
+
+                </p:tab>
+
+                <p:tab id="tab_piloten" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Pilot_header} #{statistikBean.selectedAllFluggesellschaft.name}">
+
+                  #{statistikBean.onReadFluggesellschaftPiloten()}                
+
+                  <p:dataTable id="tbl_piloten" value="#{statistikBean.fluggesellschaftPiloten}" var="pilotItems" scrollable="true" scrollHeight="400" scrollWidth="1920">
+
+                    <!--
+                                        <p:column headerText="" width="80">
+                                          <p:graphicImage value="#{statistikBean.bonusAbzeichen}" height="80"/>
+                                        </p:column>
+                    -->                    
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_PilotenName}" style="text-align: left;" >
+                      <h:outputText value='#{statistikBean.getUserName(pilotItems.iduser)}'/>
+                    </p:column>
+
+<!--                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_PilotRufname}" style="text-align: left;" >
+                      <h:outputText value='#{pilotItems.callname}'/>
+                    </p:column>
+                    -->
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Status}" width="300" style="text-align: center;" >
+                      <h:outputText value="#{statistikBean.BonusBezeichnungStatus(pilotItems.iduser)}" />
+                    </p:column>
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FluSi}" style="text-align: center;" >
+                      <h:outputText value='#{pilotItems.flusi}'/>
+                    </p:column>
+
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_LetzterFlug}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.letzterFlug}'>
+                        <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Umsatz}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.umsatz}'>
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Bonus}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.bonus}'>
+                        <f:convertNumber pattern="#,##0.00"/>
+                      </h:outputText>
+                    </p:column>
+
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Meilen}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.kilometer}'>
+                        <f:convertNumber pattern="0"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FlugStunden}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.zeit/60}'>
+                        <f:convertNumber pattern="0.00"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_TransportiertePassagiere}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.passagiere}'>
+                        <f:convertNumber pattern="0"/>
+                      </h:outputText>
+                    </p:column>
+
+
+                    <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Cargo}" style="text-align: right;" >
+                      <h:outputText value='#{pilotItems.waren}'>
+                        <f:convertNumber pattern="0"/>
+                      </h:outputText>
+                    </p:column>
+
+
+
+
+                  </p:dataTable>
+
+
+                </p:tab>
+
+
+
+                <p:tab id="tab_routen" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_header} #{statistikBean.selectedAllFluggesellschaft.name}">
+
+                  #{statistikBean.onReadFluggesellschaftRouten()}
+
+                  <p:toolbar>
+                    <p:toolbarGroup align="left">
+
+                      <p:commandButton value="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_Map}" 
+                                       title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_Map}" 
+                                       icon="fa fa-map-marker" onclick="PF('wdg_anflugziele').show();" update="frm_anflugziele">
+                      </p:commandButton>
+
+                    </p:toolbarGroup>
+                  </p:toolbar>
+
+                  <p:dataTable id="tbl_routen" value="#{statistikBean.fluggesellschaftRouten}" var="fgrouten" rowKey="#{fgrouten.idFlugrouten}" scrollable="true" scrollHeight="400">
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_Bezeichnung}">
+                      <h:outputText value="#{fgrouten.name}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_VonIcao}">
+                      <h:outputText value="#{fgrouten.vonIcao} - #{fgrouten.fromAirportLandCity}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_NachIcao}">
+                      <h:outputText value="#{fgrouten.nachicao} - #{fgrouten.toAirportLandCity}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_Meilen}" width="40">
+                      <h:outputText value="#{fgrouten.distance}" style="float: right">
+                        <f:convertNumber pattern="#,##0"/>
+                      </h:outputText>
+                    </p:column>
+
+                  </p:dataTable>
+
+                </p:tab>
+
+
+                <p:tab id="tab_fbo" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FBO_Header} #{statistikBean.selectedAllFluggesellschaft.name}" >
+
+                  <p:dataTable id="tbl_fbos" var="fgfbo" value="#{statistikBean.fluggesellschaftFBO}" rowKey="#{fgfbo.iduserfbo}" scrollable="true" scrollHeight="400" >
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FBO_Standort}" width="50">
+                      <h:outputText value="#{fgfbo.icao}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_FBO_Name}">
+                      <h:outputText value="#{fgfbo.name}"/>
+                    </p:column>
+
+                  </p:dataTable>
+
+
+                </p:tab>
+
+                <p:tab id="tab_terminals" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Terminals_header} #{statistikBean.selectedAllFluggesellschaft.name}">
+
+                  <p:dataTable id="tbl_terminal" var="fgterminals" value="#{statistikBean.fluggesellschaftTerminals}" rowKey="#{fgterminals.iduserfbo}" scrollable="true" scrollHeight="400" >
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Terminals_Standort}" width="50">
+                      <h:outputText value="#{fgterminals.icao}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Terminals_Name}">
+                      <h:outputText value="#{fgterminals.name}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Terminals_groesse}" width="100" >
+                      <h:outputText value="#{fgterminals.terminalMaxPax}" style="float: right">
+                        <f:convertNumber pattern="#,##0 PAX"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Terminals_Gebuehr}" width="60">
+                      <h:outputText value="#{fgterminals.terminalGebuehrInProzent/100}" style="float: right">
+                        <f:convertNumber pattern="#,##0.00 %;"/>
+                      </h:outputText>
+                    </p:column>
+
+
+
+                  </p:dataTable>
+
+
+                </p:tab>
+
+                <p:tab id="tab_Tankstellen" title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_header} #{statistikBean.selectedAllFluggesellschaft.name}">
+                  <p:dataTable id="tbl_tankstelle" var="fgtankstelle" value="#{statistikBean.fluggesellschaftTankstellen}" rowKey="#{fgtankstelle.iduserfbo}" scrollable="true" scrollHeight="400" >
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_Standort}" width="50">
+                      <h:outputText value="#{fgtankstelle.icao}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_Name}">
+                      <h:outputText value="#{fgtankstelle.name}"/>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_groesse}" width="100" >
+                      <h:outputText value="#{fgtankstelle.tankstelleMaxFuelKG}" style="float: right">
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_bestand} AVGAS" width="100">
+                      <h:outputText value="#{fgtankstelle.bestandAVGASkg}" style="float: right">
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_Preis}" width="60">
+                      <h:outputText value="#{fgtankstelle.preisAVGAS}" style="float: right">
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_bestand} JETA" width="100">
+                      <h:outputText value="#{fgtankstelle.bestandJETAkg}" style="float: right">
+                        <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                      </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Tankstellen_Preis}" width="60">
+                      <h:outputText value="#{fgtankstelle.preisJETA}" style="float: right">
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:column>
+
+                  </p:dataTable>
+
+                </p:tab>
+
+              </p:accordionPanel>
+
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_anflugziele" widgetVar="wdg_anflugziele" width="80%" height="800" 
+                  header="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_dlg_Map_header} #{statistikBean.selectedAllFluggesellschaft.name}" >
+
+          <h:form id="frm_anflugziele" style="height: 100%; width: 100%">
+
+            <div id="airportMap" style="height: 98%;"></div>
+
+            <script>
+
+              var airportIcon = L.icon({
+                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                iconSize: [38, 95],
+                popupAnchor: [0, -10]
+              });
+
+              var mymap = L.map('airportMap').setView([#{mapsBean.FGKoordinaten}], 4);
+
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              }).addTo(mymap);
+
+              #{mapsBean.routen}
+              #{mapsBean.routenPolylines}
+              mymap.invalidateSize(true);
+
+            </script>
+
+          </h:form>
+
+        </p:dialog>
+
+        <!-->  dummy Eintrag für den Dialog Bankbuchungen <-->
+        <h:form id="frm_daten"></h:form>
+
+        <ui:include src="/dob/dlg/modBanking.xhtml"/>
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+
+      </p:layout>
+    </h:body>
+
+  </f:view>
+</html>

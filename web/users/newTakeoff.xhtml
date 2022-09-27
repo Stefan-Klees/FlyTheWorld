@@ -1,0 +1,924 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{sprache.Terminal_pnl_terminal} #{newTakeoffBean.flughafenName}</title>
+
+      <style type="text/css">
+        .ui-accordion .ui-accordion-content {
+          padding: 0px;
+        }
+
+      </style>
+
+    </h:head>
+
+    <h:body>
+
+
+      #{newTakeoffBean.onRefreshSite()}
+
+      <p:dialog id="dlg_YAACARSInfo" widgetVar="wdg_YAACARSInfo" header="Terminalinfo" modal="true" visible="true" closable="false" rendered="#{newTakeoffBean.acarsFlugInUse}">
+        <h:form id="_YAACARSInfo">
+          <div align="center">
+            <p style="font-size: 1.2em"><h:outputText value="#{sprache.Terminal_dlg_YAACARSInfo_info}"/></p>
+            <p style="font-size: 1.4em">#{sprache.Terminal_dlg_YAACARSInfo_info2}</p>
+            <br></br>
+            <p:commandButton value="#{sprache.Terminal_dlg_YAACARSInfo_btn_schliessen}" action="/users/index.xhtml" />
+          </div>
+        </h:form>
+      </p:dialog>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" >
+
+
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_takeoff">
+
+            <pe:timer id="TakeOffTimer" singleRun="false" visible="false"  timeout="5" listener="#{newTakeoffBean.onUmbauAktiv()}" update="frm_takeoff TakeOffTimer" rendered="#{newTakeoffBean.wirdUmgebaut}" />
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+
+            <p:notificationBar id="bar" widgetVar="bar" style="height: 40px;" position="top"  effect="slide" autoDisplay="#{newTakeoffBean.abrechnungsFehler}">
+              <p:commandButton id="btnBar"  icon="fa fa-close" process="@this"  action="#{newTakeoffBean.onErrorText()}"  oncomplete="PF('bar').hide();"/>
+              <p:commandButton id="btnBarRefresh"  icon="fa fa-refresh" update="bar"/>
+              <h:outputText value="#{newTakeoffBean.abrechnungsFehlerText}" style="font-size:18px" />
+            </p:notificationBar>          
+
+
+            <p:toolbar id="tlb_takeoff" rendered="#{!newTakeoffBean.wirdUmgebaut}">
+
+              <p:toolbarGroup id="tbg_refresh">
+                <p:commandButton title="#{sprache.Terminal_btn_aktualisieren}" icon="fa fa-refresh" oncomplete="location.reload()" />
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_takeoff" rendered="#{newTakeoffBean.istEinFlugzeugGemietet}">
+
+                <p:commandButton value="#{sprache.Terminal_btn_tankstelle}" icon="fa fa-fire-extinguisher" action="#{newTakeoffBean.ontankenStart()}" 
+                                 oncomplete="PF('wdg_tankstelle').show();" rendered="#{newTakeoffBean.tankstelleOffen}" update="dlg_tankstelle"/>
+
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_takeoff1" rendered="#{newTakeoffBean.istEinFlugzeugGemietet}"> 
+                <p:commandButton value="#{sprache.Terminal_btn_flugStarten}" action="#{newTakeoffBean.onStartTheFlight()}" icon="ui-icon-clock" disabled="#{newTakeoffBean.startButtonDisabled}" oncomplete="location.reload()" rendered="#{newTakeoffBean.tankenBezahlt}"/>
+                <p:commandButton value="#{sprache.Terminal_btn_flugBeenden}" action="#{newTakeoffBean.onEndTheFlight()}" icon="ui-icon-stop" oncomplete="location.reload()" rendered="#{newTakeoffBean.flugGestartet}">
+                  <p:confirm header="#{sprache.Terminal_Warnung_FlugBeenden}" message="#{sprache.Terminal_Warnung_FlugBeenden}" icon="ui-icon-alert" />
+                </p:commandButton >
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_acars">
+                <p:commandButton value="#{sprache.Terminal_btn_AcarsFluginfoAnzeige}"  icon="ui-icon-info" onclick="PF('dlg_AcarsFlightInfo').show()" update="frm_AcarsInfo" rendered="#{newTakeoffBean.flugGestartet}"/>          
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_takeoff2" align="right">
+                <p:commandButton value="#{sprache.Terminal_btn_flugAbbrechen}" action="#{newTakeoffBean.onCancelFlight()}" icon="fa fa-close" oncomplete="location.reload()" rendered="#{newTakeoffBean.flugGestartet}">
+                  <p:confirm header="#{sprache.Terminal_Warnung_FlugAbbrechen}" message="#{sprache.Terminal_Warnung_FlugAbbrechen}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:accordionPanel activeIndex="-1">
+              <p:tab title="#{sprache.Terminal_pnl_auftraegeBereitZumAbflug} #{newTakeoffBean.flughafenName}" >
+
+                <p:dataTable id="checkboxDT"
+                             widgetVar="assignmentTable"
+                             var="assignmentItems"
+                             value="#{newTakeoffBean.myAssignments}"
+                             rowKey="#{assignmentItems.idassignement}"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                             rows="8"
+                             rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                             lazy="false"
+                             emptyMessage="#{sprache.Terminal_Table_emptyMessage}"
+                             >
+
+                  <p:column style="width:16px">
+                    <p:rowToggler />
+                  </p:column>
+
+                  <p:column style="width: 32px">
+                    <p:graphicImage id="logo" url="#{assignmentItems.airlineLogo}" height="16">
+                      <p:tooltip for="logo">
+                        <p:graphicImage url="#{assignmentItems.airlineLogo}" />
+                      </p:tooltip>
+                    </p:graphicImage>
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.Terminal_tbl_status}" style="text-align: center;" >
+                    <h:outputText value='#{sprache.Terminal_tbl_status_Fliegt}' rendered="#{assignmentItems.userlock==1}"/>
+                    <h:outputText value='#{sprache.Terminal_tbl_status_BereitZumAbflug}' rendered="#{assignmentItems.userlock==0}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_aktuelleStandard}"  style="text-align: center;" sortBy="#{assignmentItems.locationIcao}" >
+                    <h:outputText value='#{assignmentItems.locationIcao}' />
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_nachIcao}"  style="text-align: center;" sortBy="#{assignmentItems.toIcao}" >
+                    <h:outputText value='#{assignmentItems.toIcao}' />
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.Terminal_tbl_menge}" width="150" style="text-align: right;" sortBy="#{assignmentItems.ammount}">
+                    <h:outputText value="#{assignmentItems.comment} #{assignmentItems.ammount} #{sprache.kg}" rendered="#{assignmentItems.routenArt==2}" >
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText>
+                    <h:outputText value="#{assignmentItems.ammount} #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==1}" />
+                    <h:outputText value="#{assignmentItems.ammount}" rendered="#{assignmentItems.routenArt==3}" />
+                    <h:outputText value="#{assignmentItems.ammount} BC #{assignmentItems.comment}" rendered="#{assignmentItems.routenArt==4}" />
+                    <h:outputText value="#{assignmentItems.ammount} #{sprache.kg} Fuel" rendered="#{assignmentItems.routenArt==5}" />
+                    <h:outputText value=" *" rendered="#{assignmentItems.gesplittet}"/>
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" sortBy="#{assignmentItems.routenArt}" width="30">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==5}"/>                
+                    <h:outputText value="TRF"    rendered="#{assignmentItems.routenArt==3}" />
+
+                  </p:column>
+
+                  <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gewichtPax}">
+                    <f:facet name="header">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="32" title="#{sprache.Terminal_tbl_passagierGewicht}"/>
+                    </f:facet>
+                    <h:outputText value='#{assignmentItems.gewichtPax}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
+                      <f:convertNumber pattern="#0 #{sprache.kg}"/>
+                    </h:outputText>
+                    <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+                  </p:column>
+
+                  <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gepaeck}">
+                    <f:facet name="header">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/gepaeck.png" height="32" title="#{sprache.Terminal_tbl_gepaeckGewicht}"/>
+                    </f:facet>
+                    <h:outputText value='#{assignmentItems.gepaeck}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
+                      <f:convertNumber pattern="#0 #{sprache.kg}"/>
+                    </h:outputText>
+                    <h:outputText value='-' rendered="#{assignmentItems.routenArt == 2 or assignmentItems.routenArt == 3}"/>
+                  </p:column>
+
+
+                  <p:column width="60" style="text-align: right;" sortBy="#{assignmentItems.pay}">
+                    <f:facet name="header">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/money.png" height="32" title="#{sprache.Terminal_tbl_bezahlung}"/>
+                    </f:facet>
+                    <h:outputText value='#{assignmentItems.pay}'>
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_meilen}" width="50" style="text-align: center;" sortBy="#{assignmentItems.distance}" >
+                    <h:outputText value='#{assignmentItems.distance}'/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_kurs}" width="50" style="text-align: center;" sortBy="#{assignmentItems.direct}">
+                    <h:outputText value='#{assignmentItems.direct}'/>
+                    <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />                  
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_laeuftAb}" style="text-align: center;" sortBy="#{assignmentItems.expires}">
+                    <h:outputText value='#{assignmentItems.expires}'>
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_bonus1}" style="text-align: center;" sortBy="#{assignmentItems.bonusoeffentlich}">
+                    <h:outputText value='#{assignmentItems.bonusoeffentlich}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Terminal_tbl_bonus2}"  style="text-align: center;" sortBy="#{assignmentItems.bonusclosed}">
+                    <h:outputText value='#{assignmentItems.bonusclosed}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.Terminal_tbl_provision}" style="text-align: center;" sortBy="#{assignmentItems.provision}">
+                    <h:outputText value='#{assignmentItems.provision}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:rowExpansion>
+
+                    <p:panelGrid columns="2" style="width: 50%" layout="grid"  >
+
+                      <f:facet name="header">
+                        <p:graphicImage height="128" url="#{assignmentItems.airlineLogo}" />
+                      </f:facet>
+
+                      <h:outputText value="ID :" />
+                      <h:outputText value="#{assignmentItems.idassignement}"/>
+                      <h:outputText value="D.O.C. :" />
+                      <h:outputText value="#{assignmentItems.creation}">
+                        <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                      </h:outputText>
+
+                      <h:outputText value="#{sprache.Terminal_tbl_Langstrecke}" />
+                      <h:outputText value="#{sprache.ja}" rendered="#{assignmentItems.langstrecke}"/>
+                      <h:outputText value="#{sprache.nein}" rendered="#{not assignmentItems.langstrecke}"/>
+
+                      <h:outputText value="Lizenz: "/>                
+                      <h:outputText value='#{assignmentItems.lizenz}'/>
+
+                      
+                      <h:outputText value="#{sprache.Terminal_tbl_abflugFlughafen}:"/>
+                      <h:outputText value="#{assignmentItems.fromIcao} #{assignmentItems.fromName} - #{assignmentItems.fromAirportLandCity}"/>
+                      <h:outputText value="#{sprache.Terminal_tbl_zielFlughafen}:"/>
+                      <h:outputText value="#{assignmentItems.toIcao} #{assignmentItems.toName} - #{assignmentItems.toAirportLandCity}"/>
+                      <h:outputText value="#{sprache.Terminal_tbl_fluggesellschaft}: "/>
+                      <h:outputText value='#{assignmentItems.nameairline}'/>
+                      <h:outputText value="#{sprache.Terminal_tbl_besitzerDerFluggesellschaft}: "/>                
+                      <h:outputText value='#{assignmentItems.ceoAirline}'/>
+                      <h:outputText value="#{sprache.Terminal_tbl_flugrouteBezeichnung}: "/>
+                      <h:outputText value='#{assignmentItems.flugrouteName}'/>
+                      <h:outputText value="#{sprache.Terminal_tbl_ladung}:"/>
+                      <h:outputText value='#{assignmentItems.comment}'/>
+                    </p:panelGrid>
+
+                    <p:panelGrid columns="1" style="width: 800px">
+                      <h:outputText escape="false" value='#{assignmentItems.commodity}'/>
+                    </p:panelGrid>
+
+                  </p:rowExpansion>
+
+                </p:dataTable>
+
+              </p:tab>
+            </p:accordionPanel>
+
+            <p:accordionPanel rendered="#{newTakeoffBean.istEinFlugzeugGemietet}" activeIndex="0">
+              <p:tab title="#{sprache.Terminal_pnl_abflugdaten} - #{newTakeoffBean.flughafenName}" closable="true">
+
+                <p:panelGrid columns="1" style="margin-left: 10px; margin-top: 15px; float: left" >
+
+                  <p:panelGrid columns="3" style="float: left" >
+
+                    <f:facet name="header">
+                      <font size="3em">#{sprache.Terminal_Transportdaten_header}</font>
+                      <br></br><h:outputLabel value="#{sprache.Terminal_tbl_Langstrecke}" rendered="#{newTakeoffBean.langstrecke}"/>
+                    </f:facet>
+                    
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_passagiereEconomy}"/>
+                    <h:outputLabel value="#{newTakeoffBean.anzahlPassengersEconomyTakeOff}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_passagiereBusinessKlasse}"/>
+                    <h:outputLabel value="#{newTakeoffBean.anzahlPassengersBuisnessTakeOff}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_gesamtPassagiere}" />
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.anzahlPassengersBuisnessTakeOff + newTakeoffBean.anzahlPassengersEconomyTakeOff}" style="float: right; font-weight: bolder">
+                      <f:convertNumber pattern="#,##0" />
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_DOW}" style="font-weight: bolder"/>
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.dryOperatingWeight}" style="float: right; font-weight: bolder">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_gewichtDerPassagiere}" />
+                    <h:outputLabel value="#{newTakeoffBean.gewichtPassagiereTakeOff}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_gewichtDesGepaecks}"/>
+                    <h:outputLabel value="#{newTakeoffBean.gewichtGepaeckTakeOff}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_cargo}"/>
+                    <h:outputLabel value="#{newTakeoffBean.gewichtCargoTakeOff}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.gewichtCargoTakeOff + newTakeoffBean.gewichtGepaeckTakeOff}" style="float: right; font-weight: bolder">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_payload}"/>
+                    <h:outputLabel value="#{newTakeoffBean.payload}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_ZFW}" style="font-weight: bolder"/>
+                    <h:outputLabel value="&nbsp;"/> 
+                    <h:outputLabel value="#{newTakeoffBean.zeroFullWeight}" style="float: right; font-weight: bolder">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_tankfuellung}"/>
+                    <h:outputLabel value="#{newTakeoffBean.summeGewichtTreibstoff}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_TOW}" style="font-weight: bolder"/>
+                    <h:outputLabel value="&nbsp;"/> 
+                    <h:outputLabel value="#{newTakeoffBean.takeOffWeight}" style="float: right; font-weight: bolder">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_zuladungVerbleibend}"/>
+                    <h:outputLabel value="#{newTakeoffBean.selectedAircraft.hoechstAbfluggewicht - newTakeoffBean.takeOffWeight}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_treibstoffVerbleibend}"/>
+                    <h:outputLabel value="#{newTakeoffBean.treibstoffVerbleibendFuerTransportdaten}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/> 
+
+                    <h:outputLabel value="#{sprache.Terminal_Transportdaten_lbl_wertDesTransports}" style="font-weight: bolder"/>
+                    <h:outputLabel value="&nbsp;"/> 
+                    <h:outputLabel value="#{newTakeoffBean.wertTakeOff}" style="float: right;font-weight: bolder">
+                      <f:convertNumber pattern="#,##0 &euro;" />
+                    </h:outputLabel>
+
+                  </p:panelGrid>
+
+                  <ui:repeat var="abr" value="#{newTakeoffBean.abrechnungsziele}">
+                    <p:panelGrid columns="3" style="width: 100%">
+                      <h:outputLabel value="#{abr.locationIcao}" style="font-weight: bolder" />
+                      <h:outputLabel value="#{abr.toIcao}" style="font-weight: bolder"/>
+                      <h:outputLabel value="#{abr.betrag}" style="float: right;font-weight: bolder">
+                        <f:convertNumber pattern="#,##0 &euro;" />
+                      </h:outputLabel>
+
+                    </p:panelGrid>
+                  </ui:repeat>
+
+                </p:panelGrid>
+
+                <p:panelGrid id="png_flugzeugdaten" columns="2" style="margin-left: 10px; margin-top: 15px; float: left" >
+
+                  <f:facet name="header">
+                    <font size="3em">#{sprache.Terminal_Datasheet_header} - #{newTakeoffBean.selectedAircraft.type}</font>
+
+                    <h:outputText escape="false" value="#{sprache.Terminal_msg_FlugzeugStehtImHangarUndWirdUmgebaut}#{configBean.BR}" rendered="#{newTakeoffBean.wirdUmgebaut}"/>
+                    <h:outputText escape="false" value="#{sprache.Terminal_msg_VoraussichtlicheFertigstellung}" rendered="#{newTakeoffBean.wirdUmgebaut}"/>
+                    <h:outputText escape="false" value="#{newTakeoffBean.umbauZeit}" rendered="#{newTakeoffBean.wirdUmgebaut}">
+                      <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </f:facet>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_rentid}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.idMietKauf}"/>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_aktuellerStandort}"/>
+                  <h:commandLink value="#{newTakeoffBean.selectedAircraft.aktuellePositionICAO}" title="#{sprache.mnu_Auftragsplanung} >>> #{newTakeoffBean.selectedAircraft.aktuellePositionICAO}" action="assignments.xhml" actionListener="#{newTakeoffBean.icaoFuerFlughafenInfoSetzen(newTakeoffBean.selectedAircraft.aktuellePositionICAO)}" target="_blank">
+                    <f:setPropertyActionListener target="#{assignementBean.suchText}" value="#{newTakeoffBean.selectedAircraft.aktuellePositionICAO}" />
+                  </h:commandLink>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_model}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.type}"/>
+                  <h:outputText value="Lizenz"/><h:outputText value="#{newTakeoffBean.selectedAircraft.lizenz}"/>
+                  <h:outputText value="Klasse"/><h:outputText value="#{newTakeoffBean.selectedAircraft.flugzeugklasse}"/>
+                  <h:outputText value="#{sprache.Terminal_Datasheet_kennung}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.registrierung}"/>
+                  <h:outputText value="#{sprache.Terminal_Datasheet_mietpreisTrocken}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.mietpreisTrocken}" style="float: right">
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_treibstoffart}"/>              
+                  <h:outputLabel value="100 LL" rendered="#{newTakeoffBean.selectedAircraft.treibstoffArt==1}"/>
+                  <h:outputLabel value="JETA" rendered="#{newTakeoffBean.selectedAircraft.treibstoffArt==2}"/>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_tankfuellung}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.aktuelleTankfuellung}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_maximaleTankkapazitaet}"/><h:outputText value="#{newTakeoffBean.maxTankkapazitaet}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_verbrauchProStunde}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.verbrauchStunde}" style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_zustand}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.zustand / 100.0}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value=""/>
+                  <div align="center" style="font-weight: bold; text-align: center">
+                    #{newTakeoffBean.zustandText}
+                  </div>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_cockpitbesatzungOhnePilot}"/><h:outputText value="#{newTakeoffBean.sitzeCrew}" style="float: right"/>
+                  <h:outputText value="#{sprache.Terminal_Datasheet_flugbegleiter}"/><h:outputText value="#{newTakeoffBean.sitzeFlugbegleiter}" style="float: right"/>
+                  <h:outputText value="#{sprache.Terminal_Datasheet_letzterCheck}"/><h:outputText value="#{newTakeoffBean.selectedAircraft.letzterCheckMinuten / 60}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 "/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_sitzeEconomy}"/>
+                  <h:outputText value="#{newTakeoffBean.sitzeEconomy}" style="float: right">
+                    <f:convertNumber pattern="0"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_sitzeBusinessKlasse}"/>
+                  <h:outputText value='#{newTakeoffBean.sitzeBusiness}' style="float: right">
+                    <f:convertNumber pattern="0"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_reisegeschwindigkeitTAS}"/>
+                  <h:outputText value='#{newTakeoffBean.selectedAircraft.reisegeschwindigkeitTAS}' style="float: right">
+                    <f:convertNumber pattern="0"/>
+                  </h:outputText>
+
+                  <h:outputText value="Max. Speed (TAS)"/>
+                  <h:outputText value='#{newTakeoffBean.selectedAircraft.hoechstgeschwindigkeitTAS}' style="float: right">
+                    <f:convertNumber pattern="0"/>
+                  </h:outputText>
+                  
+                  <h:outputLabel value="#{sprache.Terminal_Datasheet_mindestLandebahnlaenge}"/>
+                  <h:outputText value="#{newTakeoffBean.selectedAircraft.mindestLandebahnLaenge}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_hoechstAblfluggewicht}"/>
+                  <h:outputText value='#{newTakeoffBean.selectedAircraft.hoechstAbfluggewicht}' style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_cargo}"/>
+                  <h:outputText value='#{newTakeoffBean.cargoVerfuegbar}' style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_maximalesPayload}"/>
+                  <h:outputText value='#{newTakeoffBean.maxPayload}' style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_maximaleZuladung}"/>
+                  <h:outputText value='#{newTakeoffBean.selectedAircraft.hoechstAbfluggewicht - newTakeoffBean.selectedAircraft.leergewicht}' style="float: right">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_flugzeugrueckgabeAm}" style="font-weight: bolder"/>
+                  <h:outputText value="#{newTakeoffBean.flugzeugRueckgabe}" style="font-weight: bolder">
+                    <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_rueckpfandBeiUebergabeIn} #{newTakeoffBean.selectedAircraft.heimatICAO}" style="font-weight: bolder"/>
+                  <h:outputText value="#{newTakeoffBean.selectedAircraft.pfand}" style="font-weight: bolder; float: right">
+                    <f:convertNumber  pattern="#,##0 &euro;" />
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Terminal_Datasheet_sitzkonfiguration}" style="font-weight: bolder"/>
+                  <h:outputText value="#{newTakeoffBean.getSitzKonfigBezeichnung(newTakeoffBean.selectedAircraft.idSitzKonfiguration)}" style="font-weight: bolder; float: right"/>
+
+                  <h:outputText value="#{sprache.Terminal_Sitzkonfiguration_lbl_Faktor}" style="font-weight: bolder"/>
+                  <h:outputText value="#{newTakeoffBean.sitzKonfigFaktor}" style="font-weight: bolder; float: right">
+                    <f:convertNumber pattern="#,##0.00"/>
+                  </h:outputText>
+
+
+                </p:panelGrid>
+
+                <p:panelGrid columns="1" style="margin-left: 10px; margin-top: 15px; float: left">
+
+                  <f:facet name="header">
+                    <font size="3em">#{sprache.Terminal_Abrechnung_header}</font>
+                  </f:facet>
+
+                  <h:outputText value="#{sprache.Terminal_Abrechnung_departureTerminal}" />
+                  <p:selectOneMenu id="id_Departure" value="#{newTakeoffBean.departureTerminalAbrechnung}" style="width: 95%" disabled="#{not newTakeoffBean.terminalFreigeben}">
+                    <f:selectItem itemLabel="(&infin; Pax) FTW - Terminal (5.0 %)" itemValue="-300"/>
+                    <f:selectItems value="#{newTakeoffBean.departureTerminals}" var="term" itemLabel="(#{term.terminalMaxPax} Pax)  #{term.name} (#{term.terminalGebuehrInProzent})" itemValue="#{term.iduserfbo}"/>
+                    <p:ajax event="change" listener="#{newTakeoffBean.FlugKostenBerechnung()}"  update="frm_takeoff"/>
+                  </p:selectOneMenu>
+                  <h:outputLabel value=""/>
+
+                  <h:outputText value="#{sprache.Terminal_Abrechnung_arrivalTerminal}" />
+                  <p:selectOneMenu id="id_Arrival" value="#{newTakeoffBean.arrivalTerminalAbrechnung}" style="width: 95%" disabled="#{not newTakeoffBean.terminalFreigeben}" >
+                    <f:selectItem itemLabel="(&infin; Pax) FTW - Terminal (5.0 %)" itemValue="-300"/>
+                    <f:selectItems value="#{newTakeoffBean.arrivalTerminals}" var="term" itemLabel="(#{term.terminalMaxPax} Pax) #{term.name} (#{term.terminalGebuehrInProzent})" itemValue="#{term.iduserfbo}"/>
+                    <p:ajax event="change" listener="#{newTakeoffBean.FlugKostenBerechnung()}" update="frm_takeoff"/>
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value=""/>
+
+
+                  <p:panelGrid columns="3"  style="margin-left: 10px; margin-top: 15px; float: left">
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeit} / #{sprache.Terminal_Abrechnung_erwarteteFlugzeit}"/>
+                    <h:outputLabel value="#{newTakeoffBean.flightTime}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.erwarteteFlugzeit}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_meilen} / #{sprache.Terminal_Abrechnung_erwarteteMeilen}"/>
+                    <h:outputLabel value="#{newTakeoffBean.currentFlightMiles}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.erwarteteMeilen}" style="float: right">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputLabel>
+
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_rueckerstattungTreibstoffkosten}"/>
+                    <h:outputLabel value="#{newTakeoffBean.treibstoffkosten}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.spritverbrauch}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_ertragFuerDieFluggesellschaft}" rendered="#{newTakeoffBean.gewinnAirline} gr 0" />
+                    <h:outputLabel value="#{newTakeoffBean.gewinnAirline}" style="float: right" rendered="#{newTakeoffBean.gewinnAirline} gr 0" >
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;" rendered="#{newTakeoffBean.gewinnAirline} gr 0" />
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtertragFuerDenPiloten}" />
+                    <h:outputLabel value="#{newTakeoffBean.gewinnPilot}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_pilotenbonusDerFluggesellschaft}" rendered="#{newTakeoffBean.bonus} gr 0" />
+                    <h:outputLabel value="#{newTakeoffBean.bonus}" style="float: right" rendered="#{newTakeoffBean.bonus} gr 0" >
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;" rendered="#{newTakeoffBean.bonus} gr 0" />
+
+                    <h:outputLabel value="#{newTakeoffBean.boniBezeichnung}" rendered="#{newTakeoffBean.boniBonusSystem} gr 0" />
+                    <h:outputLabel value="#{newTakeoffBean.boniBonusSystem}" style="float: right" rendered="#{newTakeoffBean.boniBonusSystem} gr 0" >
+                      <f:convertNumber pattern="#,##0.00" />
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.boniBonusSystemWert}" style="float: right" rendered="#{newTakeoffBean.boniBonusSystem} gr 0" >
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenStartgebuehr}"/>
+                    <h:outputLabel value="#{newTakeoffBean.summeGewichtNachLandung + newTakeoffBean.spritverbrauch}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.startgebuehr}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_flughafenLandegebuehren}"/>
+                    <h:outputLabel value="#{newTakeoffBean.summeGewichtNachLandung}" style="float: right">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="#{newTakeoffBean.landegebuehr}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_flugzeugmiete}"/>
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.mietgebuehrflugzeug}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_bezahlungDerCrew}"/>
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.crewgebuehren}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_departureGebuehren}"/>
+                    <h:outputLabel value="#{newTakeoffBean.departureGebuehren}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/>            
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_arrivalGebuehren}"/>
+                    <h:outputLabel value="#{newTakeoffBean.arriavalGebuehren}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value="&nbsp;"/>            
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtGebuehrArrivalDeparture}"/>
+                    <h:outputLabel value="&nbsp;"/>            
+                    <h:outputLabel value="#{newTakeoffBean.bodenpersonalgebuehren}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_gesamtKostenDesFluges}"/>
+                    <h:outputLabel value="&nbsp;"/>
+                    <h:outputLabel value="#{newTakeoffBean.summekosten}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                    <h:outputLabel value="#{sprache.Terminal_Abrechnung_provision}"/>
+                    <h:outputLabel value="&nbsp;"/>            
+                    <h:outputLabel value="#{newTakeoffBean.wertProvision}" style="float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+
+                  </p:panelGrid>
+
+                  <p:commandButton value="#{sprache.Terminal_btn_flugAbrechnen}" action="#{newTakeoffBean.onAbrechnungErstellen()}" disabled="#{not newTakeoffBean.pirepOK}" oncomplete="location.reload()"
+                                   style="width: 100%;"/>
+                </p:panelGrid>
+
+              </p:tab>
+            </p:accordionPanel> 
+
+          </h:form>        
+
+
+          <p:dialog widgetVar="dlg_AcarsFlightInfo" id="dlg_AcarsFlightInfo" header="#{sprache.Terminal_AcarsFlightInfo_dlg_header}" closeOnEscape="true" rendered="#{newTakeoffBean.isAcasFlightExist}" closable="true" >
+            <h:form id="frm_AcarsInfo">
+
+              <p:toolbar id="tlb_AcarsInfo">
+                <p:toolbarGroup id="tbg_AcarsInfo">
+                  <p style="font-size: 1.3em">
+                    <p:link href="#{newTakeoffBean.simbriefDaten}" target="_blank" value="SimBrief Datenübergabe"/>  
+                  </p>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="3">
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Flugnummer}"/> <h:outputLabel value="#{newTakeoffBean.acarsflightinfo.flugnummer}"/><h:outputLabel value=""/>
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Flugzeug}"/> <h:outputLabel value="#{newTakeoffBean.acarsflightinfo.flugzeugtype}"/><h:outputLabel value=""/>
+                <h:outputLabel value="#{sprache.Hangar_tbl_kennung}"/> <h:outputLabel value="#{newTakeoffBean.acarsflightinfo.flugzeugkennung}"/><h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_VonICAO}"/> 
+                <h:commandLink value="#{newTakeoffBean.acarsflightinfo.departureicao}" title="#{sprache.Terminal_dlg_AcarsFlightInfo_FlughafenInfo} #{newTakeoffBean.acarsflightinfo.departureicao}" action="flughafen.xhml" actionListener="#{newTakeoffBean.icaoFuerFlughafenInfoSetzen(newTakeoffBean.acarsflightinfo.departureicao)}" target="_blank"/>
+                <h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_NachICAO}"/>
+                <h:commandLink value="#{newTakeoffBean.acarsflightinfo.arrivalicao}" title="#{sprache.Terminal_dlg_AcarsFlightInfo_FlughafenInfo} #{newTakeoffBean.acarsflightinfo.arrivalicao}" action="flughafen.xhml" actionListener="#{newTakeoffBean.icaoFuerFlughafenInfoSetzen(newTakeoffBean.acarsflightinfo.arrivalicao)}" target="_blank"/>
+                <h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.Terminal_dlg_AcarsFlightInfo_lbl_Status}"/> 
+                <h:outputLabel value="#{sprache.Terminal_dlg_AcarsFlightInfo_lbl_Flugvorbereitung}" rendered="#{newTakeoffBean.acarsflightinfo.flugstatus eq 0}"/>
+                <h:outputLabel value="#{sprache.Terminal_dlg_AcarsFlightInfo_lbl_fliegt}" rendered="#{newTakeoffBean.acarsflightinfo.flugstatus eq 1}"/>
+                <h:outputLabel value="#{sprache.Terminal_dlg_AcarsFlightInfo_lbl_Gelandet}" rendered="#{newTakeoffBean.acarsflightinfo.flugstatus eq 2}"/>
+                <h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Passagiere}"/> <h:outputLabel value="#{newTakeoffBean.acarsflightinfo.paxanzahl}"/><h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GewichtderPassagiere}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.gewichtPassagiereTakeOff)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.gewichtPassagiereTakeOff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GewichtDesGepaecks}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.gewichtGepaeckTakeOff)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.gewichtGepaeckTakeOff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Cargo}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.gewichtCargoTakeOff)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.gewichtCargoTakeOff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Payload}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.gewichtGepaeckTakeOff+newTakeoffBean.gewichtCargoTakeOff+newTakeoffBean.gewichtPassagiereTakeOff)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.gewichtGepaeckTakeOff+newTakeoffBean.gewichtCargoTakeOff+newTakeoffBean.gewichtPassagiereTakeOff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Tankfuellung}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.summeGewichtTreibstoff)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.summeGewichtTreibstoff}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GesamtladungGewicht}"/> <h:outputLabel value="#{newTakeoffBean.getKG2Libs(newTakeoffBean.summeGewichtTotal)}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+                </h:outputLabel>
+                <h:outputLabel value="#{newTakeoffBean.summeGewichtTotal}" style="float: right">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>                
+
+              </p:panelGrid>
+
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_tankstelle" widgetVar="wdg_tankstelle" header="#{sprache.Terminal_Tankstelle_dlg_header}" width="1024" closable="false" height="400">
+
+          <h:form id="frm_tankstelle" rendered="#{newTakeoffBean.tankstelleOffen}">
+
+            <div id="div_tankstellenname" align="center">
+              <h1>#{newTakeoffBean.tankstellenName}</h1>
+            </div>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankstelleWaehlen}"/>
+
+              <p:selectOneMenu id="sel_Tankstelle" value="#{newTakeoffBean.objektID}" >
+                <f:selectItem  itemLabel="#{sprache.Terminal_Tankstelle_cbo_WaehleEineTankstell}" itemValue="" noSelectionOption="false" />
+                <f:selectItem  itemLabel="FTW - Oil" itemValue="-1" itemDisabled="#{newTakeoffBean.istPrivateTankstelleVorhanden}"/>
+
+                <f:selectItems value="#{newTakeoffBean.tankstellen}" var="tk" itemLabel="#{tk.name} AVGAS : #{tk.bestandAVGASkg} #{sprache.kg} - #{tk.preisAVGAS} &euro;
+                               JETA : #{tk.bestandJETAkg} #{sprache.kg} - #{tk.preisJETA} &euro;
+                               " itemValue="#{tk.iduserfbo}"  />
+                <p:ajax event="change" partialSubmit="true" listener="#{newTakeoffBean.berechneTankfuellung()}" update="frm_tankstelle frm_summe sel_Tankstelle"/>                
+              </p:selectOneMenu>
+
+            </p:panelGrid>
+
+
+            <div id="div_grafik" style="float: left; padding: 0px; width: 260px">
+              <div id="div_grafik1" align="center" style="padding: 10px;">
+                <p:selectOneMenu id="sel_Treibstoff" value="#{newTakeoffBean.tankstelleTreibstoffArt}" >
+                  <f:selectItem itemLabel="AVGAS 100LL" itemValue="1" noSelectionOption="false" itemDisabled="#{newTakeoffBean.treibstoffArt == 2}"/>
+                  <f:selectItem itemLabel="JETA" itemValue="2" noSelectionOption="false" itemDisabled="#{newTakeoffBean.treibstoffArt == 1}"/>
+                </p:selectOneMenu>
+                <p></p>
+                <p:graphicImage value="#{newTakeoffBean.tankstellenGrafik}" style="width: 250px;" alt=" #{image}" title="#{image}"/>
+              </div>
+            </div>
+
+            <div id="div_summe" style="float: left; padding-left: 40px; padding-top: 40px;">
+              <div id="div_summe1" style="float: left; padding: 10px;">
+                <h:form id="frm_summe">
+
+                  <p:panelGrid columns="3" style="width: 100%" >
+
+                    <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TanksFuellenBisMax} #{newTakeoffBean.maxTankkapazitaet} #{sprache.kg}" style="font-size: 1.2em; width: 150px;"/>
+                    <h:inputText value="#{newTakeoffBean.tankBisFuellstandKG}" style="text-align: right" >
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:inputText>
+                    <p:commandButton icon="fa fa-calculator" action="#{newTakeoffBean.onTankenBerechneBisFüllstandKg()}" update="frm_tankstelle frm_summe"/>
+
+
+                    <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankMengeEinfuellen} #{sprache.kg} " style="font-size: 1.2em; width: 150px;" />
+                    <h:inputText value="#{newTakeoffBean.tankMengeKilo}" style="text-align: right"  >
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:inputText>
+                    <p:commandButton icon="fa fa-calculator" action="#{newTakeoffBean.onTankenBerechneKilo()}" update="frm_tankstelle frm_summe"/>
+
+                    <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankFuellenBisProzent} " style="font-size: 1.2em;"/>
+                    <h:inputText value="#{newTakeoffBean.tankMengeProzent}" style="text-align: right" >
+                      <f:convertNumber pattern="#,##0.00"/>
+                    </h:inputText>
+                    <p:commandButton icon="fa fa-calculator" action="#{newTakeoffBean.onTankenBerechneProzentTankfüllung()}" update="frm_tankstelle frm_summe"/>
+
+                    <h:outputLabel value="#{sprache.Fluggesellschaften_Hangar_dlg_tankstelle_lbl_Zahlung}" style="font-size: 1.2em;"/>
+
+                    <h:outputLabel value="#{newTakeoffBean.tankstelleSumme}" style="font-size: 1.2em; float: right">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputLabel>
+                    <h:outputLabel value=""/>
+
+
+
+                  </p:panelGrid>
+
+                  <p></p>
+
+                  <p:commandButton id="cmd5" value="#{sprache.Terminal_Tankstelle_btn_TreibstoffBezahlen}" action="#{newTakeoffBean.onTankenBezahlen()}" oncomplete="location.reload()" 
+                                   disabled="#{not newTakeoffBean.tankenFreigeben}"/>
+                  <p:commandButton value="#{sprache.Terminal_Tankstelle_btn_schliessen}" oncomplete="PF('wdg_tankstelle').hide();"/>
+
+                </h:form>
+
+              </div>
+            </div>
+
+
+          </h:form>
+
+
+          <h:form id="frm_tankstelleGeschlossen" rendered="#{not newTakeoffBean.tankstelleOffen}">
+
+            <div align="center">
+              <h1> #{sprache.Terminal_Tankstelle_geschlossen}</h1>
+            </div>
+
+            <p align="center">
+              <p:commandButton value="#{sprache.Terminal_Tankstelle_btn_schliessen}" oncomplete="location.reload();"/>
+            </p>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_FlugzeugFehlt" widgetVar="wdg_FlugzeugFehlt" header="#{sprache.Terminal_FlugzeugFehlt_dlg_header}" closable="false" closeOnEscape="true" modal="true" height="250" width="250" visible="false">
+          <h:form id="frm_FlugzeugFehlt">
+            <div align="center">
+              <h2>#{sprache.Terminal_FlugzeugFehlt_lbl_keinFlugzeugGemietet}</h2>
+              <br></br><br></br>
+            </div>
+            <div align="center">
+              <p:commandButton value="#{sprache.Terminal_FlugzeugFehlt_btn_FlugzeugMieten}" action="hangar.xhtml?faces-redirect=true"/>
+              <p:commandButton value="#{sprache.Terminal_FlugzeugFehlt_btn_schliessen}"  oncomplete="PF('wdg_FlugzeugFehlt').hide()"/>
+            </div>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_AuftragFehlt" widgetVar="wdg_AuftragFehlt" header="#{sprache.Terminal_AuftragFehlt_dlg_header}" closable="false" closeOnEscape="true" modal="true" height="250" width="250" visible="false">
+          <h:form id="frm_AuftragFehlt">
+            <div align="center">
+              <h2>#{sprache.Terminal_AuftragFehlt_lbl_keineAuftraege}</h2>
+              <br></br><br></br>
+            </div>
+            <div align="center">
+              <p:commandButton value="#{sprache.Terminal_AuftragFehlt_btn_Auftragsplanung}" action="assignments.xhtml?faces-redirect=true"/>
+              <br></br><br></br>
+              <p:commandButton value="#{sprache.Terminal_AuftragFehlt_btn_schliessen}" action="#{newTakeoffBean.onAuftragsHinweisClose()}" oncomplete="PF('wdg_AuftragFehlt').hide()"/>
+            </div>
+          </h:form>
+        </p:dialog>
+
+      </p:layout>
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+
+    </h:body>
+  </f:view>
+</html>

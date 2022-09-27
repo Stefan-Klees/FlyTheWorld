@@ -1,0 +1,1552 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+
+      <title>FTW-#{sprache.FBOManagement_pnl}</title>
+
+
+      <style>
+        .ui-dialog {
+          position: fixed !important;
+        }
+      </style>
+
+
+    </h:head>
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.FBOManagement_pnl}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_daten">
+
+            #{fboUserObjekteBean.onBerechtigungenEinlesen()}
+
+            <p:toolbar id="tlb_fboManagement" style="padding-left:  5px;">
+              <p:toolbarGroup id="tbg_fboManagement" align="left">
+
+                <p:panelGrid columns="18">
+                  <p:commandButton title="#{sprache.FBOManagement_btn_neuesFboObjekt}" onclick="PF('dlg_FboAdd').show()" icon="ui-icon-plusthick" disabled="#{not fboUserObjekteBean.allowFBOHinzufuegen}" />
+
+                  <p:commandButton title="#{sprache.FBOManagement_bnt_fboObjektKuendigen}" action="#{fboUserObjekteBean.onKuendigung()}" icon="ui-icon-trash" update="frm_daten" 
+                                   rendered="#{not empty fboUserObjekteBean.selectedFboUser}" disabled="#{not fboUserObjekteBean.allowFBOLoeschen}">
+                    <p:confirm header="#{sprache.FBOManagement_Warnung_fboObjektKuendigen}" message="#{sprache.FBOManagement_Warnung_fboObjektKuendigen}" icon="ui-icon-alert" />
+                  </p:commandButton>
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_fboObjektUmbauen}" oncomplete="PF('wdg_FboErweitern').show()" icon="fa fa-wrench" update="frm_FboErweitern" 
+                                   rendered="#{not empty fboUserObjekteBean.selectedFboUser}" disabled="#{not fboUserObjekteBean.allowFBOHinzufuegen}"/>              
+
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_fboObjektBearbeiten}" icon="ui-icon-pencil" oncomplete="PF('dlg_FboEdit').show()" update="frm_FboEdit" 
+                                   rendered="#{not empty fboUserObjekteBean.selectedFboUser}" disabled="#{not fboUserObjekteBean.allowFBOBearbeiten}"/>
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_ServicePaketeBestellen}" icon="ui-icon-wrench" oncomplete="PF('wdg_BestellungService').show()" update="frm_BestellungService" 
+                                   rendered="#{fboUserObjekteBean.selectedFboUser.servicehangar}" disabled="#{not fboUserObjekteBean.allowFBOBearbeiten}"/>
+
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_treibstoffBestellen}" icon="fa fa-tint" onclick="PF('wdg_fuel').show()" rendered="#{fboUserObjekteBean.frmTankstelle}" update="frm_tankstelle" 
+                                   disabled="#{not fboUserObjekteBean.allowFBOTankstelleVerwalten}"/>
+
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_alleTankstellenAnzeigen}" icon="fa fa-tint" onclick="PF('wdg_TankstellenUebersicht').show()" 
+                                   update="frm_TankstellenUebersicht"/>
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_uebersichtTreibstoffBestellungen}" icon="fa fa-binoculars" onclick="PF('wdg_ListeBestellungen').show()" update="frm_ListeBestellungen"/>
+
+                  <p:commandLink title="#{sprache.FBOManagement_btn_TreibstoffBereitstellen}"  onclick="PF('wdg_tankstelle_faesser').show()" update="frm_tankstelle_faesser" 
+                                 rendered="#{fboUserObjekteBean.frmTankstelle}" disabled="#{not fboUserObjekteBean.allowFBOTankstelleVerwalten}" >
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="#{sprache.FBOManagement_btn_TreibstoffBereitstellen}" 
+                                    style="vertical-align: bottom; padding: 4px"/>
+                  </p:commandLink>
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_mietsummenObjekte}" onclick="PF('wdg_summen').show()" icon="fa fa-calculator" update="frm_summen"/>
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_Zahlungsliste}" icon="fa fa-money" onclick="PF('wdg_lqList').show()" />              
+
+                  <p:commandButton title="#{sprache.FBOManagement_btn_aktualisieren}" icon="fa fa-refresh" onclick="location.reload();" />
+
+                  <p:link href="#{configBean.wikiFBO}" target="_blank" >
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" title="WiKi" height="#{loginMB.iconSize}" />
+                  </p:link>
+
+
+                  <h:commandLink id="cmd_export" >
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" />
+                    <p:dataExporter type="csv" target="fboUserTable" fileName="FBO_Uebersicht"  pageOnly="false" />
+                    <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                  </h:commandLink>
+
+                </p:panelGrid>
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_fboManagementRight" align="right">
+
+                <p:panelGrid columns="10">
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_icao} "/>
+                  <p:selectOneMenu value="#{fboUserObjekteBean.fltIcao}" filter="true" filterMatchMode="contains">
+                    <f:selectItem itemLabel="#{sprache.FBOManagement_cbo_icaoUndObjekt_AlleZeigen}" itemValue=""  />
+                    <f:selectItems value="#{fboUserObjekteBean.fboUserByIcao}" var="fgs" itemValue="#{fgs.icao}" itemLabel="#{fgs.icao}" />
+                    <p:ajax event="change" update="fboUserTable" listener="#{fboUserObjekteBean.onChangeIcaoOrObjekt()}"/>
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_ftwObjekt} "/>
+                  <p:selectOneMenu value="#{fboUserObjekteBean.fltObjekt}" filter="true" filterMatchMode="contains">
+                    <f:selectItem itemLabel="#{sprache.FBOManagement_cbo_icaoUndObjekt_AlleZeigen}" itemValue=""  />
+                    <f:selectItems value="#{fboUserObjekteBean.fboUserByObjekt}" var="fgs" itemValue="#{fgs.objektName}" itemLabel="#{fgs.objektName}" />
+                    <p:ajax event="change" update="fboUserTable" listener="#{fboUserObjekteBean.onChangeIcaoOrObjekt()}"/>                    
+                  </p:selectOneMenu>
+                  <p:commandButton title="#{sprache.FBOManagement_btn_aktualisieren}" icon="fa fa-refresh" action="#{fboUserObjekteBean.onChangeIcaoOrObjekt()}" update="fboUserTable"/>
+
+                </p:panelGrid>
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="fboUserTable" 
+                         widgetVar="fboUserTable"
+                         var="fboItems"
+                         value="#{fboUserObjekteBean.fboUser}"
+                         rowKey="#{fboItems.iduserfbo}"
+                         selection="#{fboUserObjekteBean.selectedFboUser}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15" rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         lazy="false" 
+                         selectionMode="single" 
+                         scrollable="true"
+                         sortMode="single" 
+                         emptyMessage="#{sprache.FBOManagement_tbl_emptyMessage}">
+
+
+              <p:ajax listener="#{fboUserObjekteBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{fboUserObjekteBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column width="15" exportable="false">
+                <p:rowToggler/>
+              </p:column>
+
+              <p:column headerText="ID" width="30" exportable="false">
+                <h:outputText value='#{fboItems.iduserfbo}'/>
+              </p:column>
+
+              <p:column headerText="UID" width="30" exportable="false">
+                <h:outputText value='#{fboItems.idUser}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_ftwObjekt}" width="100" style="text-align: center;" sortBy="#{fboItems.objektName}" >
+                <h:outputText value='#{fboItems.objektName}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_icao}" width="110" style="text-align: center;" sortBy="#{fboItems.icao}">
+                <h:outputText value='#{fboItems.icao}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_objektBezeichnung}" width="200" style="text-align: center;" sortBy="#{fboItems.name}">
+                <h:outputText value='#{fboItems.name}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_kostenstelle}" width="60" style="text-align: right;" sortBy="#{fboItems.kostenstelle}">
+                <h:outputText value='#{fboItems.kostenstelle}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_mietpreis}"  width="90" style="text-align: right;" sortBy="#{fboItems.mietPreis}">
+                <h:outputText value='#{fboItems.mietPreis}'>
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_mietpreisAufschlag}"  width="110" style="text-align: right;" sortBy="#{fboItems.mietPreis}">
+                <h:outputText escape="false" value='#{fboUserObjekteBean.getMietaufschlag(fboItems.icao, fboItems.mietPreis)}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_mietbeginn}"  width="100" style="text-align: center;" sortBy="#{fboItems.mietbeginn}">
+                <h:outputText value='#{fboItems.mietbeginn}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>  
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_letzteMietzahlung}"  width="100" style="text-align: center;">
+                <h:outputText value='#{fboItems.letzteMietzahlung}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>  
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_naechsteFaelligkeit}" width="100" style="text-align: center;" sortBy="#{fboItems.faelligkeitNaechsteMiete}">
+                <h:outputText value='#{fboItems.faelligkeitNaechsteMiete}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>  
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_konto}" width="100" style="text-align: center;">
+                <h:outputText value='#{fboItems.bankKonto} - #{fboItems.kontoName}'/>
+              </p:column>
+
+              <p:rowExpansion>
+                <p:panelGrid columns="4" style="width: 50%" rendered="#{fboItems.tankstelle or fboItems.spritlager}">
+                  <f:facet name="header">
+                    #{sprache.FBOManagement_tbl_details_TankstelleTreibstoffmengen}
+                  </f:facet>
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_details_lbl_Treibstoff}"/>
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_details_lbl_Menge}" style="float: right"/>
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_details_lbl_VKPreis}" style="float: right"/>
+                  <h:outputLabel value="#{sprache.FBOManagement_tbl_details_lbl_EKPreis}" style="float: right"/>
+
+                  <h:outputLabel value="JETA"/>
+                  <h:outputLabel value="#{fboItems.bestandJETAkg}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{fboItems.preisJETA}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;" />
+                  </h:outputLabel>
+                  <h:outputLabel value="#{fboItems.einkaufsPreisJETA}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;" />
+                  </h:outputLabel>
+
+                  <h:outputLabel value="AVGAS 100LL"/>
+                  <h:outputLabel value="#{fboItems.bestandAVGASkg}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                  <h:outputLabel value="#{fboItems.preisAVGAS}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;" />
+                  </h:outputLabel>
+                  <h:outputLabel value="#{fboItems.einkaufsPreisAVGAS}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;" />
+                  </h:outputLabel>
+
+                </p:panelGrid>
+
+                <p:dataTable var="bst" value="#{fboUserObjekteBean.bestellungIcao}" rendered="#{fboItems.tankstelle}" style="width: 50%">
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_bestellung_lbl_Liefertermin}" width="100">
+                    <h:outputLabel value="#{bst.lieferdatum}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputLabel>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_bestellung_lbl_Treibstoffart}" style="text-align: left" width="100">
+                    <h:outputText value="AVGAS 100LL" rendered="#{bst.art eq 1}"/>
+                    <h:outputText value="JETA" rendered="#{bst.art eq 2}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_bestellung_lbl_Menge}" style="text-align: right" width="100">
+                    <h:outputText value="#{bst.menge}">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_bestellung_lbl_Betrag}" style="text-align: right" width="100">
+                    <h:outputText value="#{bst.bestellsumme}">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputText>
+                  </p:column>
+                </p:dataTable>
+
+                <p:dataTable var="assi" value="#{fboUserObjekteBean.faesserBereitgestellt}" rendered="#{fboItems.spritlager}" 
+                             emptyMessage="#{sprache.FBOManagement_tbl_Spritfaesser_empty}" style="width: 50%">
+
+                  <f:facet name="header">
+                    #{sprache.FBOManagement_tbl_Spritfaesser_BereitgestellteSpritfaesser}
+                  </f:facet>
+
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_status}" style="text-align: center;" >
+                    <h:outputText value='#{sprache.Auftragsplanung_msg_AuftraegeSindInDerLuft}' rendered="#{assi.userlock==1}"/>
+                    <h:outputText value='#{sprache.Auftragsplanung_msg_AuftraegeBereitZumAbflug}' rendered="#{assi.userlock==0}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_vonIcao}"  style="text-align: center;">
+                    <h:outputText value='#{assi.fromIcao}' />
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_aktuellerStandort}"  style="text-align: center;">
+                    <h:outputText value='#{assi.locationIcao}' />
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_nachIcao}"  style="text-align: center;">
+                    <h:outputText value="#{assi.toIcao}"/>
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_menge}" width="150" style="text-align: right;" >
+                    <h:outputText value="#{assi.comment} #{assi.ammount} #{sprache.kg}" rendered="#{assi.routenArt==2}" >
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText>
+                    <h:outputText value="#{assi.ammount} #{assi.comment}" rendered="#{assignmentItems.routenArt==1}" />
+                    <h:outputText value="#{assi.ammount}" rendered="#{assi.routenArt==3}" />
+                    <h:outputText value="#{assi.ammount} #{assi.comment}" rendered="#{assi.routenArt==4}" />
+                    <h:outputText value=" *" rendered="#{assi.gesplittet}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assi.routenArt==1}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assi.routenArt==4}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.routenArt==2 and not (assi.type==5)}"/>
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.type==5}"/>                
+                    <h:outputText value="TRF"    rendered="#{assi.routenArt==3}" />
+                  </p:column>
+
+                  <p:column width="60" style="text-align: right;" sortBy="#{assi.pay}">
+                    <f:facet name="header">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                    </f:facet>
+                    <h:outputText id="payText" value='#{assi.pay}'>
+                      <f:convertNumber pattern="#,##0 &euro;"/>
+                    </h:outputText>
+
+                    <p:tooltip for="payText" >
+
+                      <p:panelGrid columns="2">
+                        <h:outputLabel value="Per unit: "/>
+                        <h:outputText value='#{assi.pay / assi.ammount}' style="float:right">
+                          <f:convertNumber pattern="#,##0 &euro;"/>
+                        </h:outputText>
+
+                        <h:outputLabel value="Per unit/mile: "/>
+                        <h:outputText value='#{(assi.pay / assi.ammount) / assi.distance}' style="float:right">
+                          <f:convertNumber pattern="#,##0.00 &euro;"/>
+                        </h:outputText>
+                      </p:panelGrid>
+
+                    </p:tooltip>
+
+                  </p:column>
+
+                </p:dataTable>                
+
+                <p:toolbar id="tlb_hangar" rendered="#{fboItems.servicehangar}">
+                  <p:toolbarGroup id="tbg_hangar" align="left">
+
+                    <h:commandLink id="cmd_exportStock">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: middle; padding: 10px;"/>
+                      <p:dataExporter type="csv" target="tbl_ServiceHangarLager" fileName="Stock_Service_Hangar"  pageOnly="false" />
+                      <p:tooltip for="cmd_exportStock" value="Stock Service Hangar"/>
+                    </h:commandLink>
+
+                  </p:toolbarGroup>
+                </p:toolbar>
+
+                <p:dataTable id="tbl_ServiceHangarLager" var="items" value="#{fboUserObjekteBean.lagerBestaende}" 
+                             scrollHeight="200" scrollable="true" scrollRows="5"
+                             rendered="#{fboItems.servicehangar}" style="width: 100%"
+                             emptyMessage="#{sprache.FBOManagement_tbl_ServiceHangarLager_emptyMessage}">
+
+                  <f:facet name="header">
+                    #{sprache.FBOManagement_tbl_ServiceHangarLager_Header}
+                  </f:facet>
+
+                  <p:column width="25" exportable="false">
+                    <p:commandButton title="#{sprache.FBOManagement_tbl_ServiceHangarLager_btn_VerkaufsPreisFestlegen}" icon="fa fa-pencil" oncomplete="PF('wdg_LagerItemBearbeiten').show();" update=":frm_LagerItemBearbeiten" >
+                      <f:setPropertyActionListener target="#{fboUserObjekteBean.currentLagerItem}" value="#{items}" />
+                    </p:commandButton>
+                  </p:column>
+
+                  <p:column width="25" exportable="false">
+                    <p:commandButton title="#{sprache.FBOManagement_tbl_ServiceHangarLager_btn_Handelsfunktion}" icon="fa fa-money" oncomplete="PF('wdg_HangarHandel').show();" update=":frm_HangarHandel" >
+                      <f:setPropertyActionListener target="#{fboUserObjekteBean.currentLagerItem}" value="#{items}" />
+                    </p:commandButton>
+                  </p:column>
+
+                  <p:column width="25" exportable="false">
+                    <p:commandButton title="#{sprache.FBOManagement_tbl_ServiceHangarLager_btn_Umsatz}" icon="fa fa-list" oncomplete="PF('wdg_ServiceUmsatz').show();" update=":frm_ServiceUmsatz" >
+                      <f:setPropertyActionListener target="#{fboUserObjekteBean.currentLagerItem}" value="#{items}" />
+                    </p:commandButton>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Kit}">
+                    <h:outputText value="C-Check"  rendered="#{items.paketart eq 1}"/>
+                    <h:outputText value="Reparatur"  rendered="#{items.paketart eq 2}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Artikel}">
+                    <h:outputText value="#{items.paketname}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Bestand}" style="text-align: right">
+                    <h:outputText value="#{items.menge}" rendered="#{items.paketart eq 1}">
+                      <f:convertNumber pattern="#,##0 item(s)"/>
+                    </h:outputText>
+                    <h:outputText value="#{items.menge/100}" rendered="#{items.paketart eq 2}">
+                      <f:convertNumber pattern="#,##0.00 %"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_LetzterEinkaufspreis}" style="text-align: right">
+                    <h:outputText value="#{items.paketekpreis}">
+                      <f:convertNumber pattern="#,##0.00 &euro;" />
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_AktuellerVerkaufspreis}" style="text-align: right">
+                    <h:outputText value="#{items.paketvkpreis}">
+                      <f:convertNumber pattern="#,##0.00 &euro;" />
+                    </h:outputText>
+                  </p:column>
+
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_LetzteLieferung}" style="text-align: right">
+                    <h:outputText value="#{items.zustellungam}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </p:column>
+
+
+                </p:dataTable>
+
+                <p:dataTable id="tbl_ServiceHangarBestellungen" var="lager" value="#{fboUserObjekteBean.serviceHangarBestellungen}" 
+                             scrollHeight="200" scrollable="true" scrollRows="5"
+                             rendered="#{fboItems.servicehangar}" style="width: 100%"
+                             emptyMessage="#{sprache.FBOManagement_tbl_ServiceHangarLager_tbl_ServiceHangarBestellungen_emptyMessage}">
+                  <f:facet name="header">
+                    #{sprache.FBOManagement_tbl_ServiceHangarLager_tbl_ServiceHangarBestellungen_header}
+                  </f:facet>
+
+
+                  <p:column width="40">
+                    <p:commandButton title="Bestellung Stornieren" icon="fa fa-trash" action="#{fboUserObjekteBean.onBestellungServiceHangarLoeschen()}" update="tbl_ServiceHangarBestellungen">
+                      <f:setPropertyActionListener target="#{fboUserObjekteBean.selectedHangarBestellung}" value="#{lager}"/>
+                      <p:confirm header="Bestellung Stornieren" message="Bestellung wirklich stornieren?" icon="fa fa-info"/>
+                    </p:commandButton>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Kit}">
+                    <h:outputText value="C-Check"  rendered="#{lager.paketart eq 1}"/>
+                    <h:outputText value="Reparatur"  rendered="#{lager.paketart eq 2}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Artikel}">
+                    <h:outputText value="#{lager.paketname}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_tbl_ServiceHangarBestellungen_lbl_BestellteMenge}" style="text-align: right">
+                    <h:outputText value="#{lager.menge}" rendered="#{lager.paketart eq 1}">
+                      <f:convertNumber pattern="#,##0 item(s)"/>
+                    </h:outputText>
+                    <h:outputText value="#{lager.menge/100}" rendered="#{lager.paketart eq 2}">
+                      <f:convertNumber pattern="#,##0.00 %"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_tbl_ServiceHangarBestellungen_lbl_EinkaufsPreis}" style="text-align: right">
+                    <h:outputText value="#{lager.paketekpreis}">
+                      <f:convertNumber pattern="#,##0.00 &euro;" />
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_tbl_ServiceHangarBestellungen_lbl_Versandkosten}" style="text-align: right">
+                    <h:outputText value="#{lager.lieferkosten}">
+                      <f:convertNumber pattern="#,##0.00 &euro;" />
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_bestellung_lbl_Liefertermin}" style="text-align: right">
+                    <h:outputText value="#{lager.zustellungam}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </p:column>
+
+
+                </p:dataTable>
+
+                <p:dataTable id="tbl_ServiceHangarBelegung" var="belegung" value="#{fboUserObjekteBean.hangarBelegung}" 
+                             scrollHeight="200" scrollable="true" scrollRows="5"
+                             rendered="#{fboItems.servicehangar}" style="width: 100%"
+                             emptyMessage="#{sprache.FBOManagement_tbl_ServiceHangarBelegung_emptyMessage}">
+                  <f:facet name="header">
+                    #{sprache.FBOManagement_tbl_ServiceHangarBelegung_header}  ( #{fboUserObjekteBean.platzImHangar} )
+                  </f:facet>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Kit}">
+                    <h:outputText value="C-Check"  rendered="#{belegung.serviceart eq 1}"/>
+                    <h:outputText value="Reparatur"  rendered="#{belegung.serviceart eq 2}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Hangar_tbl_kennung}">
+                    <h:outputText value="#{belegung.kennung}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.Hangar_tbl_modell}">
+                    <h:outputText value="#{belegung.flugzeugtyp}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarBelegung_lbl_Reparaturpreis}" style="text-align: right">
+                    <h:outputText value="#{belegung.wert}">
+                      <f:convertNumber pattern="#,##0.00 &euro;" />
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarBelegung_lbl_Belegtem2}" style="text-align: right">
+                    <h:outputText value="#{belegung.quadratmeter}">
+                      <f:convertNumber pattern="#,##0" />
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarBelegung_lbl_Fertigstellung}" style="text-align: right">
+                    <h:outputText value="#{belegung.ablaufzeit}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputText>
+                  </p:column>
+
+
+                </p:dataTable>
+
+
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+
+            <p:dialog id="id_FboEdit" widgetVar="dlg_FboEdit" responsive="true" header="#{sprache.FBOManagement_FBOObjektBearbeiten_pnl}" closable="true" 
+                      closeOnEscape="true" rendered="#{not empty fboUserObjekteBean.selectedFboUser}" width="950">
+
+              <h:form id="frm_FboEdit">
+
+                <p:toolbar>
+                  <f:facet name="left">
+                    <p:commandButton title="#{sprache.FBOManagement_FBOObjektBearbeiten_btn_speichern}" action="#{fboUserObjekteBean.onEdit()}"  icon="fa fa-save" update=":frm_daten" />
+                    <p:commandButton title="#{sprache.FBOManagement_FBOObjektBearbeiten_btn_neueKostenstelle}" icon="fa fa-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+                    <p:commandButton title="#{sprache.FBOManagement_FBOObjektBearbeiten_btn_aktualisieren}" icon="fa fa-refresh" update="som_Kostenstelle"/>
+                    <p:commandButton title="#{sprache.FBOManagement_FBOObjektBearbeiten_btn_schliessen}" icon="fa fa-close" oncomplete="PF('dlg_FboEdit').hide()" update=":frm_daten"/>
+                  </f:facet>
+                </p:toolbar>
+
+                <p:panelGrid columns="2" style="width: 98%">
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_lbl_objektname}"/><h:inputText value="#{fboUserObjekteBean.frmBezeichnung}" style="width: 98%" maxlength="200"/>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_lbl_FG}: "/>
+                  <p:selectOneMenu value="#{fboUserObjekteBean.frmfluggesellschaftID}"   filter="true" filterMatchMode="contains" style="width: 95%">
+                    <f:selectItems value="#{fboUserObjekteBean.meineFluggesellschaftenFuerManager}" var="fgs" itemValue="#{fgs[0]}" itemLabel="#{fgs[1]}" />
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_lbl_kostenstelle}"/>
+
+                  <p:selectOneMenu id="som_Kostenstelle" value="#{fboUserObjekteBean.frmKostenStelle}"  filter="true" filterMatchMode="contains" style="width: 95%">
+                    <f:selectItem itemLabel="#{sprache.FBOManagement_FBOObjektBearbeiten_cbo_kostenstelle}" itemValue="0"/>
+                    <f:selectItems var="kst" value="#{fboUserObjekteBean.kostenstellenFuerFluggesellschaft}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_preisAVGAS}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+                  <h:inputText value="#{fboUserObjekteBean.frmPreisAVGAS}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_bestandAVGAS}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+                  <h:outputLabel value="#{fboUserObjekteBean.selectedFboUser.bestandAVGASkg}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_preisJETA}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+                  <h:inputText value="#{fboUserObjekteBean.frmPreisJETA}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_bestandJETA}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+                  <h:outputLabel value="#{fboUserObjekteBean.selectedFboUser.bestandJETAkg}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_lbl_grafik}" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+                  <h:inputText value="#{fboUserObjekteBean.frmTankstelleGrafik}" maxlength="250" style="width: 100%" rendered="#{fboUserObjekteBean.frmTankstelle or fboUserObjekteBean.frmSpritlager}"/>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_lbl_TerminalAbfertigungsgebühr}" rendered="#{fboUserObjekteBean.selectedFboUser.abfertigungsTerminal}"/>
+                  <h:inputText value="#{fboUserObjekteBean.frmTerminalAbfertigungsGebuehr}" rendered="#{fboUserObjekteBean.selectedFboUser.abfertigungsTerminal}"/>
+
+                  <h:outputLabel value="#{sprache.FBOManagement_FBOObjektBearbeiten_verrechnungsKonto}"/>
+
+                  <p:selectOneMenu value="#{fboUserObjekteBean.frmBankKonto}" style="width: 95%" >
+                    <f:selectItem itemLabel="#{fboUserObjekteBean.userKonto} - #{fboUserObjekteBean.userName}" itemValue="#{fboUserObjekteBean.userKonto}"/>
+                    <f:selectItems var="fgkonto" value="#{fboUserObjekteBean.kontenFluggesellschaft}" itemLabel="#{fgkonto.bankKonto} - #{fgkonto.bankKontoName}" itemValue="#{fgkonto.bankKonto}"/>
+                  </p:selectOneMenu>
+
+
+
+
+                </p:panelGrid>
+
+                <p:dataTable var="bst" value="#{fboUserObjekteBean.bestellungIcao}" rendered="#{fboUserObjekteBean.frmTankstelle}">
+
+                  <p:column headerText="#{sprache.FBOManagement_FBOObjektBearbeiten_tbl_Liefertermin}" width="100">
+                    <h:outputLabel value="#{bst.lieferdatum}">
+                      <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                    </h:outputLabel>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_FBOObjektBearbeiten_tbl_Art}" style="text-align: left" width="100">
+                    <h:outputText value="AVGAS 100LL" rendered="#{bst.art eq 1}"/>
+                    <h:outputText value="JETA" rendered="#{bst.art eq 2}"/>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_FBOObjektBearbeiten_tbl_Menge}" style="text-align: right" width="100">
+                    <h:outputText value="#{bst.menge}">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText>
+                  </p:column>
+
+                  <p:column headerText="#{sprache.FBOManagement_FBOObjektBearbeiten_tbl_Betrag}" style="text-align: right" width="100">
+                    <h:outputText value="#{bst.bestellsumme}">
+                      <f:convertNumber pattern="#,##0.00 &euro;"/>
+                    </h:outputText>
+                  </p:column>
+                </p:dataTable>
+
+              </h:form>
+            </p:dialog> 
+
+          </h:form>        
+
+
+          <p:dialog id="id_FboAdd" widgetVar="dlg_FboAdd" header="#{sprache.FBOManagement_FBOObjektHinzufuegen_pnl}" closable="true" 
+                    closeOnEscape="true" responsive="true" height="640">
+
+            <h:form id="frm_FboAdd">
+
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton value="#{sprache.FBOManagement_FBOObjektHinzufuegen_btn_objektMieten}" action="#{fboObjektBean.onMieten()}"  icon="ui-icon-disk" />
+                  <p:commandButton value="#{sprache.FBOManagement_FBOObjektHinzufuegen_btn_schliessen}" icon="ui-icon-pencil" oncomplete="location.reload();" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="7">
+                <h:outputText value="#{sprache.FBOManagement_FBOObjektHinzufuegen_lbl_standortFuerObjekt}"/>
+                <h:inputText value="#{fboObjektBean.frmICAO}"/>
+                <p:commandButton action="#{fboObjektBean.fboObjekteSuchen()}" icon="fa fa-search" title="#{sprache.FBOManagement_FBOObjektHinzufuegen_ObjekteAnzeigen}" update="frm_FboAdd"/>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Fluggesellschaft}: "/>
+                <p:selectOneMenu value="#{fboObjektBean.frmFluggesellschaftID}"  style="width: 250px" filter="true" filterMatchMode="contains">
+                  <f:selectItems value="#{fboUserObjekteBean.meineFluggesellschaftenFuerManager}" var="fgs" itemValue="#{fgs[0]}" itemLabel="#{fgs[1]}" />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.FBOManagement_FBOObjektHinzufuegen_lbl_Verrechnungskonto}"/>
+
+                <p:selectOneMenu value="#{fboObjektBean.frmBankkonto}" style="width: 85%" >
+                  <f:selectItem itemLabel="#{fboUserObjekteBean.userKonto} - #{fboUserObjekteBean.userName}" itemValue="#{fboUserObjekteBean.userKonto}"/>
+                  <f:selectItems var="fgkonto" value="#{fboUserObjekteBean.kontenFluggesellschaft}" itemLabel="#{fgkonto.bankKonto} - #{fgkonto.bankKontoName}" itemValue="#{fgkonto.bankKonto}"/>
+
+                </p:selectOneMenu>
+
+
+
+              </p:panelGrid>
+
+
+              <p:dataTable id="objektTable"
+                           widgetVar="objektTable"
+                           var="objektItems"
+                           value="#{fboObjektBean.FBOObjekte}"
+                           rowKey="#{objektItems.idObjekt}"
+                           selection="#{fboObjektBean.selectedFboObjekt}"
+                           paginator="true"
+                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                           rows="15"
+                           scrollable="true"
+                           rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                           lazy="false"
+                           selectionMode="single"
+                           sortMode="single" style="width: 100%">
+
+
+                <p:ajax listener="#{fboObjektBean.onRowSelect}" event="rowSelect" />
+                <p:ajax listener="#{fboObjektBean.onRowUnselect}" event="rowUnselect" update="frm_FboAdd"/>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_id}" width="10">
+                  <h:outputText value="#{objektItems.idObjekt}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_objektname}" width="180" sortBy="#{objektItems.objektName}">
+                  <h:outputText value="#{objektItems.objektName}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_mietpreis}" width="80" sortBy="#{objektItems.mietPreis}" >
+                  <h:outputText value="#{objektItems.mietPreis}" style="float: right">
+                    <f:convertNumber pattern="#,##0 &euro;" />
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_routen}" width="80" sortBy="#{objektItems.anzahlRouten}">
+                  <h:outputText value="#{objektItems.anzahlRouten}" style="float: right">
+                    <f:convertNumber pattern="#,##0" />
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_personal}" width="80" sortBy="#{objektItems.anzahlPersonal}">
+                  <h:outputText value="#{objektItems.anzahlPersonal}" style="float: right">
+                    <f:convertNumber pattern="#,##0" />
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_FBOObjektHinzufuegen_tbl_stellplaetze}" width="80" sortBy="#{objektItems.anzahlStellplaetze}">
+                  <h:outputText value="#{objektItems.anzahlStellplaetze}" style="float: right">
+                    <f:convertNumber pattern="#,##0" />
+                  </h:outputText>
+                </p:column>
+              </p:dataTable>
+
+              <p:panelGrid columns="2">
+
+              </p:panelGrid>
+
+            </h:form>
+          </p:dialog> 
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_fuel" widgetVar="wdg_fuel" header="#{sprache.FBOManagement_TreibstoffBestellung_pnl_}" width="1024" modal="true">
+
+          <h:form id="frm_tankstelle">
+
+            <div id="div_summe" style="float: top; padding: 0px;" align="center">
+              <h2 align="center">#{fboUserObjekteBean.selectedFboUser.name}</h2>
+
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/fuel.jpg" style="width: 75%" />
+
+              <p:panelGrid columns="2" style="border: hidden; padding: 0px;width: 100%">
+                <p:commandButton title="#{sprache.FBOManagement_TreibstoffBestellung_btn_schliessen}" icon="fa fa-close" oncomplete="PF('wdg_fuel').hide();"/>
+                <h:outputLabel value=""/>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_lbl_maximaleBestellmenge}" style="font-size: 1.5em"/>
+                <h:outputLabel value="#{fboUserObjekteBean.selectedFboUser.tankstelleMaxFuelKG - fboUserObjekteBean.selectedFboUser.bestandJETAkg - fboUserObjekteBean.selectedFboUser.bestandAVGASkg} #{sprache.kg}" style="font-size: 1.5em"/>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_lbl_aktuellerBestandJETA}" style="font-size: 1.5em"/>
+                <h:outputLabel value="#{fboUserObjekteBean.selectedFboUser.bestandJETAkg} #{sprache.kg}" style="font-size: 1.5em"/>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_lbl_aktuellerBestandAVGAS}" style="font-size: 1.5em"/>
+                <h:outputLabel value="#{fboUserObjekteBean.selectedFboUser.bestandAVGASkg} #{sprache.kg}" style="font-size: 1.5em"/>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_lbl_treibstoffArtWaehlen}" style="font-size: 1.5em"/>
+                <p:selectOneMenu id="sel_Treibstoff" value="#{fboUserObjekteBean.frmFuelArt}" style="width:150px">
+                  <f:selectItem itemLabel="#{sprache.FBOManagement_TreibstoffBestellung_cbo_treibstoffArtAuswaehlen}" itemValue="0" noSelectionOption="false" />
+                  <f:selectItems value="#{flugzeugBean.treibstoffArt}" />
+                  <p:ajax event="change" partialSubmit="true" listener="#{fboUserObjekteBean.onAngeboteEinholen()}" update="frm_tankstelle id_angebote"/>
+                </p:selectOneMenu>
+
+              </p:panelGrid>
+
+
+
+              <p:dataTable id="id_angebote" value="#{fboUserObjekteBean.angebote}" var="items"
+                           paginator="true"
+                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                           rows="5"
+                           scrollable="true"
+                           rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                           >
+
+                <p:column style="width:32px;text-align: center">
+                  <p:commandButton icon="fa fa-share-square-o" title="#{sprache.FBOManagement_TreibstoffBestellung_btn_bestellungAufgeben}" update="frm_Bestellung" oncomplete="PF('wdg_Bestellung').show()">
+                    <f:setPropertyActionListener value="#{items}" target="#{fboUserObjekteBean.selectedBestellung}"  />
+                  </p:commandButton>
+                </p:column>
+
+
+                <p:column headerText="#{sprache.FBOManagement_TreibstoffBestellung_tbl_angebotNummer}" style="text-align: center">
+                  <h:outputText value="#{items.angebotNr}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_TreibstoffBestellung_tbl_type}" style="text-align: center">
+                  <h:outputText value="#{items.fuelArt}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_TreibstoffBestellung_tbl_lieferdatum}" style="text-align: center">
+                  <h:outputText value="#{items.lieferDatum}">
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_TreibstoffBestellung_tbl_menge} #{sprache.kg}" style="text-align: right">
+                  <h:outputText value="#{items.menge}" style="float: right"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.FBOManagement_TreibstoffBestellung_tbl_preis}" style="text-align: right">
+                  <h:outputText value="#{items.preis}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{FBOManagement_TreibstoffBestellung_tbl_gesamtpreis}" style="text-align: right">
+                  <h:outputText value="#{items.preis*items.menge}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputText>
+                </p:column>
+
+              </p:dataTable>
+
+            </div>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_ListeBestellungen" widgetVar="wdg_ListeBestellungen" header="#{sprache.FBOManagement_Bestellungen_lbl}" width="1024">
+
+          <h:form id="frm_ListeBestellungen">
+
+            <h:commandLink id="cmd_export">
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+              <p:dataExporter type="csv" target="tbl_TankstellenBestellungen" fileName="Tankstellen-Bestellungen"  pageOnly="false" />
+              <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+            </h:commandLink>
+
+
+
+            <p:dataTable value="#{fboUserObjekteBean.bestellungen}" 
+                         id="tbl_TankstellenBestellungen"
+                         var="bstItems"
+                         scrollHeight="450"
+                         scrollable="true"
+                         >
+
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_lieferdatum}" style="text-align: center" width="80">
+                <h:outputText value="#{bstItems.lieferdatum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_tankstelle}" style="text-align: left" width="350">
+                <h:outputText value="#{bstItems.icao} - #{bstItems.name}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_treibstoffart}" style="text-align: left" width="80">
+                <h:outputText value="AVGAS 100LL" rendered="#{bstItems.art eq 1}"/>
+                <h:outputText value="JETA" rendered="#{bstItems.art eq 2}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_menge}" style="text-align: right" width="60">
+                <h:outputText value="#{bstItems.menge}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_bestellbetrag}" style="text-align: right" width="60">
+                <h:outputText value="#{bstItems.bestellsumme}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_aktuellerBestand}" style="text-align: right" width="80">
+                <h:outputText value="#{bstItems.bestandAVGASkg}" rendered="#{bstItems.art eq 1}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+                <h:outputText value="#{bstItems.bestandJETAkg}" rendered="#{bstItems.art eq 2}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.FBOManagement_Bestellungen_tbl_bankkonto}" style="text-align: left" width="80">
+                <h:outputText value="#{bstItems.bankkonto}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_kostenstelle" widgetVar="wdg_kostenstelle" header="#{sprache.FBOManagement_Kostenstellen_pnl}" width="700">
+          <h:form id="frm_kostenstelle">
+            <p:toolbar id="tlb_kostenstelle">
+              <p:toolbarGroup id="tbg_kostenstelle">
+                <p:commandButton title="#{sprache.FBOManagement_Kostenstellen_btn_speichern}" action="#{statistikBean.createKostenStelle()}" icon="fa fa-save" update="kst_data"/>
+                <p:commandButton title="#{sprache.FBOManagement_Kostenstellen_btn_schliessen}" onclick="PF('wdg_kostenstelle').hide()" icon="fa fa-close"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.FBOManagement_Kostenstellen_lbl_bezeichnung} "/><h:inputText value="#{statistikBean.frmBezeichnung}" size="80" maxlength="250"/>
+              <h:outputLabel value="#{sprache.FBOManagement_Kostenstellen_lbl_kostenstelle}"/><h:inputText value="#{statistikBean.frmKostenStelle}" size="15"/>
+            </p:panelGrid>
+
+            <p:dataTable id="kst_data" value="#{statistikBean.kostenstellen}" var="kst" scrollable="true" scrollHeight="480">
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-remove" title="#{sprache.FBOManagement_Kostenstellen_btn_loeschen}" action="#{statistikBean.deleteKostenstelle()}" update="kst_data" >
+                  <f:setPropertyActionListener value="#{kst}" target="#{statistikBean.selectedKostenstelle}"  />
+                  <p:confirm header="#{sprache.FBOManagement_Kostenstellen_Warnung_loeschen}" message="#{sprache.FBOManagement_Kostenstellen_Warnung_loeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>                
+
+              <p:column headerText="#{sprache.FBOManagement_Kostenstellen_tbl_kostenstelle}" width="60" style="text-align: center">
+                <h:outputText value="#{kst.kostenstelle}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Kostenstellen_tbl_bezeichnung}" style="text-align: center">
+                <h:outputText value="#{kst.bezeichnung}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_summen" widgetVar="wdg_summen" header="#{sprache.FBOManagement_Mietsummen_pnl}" responsive="true">
+
+          <h:form id="frm_summen">
+            <p:panelGrid columns="4">
+              <h:outputLabel value="Objekt"/><h:outputLabel value="Grundpreis"/><h:outputLabel value="Aufschlag"/><h:outputLabel value="Mietpreis"/>
+
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_summeFBOs}"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeFBO}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeFBOAufschlag}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeFBOAufschlag + fboUserObjekteBean.summeFBO}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_summeTankstelle}"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTankstellen}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTankstellenAufschlag}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTankstellenAufschlag + fboUserObjekteBean.summeTankstellen}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_summeTerminals}"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTerminals}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTerminalsAufschlag}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeTerminalsAufschlag + fboUserObjekteBean.summeTerminals}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_summeRoutenobjekte}"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeRoutenObjekte}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeRoutenObjekteAufschlag}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeRoutenObjekteAufschlag + fboUserObjekteBean.summeRoutenObjekte}" style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_summeBusinessLounge}"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeBusinessLounge}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeBusinessLoungeAufschlag}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{fboUserObjekteBean.summeBusinessLoungeAufschlag  + fboUserObjekteBean.summeBusinessLounge}"  style="float: right">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_Mietsummen_lbl_gesamtsumme}" style="font-weight: bold"/>
+              <h:outputLabel value="#{fboUserObjekteBean.summeBusinessLounge  + fboUserObjekteBean.summeFBO
+                                      + fboUserObjekteBean.summeTankstellen + fboUserObjekteBean.summeTerminals +
+                                      fboUserObjekteBean.summeRoutenObjekte}"  style="float: right;font-weight: bold">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{fboUserObjekteBean.summeBusinessLoungeAufschlag  + fboUserObjekteBean.summeFBOAufschlag 
+                                      + fboUserObjekteBean.summeTankstellenAufschlag + fboUserObjekteBean.summeTerminalsAufschlag +
+                                      fboUserObjekteBean.summeRoutenObjekteAufschlag}"  style="float: right;font-weight: bold">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+
+              <h:outputLabel value="#{fboUserObjekteBean.gesamtSumme}" style="float: right;font-weight: bold">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_FboErweitern" widgetVar="wdg_FboErweitern" header="#{sprache.FBOManagement_FBOObjektUmbauen_pnl}" closable="true" 
+                  closeOnEscape="true" responsive="true" width="850" modal="true" >
+
+          <h:form id="frm_FboErweitern">
+            <p:toolbar id="tlb_FboErweitern">
+              <p:toolbarGroup id="tbg_FboErweitern" align="left">
+                <p:commandButton value="#{sprache.FBOManagement_FBOObjektUmbauen_btn_schliessen}" icon="fa fa-close" oncomplete="PF('wdg_FboErweitern').hide()" update="frm_daten"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="erw_objektTable"
+                         widgetVar="erw_objektTable"
+                         var="objektItems"
+                         value="#{fboUserObjekteBean.objekteDerArt}"
+                         rowKey="#{objektItems.idObjekt}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         sortMode="single">
+
+              <p:column width="20">
+                <p:commandButton title="#{sprache.FBOManagement_FBOObjektUmbauen_btn_objektUmbauen}" action="#{fboUserObjekteBean.onUmbau()}" icon="fa fa-wrench" 
+                                 oncomplete="PF('wdg_FboErweitern').hide()" update="frm_daten">
+                  <f:setPropertyActionListener value="#{objektItems}" target="#{fboUserObjekteBean.selectedUmbau}" />
+                  <p:confirm header="#{sprache.FBOManagement_FBOObjektUmbauen_Warnung_ObjektUmbauen}" message="#{sprache.FBOManagement_FBOObjektUmbauen_Warnung_ObjektUmbauen}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_id}" width="10">
+                <h:outputText value="#{objektItems.idObjekt}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_objektname}" width="180" sortBy="#{objektItems.objektName}" >
+                <h:outputText value="#{objektItems.objektName}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_mietpreis}" width="80" sortBy="#{objektItems.mietPreis}" >
+                <h:outputText value="#{objektItems.mietPreis}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_routen}" width="80" sortBy="#{objektItems.anzahlRouten}">
+                <h:outputText value="#{objektItems.anzahlRouten}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_personal}" width="80" sortBy="#{objektItems.anzahlPersonal}">
+                <h:outputText value="#{objektItems.anzahlPersonal}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_FBOObjektUmbauen_tbl_stellplaetze}" width="80" sortBy="#{objektItems.anzahlStellplaetze}">
+                <h:outputText value="#{objektItems.anzahlStellplaetze}" style="float: right">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+              </p:column>
+            </p:dataTable>
+
+
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_lqList" widgetVar="wdg_lqList" header="#{sprache.FBOManagement_Zahlungen_dlg_Header}" width="600">
+          <h:form id="frm_lgList">
+
+            <p:toolbar id="tlb_lgLIst" >
+              <p:toolbarGroup id="tbg_lgList" align="left" >
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Fluggesellschaft}: " style="vertical-align: middle;" />
+                <p:selectOneMenu value="#{fboUserObjekteBean.frmfluggesellschaftID}"  style="width: 250px; vertical-align: middle;" filter="true" filterMatchMode="contains">
+                  <f:selectItems value="#{fboUserObjekteBean.meineFluggesellschaftenFuerManager}" var="fgs" itemValue="#{fgs[0]}" itemLabel="#{fgs[1]}" />
+                  <p:ajax event="change" update="frm_lgList"/>
+                </p:selectOneMenu>
+
+                <p:commandButton title="#{sprache.FBOManagement_btn_aktualisieren}" icon="fa fa-refresh" update="frm_lgList" style="vertical-align: middle;" />              
+
+
+                <p:toolbarGroup id="tbg_lgListRechts" align="right">
+                  <h:commandLink id="cmd_export">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                    <p:dataExporter type="csv" target="tbl_lqList" fileName="Uebersicht_Zahlungen"  pageOnly="false" />
+                    <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                  </h:commandLink>
+                </p:toolbarGroup>
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+
+            <p:dataTable id="tbl_lqList" 
+                         var="lg"
+                         value="#{fboUserObjekteBean.liquiditaetsplanung}"
+                         scrollable="true"
+                         scrollHeight="450"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         emptyMessage="#{sprache.FBOManagement_Zahlungen_tbl_emptyMessage}"
+                         >
+
+
+              <p:column>
+                <h:outputText value="#{lg.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_Zahlungen_tbl_Datum}" style="text-align: center">
+                <h:outputText value="#{lg.datum}">
+                  <f:convertDateTime   pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.FBOManagement_Zahlungen_tbl_Betrag}" style="text-align: right">
+                <h:outputText value="#{lg.betrag}">
+                  <f:convertNumber pattern="#,##0.00 &euro;" />
+                </h:outputText>
+              </p:column>
+
+
+            </p:dataTable>
+
+
+
+          </h:form>
+
+
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_TankstellenUebersicht" widgetVar="wdg_TankstellenUebersicht"  header="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_header}"  width="1100">
+          <h:form id="frm_TankstellenUebersicht">
+
+            <p:dataTable id="tbl_tankstellenSprit"
+                         widgetVar="wdg_tankstellenSprit"
+                         var="tankstellen"
+                         value="#{fboUserObjekteBean.alleTankstellen}"
+                         rowKey="#{tankstellen.iduserfbo}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         >
+
+              <p:column width="20">
+                <p:commandButton title="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_btn_bestellen}"  action="#{fboUserObjekteBean.onTankstelleZuweisenFuerBestellung()}" 
+                                 icon="fa fa-tint" onclick="PF('wdg_fuel').show()" update="frm_tankstelle" disabled="#{not fboUserObjekteBean.allowFBOTankstelleVerwalten}" 
+                                 >
+                  <f:setPropertyActionListener value="#{tankstellen}" target="#{fboUserObjekteBean.selectedTankstelle}" />
+                </p:commandButton>
+              </p:column>
+
+              <p:column width="150">
+                <h:outputLabel value="#{tankstellen.icao} - #{tankstellen.name}"/>
+              </p:column>
+
+              <p:column width="60" headerText="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_tbl_AVGAS100LLBestand}" style="text-align: right">
+                <h:outputLabel value="#{tankstellen.bestandAVGASkg}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column width="60" headerText="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_tbl_LetzterPreis}" style="text-align: right">
+                <h:outputLabel value="#{tankstellen.einkaufsPreisAVGAS}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column width="60" headerText="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_tbl_JETABestand}" style="text-align: right">
+                <h:outputLabel value="#{tankstellen.bestandJETAkg}" >
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column width="60" headerText="#{sprache.FBOManagement_dlg_Tankstellen_Spritbestellung_tbl_LetzterPreis}" style="text-align: right">
+                <h:outputLabel value="#{tankstellen.einkaufsPreisJETA}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+              </p:column>
+
+
+            </p:dataTable>
+
+
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_Bestellung" widgetVar="wdg_Bestellung" header="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_pnl}" width="700" height="450">
+
+          <h:form id="frm_Bestellung">
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <p:panelGrid columns="2" style="width: 100%">
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_bestellNummer}" style="font-size: 1.5em" /> 
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.angebotNr}" style="font-size: 1.5em" /> 
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_type}" style="font-size: 1.5em" />
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.fuelArt}" style="font-size: 1.5em" /> 
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_lieferdatum}" style="font-size: 1.5em" />
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.lieferDatum}" style="font-size: 1.5em" >
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_menge}" style="font-size: 1.5em" />
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.menge}" style="font-size: 1.5em; float: right" >
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_preis}" style="font-size: 1.5em" />
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.preis}" style="font-size: 1.5em; float: right" >
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_lbl_summe}" style="font-size: 1.5em; font-weight: bold" />
+                <h:outputLabel value="#{fboUserObjekteBean.selectedBestellung.menge * fboUserObjekteBean.selectedBestellung.preis}" style="font-size: 1.5em; font-weight: bold; float: right" >
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputLabel>
+
+              </p:panelGrid>
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/fax.png" width="250" />            
+            </p:panelGrid>
+
+
+            <p style="font-weight: bolder">#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_txt_lieferbedingungen}</p>
+
+            <p:toolbar>
+              <p:toolbarGroup align="left">
+                <p:commandButton value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_btn_absenden}" action="#{fboUserObjekteBean.onFuelBestellung()}" oncomplete="PF('wdg_Bestellung').hide()"/>
+                <p:commandButton value="#{sprache.FBOManagement_TreibstoffBestellung_Bestellung_btn_abbrechen}" onclick="PF('wdg_Bestellung').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+
+          </h:form>
+
+
+        </p:dialog>
+
+        <p:dialog id="dlg_tankstelle_faesser" widgetVar="wdg_tankstelle_faesser" header="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_header}" width="800" modal="true" closeOnEscape="true">
+          <h:form id="frm_tankstelle_faesser">
+            <p:toolbar id="tlb_tankstelle_faesser">
+              <p:toolbarGroup id="tbg_tankstelle_faesser">
+                <p:commandButton title="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_btn_FaesserBereitstellen}" icon="fa fa-check" 
+                                 action="#{fboUserObjekteBean.onFaesserErstellen()}" oncomplete="PF('wdg_tankstelle_faesser').hide()" update="frm_daten:fboUserTable"/>
+                <p:commandButton title="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_tankstelle_faesser').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png"  title="Treibstoff-Fässer bereitstellen" 
+                              style="vertical-align: center; padding: 4px; height: 50%"/>
+
+              <p:panelGrid columns="2" style="width: 100%">
+
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Spritlager}"/>
+
+                <p:selectOneMenu value="#{fboUserObjekteBean.frmFassFboID}" style="width: 90%" >
+                  <f:selectItem itemLabel="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_cbo_SpritlagerWaehlen}" itemValue="-1"/>
+                  <f:selectItems var="spritlager" value="#{fboUserObjekteBean.spritlager}" itemLabel="#{spritlager.objektName} - #{spritlager.icao}" itemValue="#{spritlager.iduserfbo}"/>
+                  <p:ajax event="change" listener="#{fboUserObjekteBean.onFaesserZielflughafen()}" update="zielflughafen"/>
+                </p:selectOneMenu>
+
+
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Fassgroesse}"/>
+                <p:selectOneMenu value="#{fboUserObjekteBean.frmFassgroesseKG}"  style="width: 100px" >
+                  <f:selectItem itemLabel="10 #{sprache.kg}" itemValue="10" noSelectionOption="true" />
+                  <f:selectItem itemLabel="25 #{sprache.kg}" itemValue="25" noSelectionOption="true" />
+                  <f:selectItem itemLabel="50 #{sprache.kg}" itemValue="50" noSelectionOption="true" />
+                  <f:selectItem itemLabel="100 #{sprache.kg}" itemValue="100" noSelectionOption="true" />
+                  <f:selectItem itemLabel="200 #{sprache.kg}" itemValue="200" noSelectionOption="true" />              
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Treibstoffart}"/>
+                <p:selectOneMenu value="#{fboUserObjekteBean.frmFassTreibstoffart}"  style="width: 100px" >
+                  <f:selectItem itemLabel="JETA" itemValue="JETA" noSelectionOption="true" />
+                  <f:selectItem itemLabel="AVGAS 100LL" itemValue="AVGAS" noSelectionOption="true" />
+                </p:selectOneMenu>
+
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Zielflughafen}"/> <h:inputText disabled="true" id="zielflughafen" value="#{fboUserObjekteBean.frmFassZielflughafen}"/>
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Fassanzahl}"/> <h:inputText value="#{fboUserObjekteBean.frmFassanzahl}"/>
+                <h:outputLabel value="#{sprache.FBOManagement_dlg_TreibstoffBereitstellen_lbl_Entlohnung}"/> <h:inputText value="#{fboUserObjekteBean.frmFassTransportPreis}"/>
+
+              </p:panelGrid>
+
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_BestellungService" widgetVar="wdg_BestellungService" header="#{sprache.FBOManagement_dlg_BestellungService_header}" width="800" position="300,100">
+          <h:form id="frm_BestellungService">
+            <p:toolbar id="tlb__BestellungService">
+              <p:toolbarGroup id="tbg_BestellungService" align="left">
+                <p:commandButton value="#{sprache.FBOManagement_dlg_BestellungService_btn_BestellungAbsenden}" icon="fa fa-check" action="#{fboUserObjekteBean.onBestellungAufgeben()}" update="frm_BestellungService :frm_daten:fboUserTable" />
+                <p:commandButton title="#{sprache.FBOManagement_dlg_BestellungService_btn_BestellungSchliessen}" icon="fa fa-close" onclick="PF('wdg_BestellungService').hide();" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_FlugzeugWaehlen}"/>
+              <p:selectOneMenu value="#{fboUserObjekteBean.bstPackFlugzeugID}" filter="true" filterMatchMode="contains" autoWidth="true" >
+                <f:selectItem itemLabel="#{sprache.FBOManagement_dlg_BestellungService_cbo_FlugzeugWaehlen}" itemValue="-1" noSelectionOption="true"/>
+                <f:selectItems value="#{fboUserObjekteBean.servicePackList}" var="packs" itemLabel="#{packs.type}" itemValue="#{packs.idFlugzeug}"/>
+                <p:ajax event="change" update="frm_BestellungService" listener="#{fboUserObjekteBean.onBestelldatenErmittelnUeberFlugzeug()}"/>
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_kitWaehlen}"/>
+              <p:selectOneMenu value="#{fboUserObjekteBean.bstPackArt}" filter="true" filterMatchMode="contains" autoWidth="true" >
+                <f:selectItem itemLabel="C-Check Kit" itemValue="1" noSelectionOption="true"/>
+                <f:selectItem itemLabel="Reparatur Kit" itemValue="2" noSelectionOption="true"/>
+                <p:ajax event="change" update="frm_BestellungService" listener="#{fboUserObjekteBean.onBestelldatenErmittelnUeberFlugzeug()}"/>
+              </p:selectOneMenu>
+
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_MengeWaehlen}" rendered="#{fboUserObjekteBean.bstPackArt eq 2}"/>
+              <p:selectOneMenu value="#{fboUserObjekteBean.bstPackProzent}" filter="true" filterMatchMode="contains" autoWidth="true" rendered="#{fboUserObjekteBean.bstPackArt eq 2}">
+                <f:selectItem itemLabel="2,5 %" itemValue="2.5" noSelectionOption="true"/>
+                <f:selectItem itemLabel="5,0 %" itemValue="5.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="10,0 %" itemValue="10.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="15,0 %" itemValue="15.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="20,0 %" itemValue="20.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="30,0 %" itemValue="30.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="40,0 %" itemValue="40.0" noSelectionOption="true"/>
+                <f:selectItem itemLabel="50,0 %" itemValue="50.0" noSelectionOption="true"/>
+                <p:ajax event="change" update="frm_BestellungService" listener="#{fboUserObjekteBean.onBestelldatenErmittelnUeberFlugzeug()}"/>
+              </p:selectOneMenu>
+
+
+            </p:panelGrid>
+
+            <p:panelGrid columns="2" style="width: 100%" rendered="#{fboUserObjekteBean.bstPackFlugzeugID > 0}">
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_PaketStandortICAO}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackStandortICAO}"/>
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_PaketStandort}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackStandortName}"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_Entfernung}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackEntfernung}">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_LieferKosten}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackLieferkosten}">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_Liefertermin}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackLieferzeit}">
+                <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_Einkaufspreis}"/> <h:outputLabel value="#{fboUserObjekteBean.bstPackEinkauf}">
+                <f:convertNumber pattern="#,##0 &euro;"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_BestellungService_lbl_Menge}" rendered="#{fboUserObjekteBean.bstPackArt eq 1}"/> <h:inputText value="#{fboUserObjekteBean.bstPackAnzahl}" size="10" rendered="#{fboUserObjekteBean.bstPackArt eq 1}"/>
+
+            </p:panelGrid>
+
+            <div align="center">
+              <p>
+                <p:graphicImage url="#{fboUserObjekteBean.bstPackFlugzeugBild}"  style="width: 50%" rendered="#{fboUserObjekteBean.bstPackFlugzeugID gt 0}"/>  
+              </p>
+            </div>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_LagerItemBearbeiten" widgetVar="wdg_LagerItemBearbeiten" header="#{sprache.FBOManagement_dlg_LagerItemBearbeiten_Header}" width="450">
+          <h:form id="frm_LagerItemBearbeiten">
+            <p:toolbar id="tlb_LagerItemBearbeiten">
+              <p:toolbarGroup id="tbg_LagerItemBearbeiten">
+                <p:commandButton title="#{sprache.FBOManagement_dlg_LagerItemBearbeiten_btn_speichern}" icon="fa fa-save" action="#{fboUserObjekteBean.onLagerServiceHangarSpeichern()}" 
+                                 oncomplete="PF('wdg_LagerItemBearbeiten').hide();" update=":frm_daten:fboUserTable"/>
+                <p:commandButton title="#{sprache.FBOManagement_dlg_LagerItemBearbeiten_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_LagerItemBearbeiten').hide();"/>
+
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputText value="#{sprache.FBOManagement_dlg_LagerItemBearbeiten_lbl_Verkaufspreis}"/> <h:inputText value="#{fboUserObjekteBean.currentLagerItem.paketvkpreis}"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_HangarHandel" widgetVar="wdg_HangarHandel" header="Service Paket Handel" width="640" modal="true">
+          <h:form id="frm_HangarHandel">
+            <p:toolbar id="tlb_HangarHandel">
+              <p:toolbarGroup id="tbg_HangarHandel">
+                <p:commandButton title="#{sprache.FBOManagement_dlg_HangarHandel_btn_HandelPruefen}" icon="fa fa-check" action="#{fboUserObjekteBean.onHandelCheck()}" update="frm_HangarHandel"/>
+                <p:commandButton title="#{sprache.FBOManagement_dlg_HangarHandel_btn_Transferdurchfuehren}" icon="fa fa-money" action='#{fboUserObjekteBean.onHandelTransfer()}' 
+                                 oncomplete="PF('wdg_HangarHandel').hide();" update="frm_BestellungService :frm_daten:fboUserTable" >
+                  <p:confirm header="#{sprache.FBOManagement_dlg_HangarHandel_confirm_header}" message="Handel wirklich ausführen?" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.FBOManagement_dlg_HangarHandel_btn_schliessen}" icon="fa fa-close" oncomplete="PF('wdg_HangarHandel').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Paket}"/> <h:outputLabel value="C-Check" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 1}"/>
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Servicepaket}" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 2}"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Servicepaket}"/> <h:outputLabel value="#{fboUserObjekteBean.currentLagerItem.paketname}"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Empfaenger}"/>
+
+              <p:selectOneMenu id="som_handel" value="#{fboUserObjekteBean.bstPackAnlieferID}" style="width: 350px">
+                <f:selectItem itemLabel="#{sprache.FBOManagement_dlg_HangarHandel_cbo_Servicehangarwaehlen}" itemValue="-1" />
+                <f:selectItems var="sh" value="#{fboUserObjekteBean.serviceHangars}" itemValue="#{sh.iduserfbo}" itemLabel="#{sh.name}"/>
+                <p:ajax event="change" listener="#{fboUserObjekteBean.onHandelCheck()}" update="frm_HangarHandel"/>
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Menge}" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 1}"/>
+              <h:inputText value="#{fboUserObjekteBean.bstPackAnzahl}" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 1}" size="5"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_MengePRZ}" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 2}"/>
+              <h:inputText value="#{fboUserObjekteBean.bstPackProzent}" rendered="#{fboUserObjekteBean.currentLagerItem.paketart eq 2}" size="5"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Entfernung}" /> 
+              <h:outputLabel value="#{fboUserObjekteBean.bstPackEntfernung}" style="text-align: right;">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Versandkosten}" /> 
+              <h:inputText value="#{fboUserObjekteBean.bstPackLieferkosten}"/>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Handelspreis}" /> 
+              <h:inputText value="#{fboUserObjekteBean.bstPackAnlieferPreis}">
+                <f:convertNumber pattern="#,##0"/>
+              </h:inputText>
+
+              <h:outputLabel value="#{sprache.FBOManagement_dlg_HangarHandel_lbl_Lieferzeit}" /> 
+              <h:outputLabel value="#{fboUserObjekteBean.bstPackLieferzeit}">              
+                <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+              </h:outputLabel>
+
+
+
+            </p:panelGrid>            
+
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_ServiceUmsatz" widgetVar="wdg_ServiceUmsatz" header="Paketumsatz" width="900">
+          <h:form id="frm_ServiceUmsatz">
+            <p:toolbar id="tlb_ServiceUmsatz">
+              <p:toolbarGroup id="tbg_ServiceUmsatz" align="left">
+                <p:commandButton title="#{sprache.FBOManagement_dlg_ServiceUmsatz_btn_schliessen}" icon="fa fa-close" oncomplete="PF('wdg_ServiceUmsatz').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="dtb_ServiceUmsatz" var="umsatz" value="#{fboUserObjekteBean.lagerPaketUmsatz}" 
+                         scrollRows="10"
+                         scrollable="true"
+                         scrollHeight="450"
+                         emptyMessage="#{sprache.FBOManagement_dlg_ServiceUmsatz_tbl_emptyMessage}">
+
+              <f:facet name="header">
+                <h:outputText value="#{fboUserObjekteBean.currentLagerItem.paketname}"/>
+              </f:facet>
+
+              <p:column headerText="#{sprache.FBOManagement_tbl_ServiceHangarLager_lbl_Kit}">
+                <h:outputText value="C-Check" rendered="#{umsatz.paketart eq 1}"/>
+                <h:outputText value="Rep. Kit" rendered="#{umsatz.paketart eq 2}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_dlg_ServiceUmsatz_tbl_lbl_Menge}" style="text-align: right">
+                <h:outputText value="#{umsatz.menge}" rendered="#{umsatz.paketart eq 1}">
+                  <f:convertNumber pattern="#,##0" />
+                </h:outputText>
+
+                <h:outputText value="#{umsatz.menge/100}" rendered="#{umsatz.paketart eq 2}">
+                  <f:convertNumber pattern="#,##0.00 %" />
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_dlg_ServiceUmsatz_tbl_lbl_Verbrauchtam}" style="text-align: center">
+                <h:outputText value="#{umsatz.verkauftam}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.FBOManagement_dlg_ServiceUmsatz_tbl_lbl_Abnehmer}">
+                <h:outputText value="#{fboUserObjekteBean.getHangarLagerUmsatzAbnehmer(umsatz.verkauftanuserid)}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage id="ghi_status" value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+
+      </p:layout>
+
+    </h:body>
+  </f:view>
+</html>
+

@@ -1,0 +1,588 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{airline_pilotenBean.airlineName} #{sprache.Fluggesellschaften_Piloten_pnl}</title>
+
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="#{airline_pilotenBean.airlineName} - #{sprache.Fluggesellschaften_Piloten_pnl}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+            #{airline_pilotenBean.onRefresh()}
+
+
+            <p:toolbar id="tlb_daten">
+
+              <p:toolbarGroup id="tbg_suche" align="right">
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_lbl_PilotenSuchen}: "/>
+                <h:inputText value="#{airline_pilotenBean.suchText}"/>
+                <p:commandButton icon="ui-icon-search" action="#{airline_pilotenBean.onSuche()}" update="pilotsTable"/>
+              </p:toolbarGroup>
+
+
+              <p:toolbarGroup id="tbg_daten" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_btn_zurueck}" action="fluggesellschaft.xhtml?faces-redirect=true" icon="ui-icon-arrowreturn-1-w" />
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_btn_neuenPilotenAnlegen}" onclick="PF('wdg_newPilot').show();" icon="ui-icon-plusthick" disabled="#{not airline_pilotenBean.allowPilotenEinstellen}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_btn_pilotenVerwalten}" onclick="PF('wdg_PilotEdit').show()" icon="ui-icon-pencil" rendered="#{not empty airline_pilotenBean.selectedPilot}" 
+                                 disabled="#{not airline_pilotenBean.allowPilotenBearbeiten}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_btn_pilotEntfernen}" async="true" action="#{airline_pilotenBean.onDeletePilot()}" icon="ui-icon-trash" update="frm_daten" 
+                                 rendered="#{not empty airline_pilotenBean.selectedPiloten}" disabled="#{not airline_pilotenBean.allowPilotenEntlassen}">
+                  <p:confirm header="#{sprache.Fluggesellschaften_Piloten_Warnung_PilotLoeschen}" message="#{sprache.Fluggesellschaften_Piloten_Warnung_PilotLoeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_btn_Rundbrief}" onclick="PF('wdg_NewMessage').show()" icon="fa fa-envelope" disabled="#{not airline_pilotenBean.allowPilotenBearbeiten}"/>
+
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_PilotenlogVdatBdat}" icon="fa fa-area-chart" onclick="PF('wdg_tagestatistik').show();" rendered="#{not empty airline_pilotenBean.selectedPilot}" />
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_Fluglog}" icon="fa fa-area-chart" oncomplete="PF('wdg_PilotLog').show();" 
+                                 update="frm_PilotLog" rendered="#{not empty airline_pilotenBean.selectedPilot}" />                
+
+                <h:commandLink id="cmd_export">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                  <p:dataExporter type="csv" target="pilotsTable" fileName="Pilotenuebersicht"  pageOnly="false" />
+                  <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                </h:commandLink>
+
+              </p:toolbarGroup>
+
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="pilotsTable"
+                         widgetVar="pilotsTable"
+                         var="pilotItems"
+                         value="#{airline_pilotenBean.listPiloten}"
+                         rowKey="#{pilotItems.idflugesellschaftPiloten}"
+                         selection="#{airline_pilotenBean.selectedPiloten}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         emptyMessage="Keine Piloten vorhanden"
+                         >
+
+                  <p:ajax event="rowSelectCheckbox" update="frm_daten"   />
+                  <p:ajax event="rowUnselectCheckbox" update="frm_daten"   />
+                  <p:ajax event="toggleSelect" update="frm_daten"   />
+              
+              <p:ajax listener="#{airline_pilotenBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{airline_pilotenBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+
+              <p:column selectionMode="multiple" width="20" style="text-align:center" exportable="false">
+
+              </p:column>
+              
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FTWUID}" width="10" style="text-align: center;" visible="false" >
+                <h:outputText value='#{pilotItems.iduser}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_IDPilot}" width="10" style="text-align: center;" visible="false" >
+                <h:outputText value='#{pilotItems.idflugesellschaftPiloten}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FgID}" width="10" style="text-align: center;" visible="false">
+                <h:outputText value='#{pilotItems.idflugesellschaft}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_PilotenName}" style="text-align: left;" >
+                <h:outputText value='#{airline_pilotenBean.getUserName(pilotItems.iduser)}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_PilotRufname}" style="text-align: left;" >
+                <h:outputText value='#{pilotItems.callname}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Status}" width="150" style="text-align: center;" >
+                <h:outputText value="#{airline_pilotenBean.BonusBezeichnungStatus(pilotItems.iduser)}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FluSi}" style="text-align: center;" >
+                <h:outputText value='#{pilotItems.flusi}'/>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_LetzterFlug}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.letzterFlug}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Kostenstelle}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.kostenstelle}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Umsatz}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.umsatz}'>
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Bonus}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.bonus}'>
+                  <f:convertNumber pattern="#,##0.00"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Meilen}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.kilometer}'>
+                  <f:convertNumber pattern="0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_FlugStunden}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.zeit/60}'>
+                  <f:convertNumber pattern="0.00"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_TransportiertePassagiere}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.passagiere}'>
+                  <f:convertNumber pattern="0"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_tbl_Cargo}" style="text-align: right;" >
+                <h:outputText value='#{pilotItems.waren}'>
+                  <f:convertNumber pattern="0"/>
+                </h:outputText>
+              </p:column>
+
+            </p:dataTable>
+
+
+
+            <p:dialog id="dlg_PilotEdit" widgetVar="wdg_PilotEdit" header="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_dlg}" width="800" closable="true" rendered="#{not empty airline_pilotenBean.selectedPilot}">
+              <h:form id="frm_PilotEdit">
+                <p:toolbar id="tbl__PilotEdit">
+                  <p:toolbarGroup id="tbg_PilotEdit" align="left">
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_speichern}" action="#{airline_pilotenBean.onSavePilot()}" icon="ui-icon-disk" update="frm_daten" />
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_neueKostenstelle}" icon="ui-icon-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_aktualisieren}" icon="ui-icon-refresh" update="som_Kostenstelle"/>
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_PilotEdit').hide()" update="frm_daten"/>
+                  </p:toolbarGroup>
+                </p:toolbar>
+                <p:panelGrid columns="2">
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_ftwBenutzername}" />
+                  <h:inputText value="#{airline_pilotenBean.pilotUserName}" size="40" disabled="true"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Fluggesellschaft}" />                  
+                  <p:selectOneMenu id="somSwitch" value="#{airline_pilotenBean.switchFluggesellschaft}" style="width: 95%">
+                    <f:selectItems var="fgesellschaft" value="#{airline_pilotenBean.fluggesellschaften}" itemLabel="#{fgesellschaft.name}" itemValue="#{fgesellschaft.idFluggesellschaft}"/>
+                    <p:ajax event="change" listener="#{airline_pilotenBean.onSwitchPilot()}" update="somSwitch"/>
+                  </p:selectOneMenu>
+                  
+                  
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_pilotenRufname}" />
+                  <h:inputText value="#{airline_pilotenBean.selectedPilot.callname}" size="40"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_email}" />
+                  <h:inputText value="#{airline_pilotenBean.selectedPilot.email}" size="40"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_status}" />
+                  <p:outputLabel value="#{airline_pilotenBean.BonusBezeichnungStatus(airline_pilotenBean.selectedPilot.iduser)}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_FluSi}" />
+                  <h:inputText value="#{airline_pilotenBean.selectedPilot.flusi}" size="50" maxlength="80"/>
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_dlg_edit_lbl_DarfKonvertieren}"/>
+                  <p:selectBooleanButton disabled="true" value="#{airline_pilotenBean.selectedPilot.darfkonvertieren}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" 
+                                         onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:100%"/>
+
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_kostenstelle}"/>
+                  <p:selectOneMenu id="som_Kostenstelle" value="#{airline_pilotenBean.selectedPilot.kostenstelle}" style="width: 95%" filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_cbo_kostenstelle}" itemValue="0"/>
+                    <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                  </p:selectOneMenu>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_bonus}" />
+                  <h:inputText value="#{airline_pilotenBean.selectedPilot.bonus}" size="10"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_meilen}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.kilometer}"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_flugzeitMinuten}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.zeit}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_transportiertePassagiere}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.passagiere}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_befoerdertesCargo}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.waren}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_erwirtschafteterUmsatz}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.umsatz}" >
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputLabel>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_lbl_letzterFlug}" />
+                  <h:outputLabel value="#{airline_pilotenBean.selectedPilot.letzterFlug}">
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputLabel>
+
+                </p:panelGrid>
+              </h:form>
+            </p:dialog> 
+          </h:form>        
+
+
+
+        </p:layoutUnit>
+
+          <p:dialog id="dlg_newPilot" widgetVar="wdg_newPilot" header="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_dlg}" width="480">
+            <h:form id="frm_newPilot">
+              <p:toolbar id="tlb_newPilot">
+                <p:toolbarGroup id="tbg__newPilot" align="left">
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_btn_PilotInDieFluggesellschaftAufnehmen}" 
+                                   action="#{airline_pilotenBean.onCreatePilot()}" icon="fa fa-save" update="frm_daten" oncomplete="PF('wdg_newPilot').hide()"/>
+                  
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_btn_exit}"  icon="fa fa-close" onclick="PF('wdg_newPilot').hide()"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+              <p:panelGrid id="pgr_newPilot" columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_lbl_ftwUsername}"/>
+
+                <p:selectOneMenu id="som_newPilot" value="#{airline_pilotenBean.frmFTWUsername}" style="width: 90%" filter="true" filterMatchMode="contains">
+                  <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_cbo_ftwUserAuswaehlen}" itemValue=""/>
+                  <f:selectItems var="pilot" value="#{airline_pilotenBean.listUser}" itemLabel="#{pilot.name} - #{pilot.sprache}" itemValue="#{pilot.name}"/>
+                </p:selectOneMenu>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+          <p:dialog id="dlg_kostenstelle" widgetVar="wdg_kostenstelle" header="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_dlg}" width="700">
+            <h:form id="frm_kostenstelle">
+              <p:toolbar id="tlb_kostenstelle">
+                <p:toolbarGroup id="tbg_kostenstelle">
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_btn_speichern}" action="#{statistikBean.createKostenStelle()}" icon="fa fa-save" update="kst_data"/>
+                  <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_btn_schliessen}" onclick="PF('wdg_kostenstelle').hide()" icon="fa fa-close"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="2" style="width: 100%">
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_lbl_bezeichnung} "/><h:inputText value="#{statistikBean.frmBezeichnung}" size="80" maxlength="250"/>
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_lbl_kostenstelle}"/><h:inputText value="#{statistikBean.frmKostenStelle}" size="15"/>
+              </p:panelGrid>
+
+              <p:dataTable id="kst_data" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" var="kst" scrollable="true" scrollHeight="480">
+
+                <p:column style="width:32px;text-align: center">
+                  <p:commandButton icon="fa fa-remove" title="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_btn_Loeschen}" action="#{statistikBean.deleteKostenstelle()}" update="kst_data" >
+                    <f:setPropertyActionListener value="#{kst}" target="#{statistikBean.selectedKostenstelle}"  />
+                    <p:confirm header="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_Warnung_Loeschen}" message="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_Warnung_Loeschen}" icon="ui-icon-alert" />
+                  </p:commandButton>
+                </p:column>                
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_tbl_kostenstelle}" width="60" style="text-align: center">
+                  <h:outputText value="#{kst.kostenstelle}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_Kostenstelle_tbl_bezeichnung}" style="text-align: center">
+                  <h:outputText value="#{kst.bezeichnung}"/>
+                </p:column>
+
+              </p:dataTable>
+
+            </h:form>
+
+          </p:dialog>
+
+          <p:dialog id="dlg_StatistikZeigen" widgetVar="wdg_StatistikZeigen" header="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_dlg_header_AuswertungPilotenaktivitaeten}" width="1200">
+            <h:form id="frm_StatistikZeigen">
+
+              <p:toolbar id="tlb_StatistikZeigen">
+                <p:toolbarGroup id="tbg_StatistikZeigen" align="left">
+                  <h:commandLink id="cmd_export_StatistikZeigen">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}"/>
+                    <p:dataExporter type="csv" target="pilotLogTbl_StatistikZeigen" fileName="Pilotenlog_Zeitraum"  pageOnly="false" />
+                    <p:tooltip for="cmd_export_StatistikZeigen" value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_DatenexportCSV}"/>
+                  </h:commandLink>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:dataTable id="pilotLogTbl_StatistikZeigen" value="#{airline_pilotenBean.pilotenLogDatum}" var="log_StatistikZeigen" scrollable="true" scrollHeight="400" lazy="true">
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_dlg_StatistikZeigen_lbl_Zeit}" width="70">
+                  <h:outputLabel value="#{log_StatistikZeigen[1]}">
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputLabel>
+
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Pilot}" width="70">
+                  <h:outputLabel value="#{log_StatistikZeigen[13]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Zeit}" width="70">
+                  <h:outputLabel value="#{log_StatistikZeigen[1]}">
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_FlugNr}" width="70">
+                  <h:outputLabel value="#{log_StatistikZeigen[2]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Registrierung}" width="70">
+                  <h:outputLabel value="#{log_StatistikZeigen[3]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Flugzeug}" width="150">
+                  <h:outputLabel value="#{log_StatistikZeigen[4]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Abflug}" width="150">
+                  <h:outputLabel value="#{log_StatistikZeigen[5]}  #{log_StatistikZeigen[6]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Ankunft}" width="150">
+                  <h:outputLabel value="#{log_StatistikZeigen[7]}  #{log_StatistikZeigen[8]}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Pax}" width="40">
+                  <h:outputLabel value="#{log_StatistikZeigen[9]}" style="float: right" rendered="#{log_StatistikZeigen[9] > 0}">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Cargo}" width="40">
+                  <h:outputLabel value="#{log_StatistikZeigen[10]}" style="float: right" rendered="#{log_StatistikZeigen[10] > 0}">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Auftragswert}" width="80">
+                  <h:outputLabel value="#{log_StatistikZeigen[11]}"  style="float: right" >
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="Miles" width="80" visible="false">
+                  <h:outputLabel value="#{log_StatistikZeigen[13]}"  style="float: right" >
+                    <f:convertNumber pattern="#0"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="Filght-Time (minutes)" width="80" visible="false">
+                  <h:outputLabel value="#{log_StatistikZeigen[14]}"  style="float: right" >
+                    <f:convertNumber pattern="#0"/>
+                  </h:outputLabel>
+                </p:column>
+                
+                
+              </p:dataTable>
+
+            </h:form>
+          </p:dialog>
+        
+        
+          <p:dialog id="dlg_tagestatistik" widgetVar="wdg_tagestatistik" header="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_dlg_header_TagestatistikPilotenaktivitaeten}" 
+                    width="650" closeOnEscape="true">
+            <h:form id="frm_tagestatistik">
+              <p:panelGrid columns="5">
+                <h:outputText value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_lbl_VonDatum}"/>
+                <p:calendar id="cal_tagestatistikVon" pattern="dd.MM.yyyy" value="#{airline_pilotenBean.frmStatistikvonDatum}" />
+                <h:outputText value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_lbl_BisDatum}"/>
+                <p:calendar id="cal_tagestatistikBis" pattern="dd.MM.yyyy" value="#{airline_pilotenBean.frmStatistikbisDatum}"/>
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_lbl_AnfrageSenden}" onclick="PF('wdg_StatistikZeigen').show();" oncomplete="PF('wdg_tagestatistik').hide();" update="frm_StatistikZeigen"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+        
+        
+
+
+        <p:dialog id="dlg_PilotLog" widgetVar="wdg_PilotLog" header="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_Fluglog}" width="1400">
+          <h:form id="frm_PilotLog">
+            <p:toolbar id="tlb_PilotLog">
+              <p:toolbarGroup id="tbg_PilotLog" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_btn_exit}"  icon="fa fa-close" onclick="PF('wdg_PilotLog').hide()"/>
+                <h:commandLink id="cmd_export">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                  <p:dataExporter type="csv" target="pilotLogTbl" fileName="Pilotenlog_#{pilotItems.callname}"  pageOnly="false" />
+                  <p:tooltip for="cmd_export" value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_DatenexportCSV}"/>
+                </h:commandLink>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="pilotLogTbl" value="#{airline_pilotenBean.pilotenLog}" var="log" 
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="true">
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Zeit}" width="70">
+                <h:outputLabel value="#{log[1]}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_FlugNr}" width="40">
+                <h:outputLabel value="#{log[2]}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Registrierung}" width="70">
+                <h:outputLabel value="#{log[3]}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Flugzeug}" width="150">
+                <h:outputLabel value="#{log[4]}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Abflug}" width="150">
+                <h:outputLabel value="#{log[5]}  #{log[6]}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Ankunft}" width="150">
+                <h:outputLabel value="#{log[7]}  #{log[8]}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Pax}" width="30">
+                <h:outputLabel value="#{log[9]}" style="float: right" rendered="#{log[9] > 0}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Cargo}" width="60">
+                <h:outputLabel value="#{log[10]}" style="float: right" rendered="#{log[10] > 0}">
+                  <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_PilotLog_tbl_Auftragswert}" width="80">
+                <h:outputLabel value="#{log[11]}"  style="float: right" >
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputLabel>
+              </p:column>
+
+                <p:column headerText="Miles" width="80" visible="false">
+                  <h:outputLabel value="#{log[13]}"  style="float: right" >
+                    <f:convertNumber pattern="#0"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="Filght-Time (minutes)" width="80" visible="false">
+                  <h:outputLabel value="#{log[14]}"  style="float: right" >
+                    <f:convertNumber pattern="#0"/>
+                  </h:outputLabel>
+                </p:column>
+              
+              
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+
+
+
+
+        <p:dialog id="dlg_NewMessage" widgetVar="wdg_NewMessage" header="#{sprache.Fluggesellschaften_Piloten_Rundbrief_dlg_header}" closable="true" width="900" >
+          <h:form id="frm_EditMessage">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton value="#{sprache.Pinnwand_NeuerPin_btn_Senden}" action="#{airline_pilotenBean.onRundbrief()}" icon="ui-icon-check" oncomplete="PF('wdg_NewMessage').hide()" />
+                <p:commandButton value="#{sprache.Pinnwand_NeuerPin_btn_Schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_NewMessage').hide()" />
+              </f:facet>
+            </p:toolbar>
+            <p:panelGrid columns="2">
+              <p:outputLabel value="#{sprache.Pinnwand_NeuerPin_lbl_Empfaenger}" />
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Piloten_dlg_NewMessage_lbl_Tabellenauswahl}"/>
+              <p:outputLabel value="#{sprache.Pinnwand_NeuerPin_lbl_Betreff}" />
+              <p:inputText value="#{airline_pilotenBean.frmPinBetreff}" maxlength="250" size="80"/>
+              <p:outputLabel value="" />
+              <p:editor id="editor1" widgetVar="editorWidget" value="#{airline_pilotenBean.frmPinText}" />
+            </p:panelGrid>
+          </h:form>
+        </p:dialog> 
+
+
+
+      </p:layout>
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </f:view>
+</html>
+

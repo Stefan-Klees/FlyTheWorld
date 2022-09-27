@@ -1,0 +1,704 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{flugzeugeMietKaufBean.airlineName} - #{sprache.Fluggesellschaften_btn_routenFestlegen}</title>
+
+
+
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="#{flugzeugeMietKaufBean.airlineName} - #{sprache.Fluggesellschaften_btn_routenFestlegen}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          #{airrouteBean.onRefresh()}
+
+          <h:form id="frm_tools">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:ribbon id="ribb_2">
+              <p:tab title="Routenanlage" >
+                <p:ribbonGroup style="height: 50px;">
+                  <p:panelGrid id="png_Routenanlage" columns="12" style="height: 46px;" >
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_zurueck}" action="fluggesellschaft.xhtml" icon="fa fa-arrow-left"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_neueRoute}" oncomplete="PF('wdg_neueRoute').show()" action="#{airrouteBean.beforCreate()}" icon="fa fa-plus" disabled="#{not airrouteBean.allowRoutenErstellen}"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_RoutenAktivieren}" action="#{airrouteBean.onAlleRoutenAktiveDeativ()}" icon="fa fa-power-off"
+                                     update="frm_daten:routenTable" disabled="#{not airrouteBean.allowRoutenBearbeiten}"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_AuftraegeZeigen}"  icon="fa fa-list" onclick="PF('wdg_Auftraege').show()" disabled="#{not airrouteBean.allowRoutenBearbeiten}" update="frm_Auftraege"/>
+
+                    <p:commandButton title="#{sprache.UnternehmenFTW_EingetrageneFluggesellschaften_Info_tab_Routen_Map}" icon="fa fa-map-marker"  disabled="#{not airrouteBean.allowRoutenBearbeiten}" rendered="false"/>
+
+                    <h:outputText value="Zeige Routen für"/>
+                    <p:selectOneMenu id="sonPilotMnu" value="#{airrouteBean.selPilot}" autoWidth="true">
+                      <f:selectItem itemLabel="Kein Pilot" itemValue="-1"/>
+                      <f:selectItems value="#{airrouteBean.pilotenFluggesellschaft}" var="pl" itemLabel="#{pl.callname}" itemValue="#{pl.iduser}"/>
+                      <p:ajax event="change" update="frm_daten" listener="#{airrouteBean.onFlugroutenFuerPilot()}"/>
+                    </p:selectOneMenu>
+
+                    <p:link href="#{configBean.wikiRouten}" target="_blank" >
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
+                    </p:link>
+
+
+
+
+                  </p:panelGrid>
+
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="Edit / Routeninfo">
+                <p:ribbonGroup style="height: 50px;">
+
+                  <p:panelGrid id="png_edit" columns="12" style="height: 46px;" >
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_routeBearbeiten}" icon="fa fa-pencil" oncomplete="PF('wdg_RouteEdit').show()" 
+                                     update="frm_daten:frm_routEdit" rendered="#{not empty airrouteBean.selectedFlugrouten}" disabled="#{not airrouteBean.allowRoutenBearbeiten}"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_routeKopieren}" action="#{airrouteBean.onCopyRoute()}" icon="fa fa-copy" update="frm_daten" rendered="#{not empty airrouteBean.selectedFlugrouten}" 
+                                     disabled="#{not airrouteBean.allowRoutenErstellen}"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_routeLoeschen}" action="#{airrouteBean.deleteFlugroute()}" icon="fa fa-trash" update="frm_daten frm_tools:ribb_2:png_edit" 
+                                     rendered="#{not empty airrouteBean.selectedFlugrouten}" disabled="#{not airrouteBean.allowRoutenLoeschen}" >
+                      <p:confirm header="#{sprache.Fluggesellschaften_Routen_Warnung_RouteLoeschen}" message="#{sprache.Fluggesellschaften_Routen_Warnung_RouteLoeschen}" icon="fa fa-alert" />
+                    </p:commandButton>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_umsatzReset}" action="#{airrouteBean.onReset()}" icon="fa fa-money" update="frm_daten frm_tools:ribb_2:png_edit" rendered="#{not empty airrouteBean.selectedFlugrouten}" 
+                                     disabled="#{not airrouteBean.allowRoutenBearbeiten}">
+
+                      <p:confirm header="#{sprache.Fluggesellschaften_Routen_Warnung_umsatzReset}" message="#{sprache.Fluggesellschaften_Routen_Warnung_umsatzReset}" icon="fa fa-alert" />
+                    </p:commandButton>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_RoutenAuslastung}" action="#{airrouteBean.onRoutenAuslastung()}" oncomplete="PF('wdg_Routenauslastung').show()" icon="fa fa-area-chart"
+                                     update="frm_Routenauslastung" rendered="#{not empty airrouteBean.selectedFlugrouten}" disabled="#{not airrouteBean.allowRoutenBearbeiten}"/>
+
+                    <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_RoutenZaehlen}" action="#{airrouteBean.zaehleFlugrouten()}" icon="fa fa-calculator" 
+                                     rendered="#{not empty airrouteBean.selectedFlugrouten}" disabled="#{not airrouteBean.allowRoutenBearbeiten}"/>
+
+                    <p:link href="#{configBean.wikiRouten}" target="_blank" >
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
+                    </p:link>
+                    
+                    <h:commandLink id="cmd_export">
+                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="32" title="#{sprache.Fluggesellschaften_Routen_btn_CSVExport}"/>
+                      <p:dataExporter type="csv" target="frm_daten:routenTable" fileName="Routenuebersicht"  pageOnly="false" />
+                      <p:tooltip for="cmd_export" value="Datenexport CSV"/>
+                    </h:commandLink>
+
+                  </p:panelGrid>
+
+
+                </p:ribbonGroup>
+              </p:tab>
+            </p:ribbon>
+
+          </h:form>
+
+          <h:form id="frm_daten">
+
+            <p:dataTable id="routenTable" 
+                         widgetVar="routenTable"
+                         var="routItems"
+                         value="#{airrouteBean.listFlugrouten}"
+                         rowKey="#{routItems.idFlugrouten}"
+                         selection="#{airrouteBean.selectedFlugrouten}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                         rows="15"
+                         lazy="false" 
+                         selectionMode="single"
+                         sortMode="multiple"
+                         emptyMessage="Keine Routen vorhanden">
+
+
+              <p:ajax id="aj1" listener="#{airrouteBean.onRowSelect}" event="rowSelect" update="frm_daten frm_tools:ribb_2:png_edit"/>
+              <p:ajax id="aj2" listener="#{airrouteBean.onRowUnselect}" event="rowUnselect" update="frm_daten frm_tools:ribb_2:png_edit"/>
+
+              <p:column width="10" exportable="false">
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_name}" width="260" style="text-align: center;" 
+                        sortBy="#{routItems.name}" filterMatchMode="contains" filterBy="#{routItems.name}" filterStyle="width:160px" >
+                <h:outputText escape="false" value="Pilot: #{configBean.boldOn}#{airrouteBean.getUserName(routItems.idPilot)}#{configBean.boldOff}#{configBean.BR}" rendered="#{routItems.idPilot gt 0}"/>
+                <h:outputText escape="false" value="#{routItems.name}#{configBean.BR}#{airrouteBean.getFlugzeugType(routItems.idFlugzeugMietKauf)}"/>
+                <h:outputText escape="false" value="#{configBean.BR}" rendered="#{routItems.ausfuehrungPerDatum}"/>
+                <h:outputText escape="false" value="#{routItems.ausfuehrungAm}" rendered="#{routItems.ausfuehrungPerDatum}" style="font-size: 1.2em">
+                  <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+                <br></br>
+                <h:outputText escape="false" value=" *Mo " rendered="#{routItems.mo}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Di " rendered="#{routItems.di}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Mi " rendered="#{routItems.mi}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Do " rendered="#{routItems.don}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Fr " rendered="#{routItems.fr}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *Sa " rendered="#{routItems.sa}" style="font-size: 1.2em"/>
+                <h:outputText escape="false" value=" *So " rendered="#{routItems.so}" style="font-size: 1.2em"/>
+              </p:column>
+
+
+              <p:column id="fromIcao" headerText="#{sprache.Fluggesellschaften_Routen_tbl_vonIcao}" width="50" filterStyle="width:40px" filterMaxLength="5" style="text-align: center;" filterBy="#{routItems.vonIcao}">
+                <h:outputText value="#{routItems.vonIcao}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_nachIcao}" width="50" filterStyle="width:40px" style="text-align: center;" filterBy="#{routItems.nachicao}" >
+                <h:outputText value="#{routItems.nachicao}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_meilen}" width="50" style="text-align: center;">
+                <h:outputText value="#{routItems.distance}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_kurs}" width="40" style="text-align: center;" >
+                <h:outputText value='#{routItems.direct}'/>
+                <h:outputText value=' NO' rendered="#{routItems.direct gt assignementBean.nullPunkt and routItems.direct lt assignementBean.osten }"/>
+                <h:outputText value=' O' rendered="#{routItems.direct==assignementBean.osten }"/>
+                <h:outputText value=' S' rendered="#{routItems.direct==assignementBean.sueden }"/>
+                <h:outputText value=' SO' rendered="#{routItems.direct gt assignementBean.osten and routItems.direct lt assignementBean.sueden }"/>              
+                <h:outputText value=' W' rendered="#{routItems.direct==assignementBean.westen }"/>
+                <h:outputText value=' SW' rendered="#{routItems.direct gt assignementBean.sueden and routItems.direct lt assignementBean.westen }"/>              
+                <h:outputText value=' N' rendered="#{routItems.direct==assignementBean.norden }"/>
+                <h:outputText value=' NW' rendered="#{routItems.direct gt assignementBean.westen and routItems.direct lt assignementBean.norden }"/>                            
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_oeffentlich}" width="40" style="text-align: right;" >
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.oeffentlich}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.oeffentlich}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_bussinesKlasse}" width="40" style="text-align: right;" sortBy="#{routItems.useBusinessLounge}">
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.useBusinessLounge}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.useBusinessLounge}" />
+              </p:column>
+
+              <p:column headerText="" width="25" exportable="false">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_BusinessAktivieren}"  icon="fa fa-power-off"  action="#{airrouteBean.onBusinessAktivierenDeaktivieren()}" update="frm_daten routenTable" >
+                  <f:setPropertyActionListener value="#{routItems}" target="#{airrouteBean.selectedFlugrouten}" />
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column width="10" style="text-align: right;" sortBy="#{routItems.routenArt}" exportable="false">
+
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_istRouteAktiv}" width="40" style="text-align: right;" sortBy="#{routItems.aktiv}" >
+                <h:outputText value="#{sprache.ja}" rendered="#{routItems.aktiv}" />
+                <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.aktiv}" />
+              </p:column>
+
+              <p:column headerText="" width="25" exportable="false">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_btn_RoutenAktivieren}"  icon="fa fa-power-off"  
+                                 action="#{airrouteBean.onRouteAktivierenDeaktivieren()}" update="frm_daten routenTable" >
+                  <f:setPropertyActionListener value="#{routItems}" target="#{airrouteBean.selectedFlugrouten}" />
+                </p:commandButton>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_letzterFlug}" width="80" style="text-align: center;" sortBy="#{routItems.letzterFlug}">
+                <h:outputText value='#{routItems.letzteAusfuehrungAm}' rendered="#{not routItems.ausfuehrungPerDatum}">
+                  <f:convertDateTime   pattern="dd.MM.yyyy" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_umsatz}" visible="false">
+                <h:outputText value="#{routItems.umsatz}" >
+                  <f:convertNumber  pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Routen_tbl_menge}" visible="false">
+                <h:outputText value="#{routItems.umsatzmenge}" >
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="Repeat" width="50" style="text-align: center;">
+                <h:outputText value="#{routItems.ausfuehrungsZaehler} - #{routItems.wiederholungen}"/>
+              </p:column>
+
+
+
+              <p:rowExpansion>
+                <p:panelGrid columns="2" style="width: 50%">
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_ID}"/>
+                  <h:outputText value="#{routItems.idFlugrouten}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_AbflugHafen} :"/>
+                  <h:outputText value="#{routItems.vonIcao}  #{routItems.fromName} - #{routItems.fromAirportLandCity}"/>
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_detail_ZielHafen} :"/>
+                  <h:outputText value="#{routItems.nachicao}  #{routItems.toName} - #{routItems.toAirportLandCity} "/>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerJedenPiloten}"  style="text-align: right;" />
+                  <h:outputText value="#{routItems.bonusFuerPiloten / 100}">
+                    <f:convertNumber pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerPilotDerFluggesellschaft}" style="text-align: right;" />
+                  <h:outputText value="#{routItems.bonusFuerAirlinePiloten / 100}">
+                    <f:convertNumber  pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_provision}" style="text-align: right;"/>
+                  <h:outputText value="#{routItems.provision / 100}">
+                    <f:convertNumber  pattern="0.00 %"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_umsatz}" />
+                  <h:outputText value="#{routItems.umsatz}" >
+                    <f:convertNumber  pattern="#,##0 &euro;"/>
+                  </h:outputText>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_menge}" />
+                  <h:outputText value="#{routItems.umsatzmenge}" >
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputText>
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_tbl_EcoAktiv}" style="text-align: right;" />
+
+                  <h:outputText value="#{sprache.ja}" rendered="#{routItems.ecoAktiv}" />
+                  <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.ecoAktiv}" />
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_tbl_Langstrecke}" style="text-align: right;" />
+
+                  <h:outputText value="#{sprache.ja}" rendered="#{routItems.langstrecke}" />
+                  <h:outputText value="#{sprache.nein}" rendered="#{ not routItems.langstrecke}" />
+
+                </p:panelGrid>
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+            <p:dialog id="dlg_RouteEdit" widgetVar="wdg_RouteEdit" 
+                      header="#{sprache.Fluggesellschaften_Routen_RoutenBearbeiten_dlg} ID: #{airrouteBean.selectedFlugrouten.idFlugrouten} - #{airrouteBean.selectedFlugrouten.name} " 
+                      closable="true" width="800" rendered="#{not empty airrouteBean.selectedFlugrouten}">
+
+              <h:form id="frm_routEdit">
+                <p:toolbar>
+                  <f:facet name="left">
+                    <p:commandButton value="#{sprache.Fluggesellschaften_Routen_RoutenBearbeiten_btn_speichern}"  action="#{airrouteBean.saveFlugroute()}"  icon="ui-icon-disk" update="frm_daten" />
+                    <p:commandButton value="#{sprache.Fluggesellschaften_Routen_RoutenBearbeiten_btn_schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_RouteEdit').hide()" update="frm_daten"/>
+                  </f:facet>
+                </p:toolbar>
+
+
+                <p:tabView id="tabv_editroute"  activeIndex="0">
+                  <p:tab title="Routendaten">
+
+                    <p:panelGrid columns="2" style="width: 100%">
+
+                      <h:outputText value="Flugzeug"/>
+                      <p:selectOneMenu value="#{airrouteBean.selectedFlugrouten.idFlugzeugMietKauf}" style="width: 95%" >
+                        <f:selectItem itemLabel="Flugzeug auswählen..." itemValue="-1"/>
+                        <f:selectItems value="#{airrouteBean.airlineFlugzeug}" var="flz" itemLabel="#{flz.aktuellePositionICAO} - #{flz.registrierung} - #{flz.type}" itemValue="#{flz.idMietKauf}"/>
+                        <p:ajax event="change"  listener="#{airrouteBean.checkRoutenArt()}" update="maxPaxEdit maxBCEdit maxCargoEdit son_routenartEdit"/>
+                      </p:selectOneMenu>
+
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_name}" />
+                      <p:inputText value="#{airrouteBean.selectedFlugrouten.name}" style="width: 95%" />
+
+                      <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_artDerRoute}:" />
+                      <p:selectOneMenu id="son_routenartEdit" value="#{airrouteBean.selectedFlugrouten.routenArt}" style="width:95%" >
+                        <f:selectItems value="#{airrouteBean.routenArt}" />
+                        <p:ajax event="change" listener="#{airrouteBean.checkRoutenArt()}" update="son_routenartEdit id_bsEdit id_ecoAktivEdit" />
+                      </p:selectOneMenu>
+
+                      <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_fboVonIcao}" />
+                      <p:selectOneMenu value="#{airrouteBean.selectedFlugrouten.vonIcao}" style="width: 95%" >
+                        <f:selectItems value="#{airrouteBean.terminals}" var="fbo" itemLabel="#{fbo.icao} #{fbo.name}" itemValue="#{fbo.icao}"/>
+                      </p:selectOneMenu>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_nachIcao}" />
+                      <p:selectOneMenu value="#{airrouteBean.selectedFlugrouten.nachicao}" style="width: 95%" >
+                        <f:selectItems value="#{airrouteBean.terminals}" var="fbo" itemLabel="#{fbo.icao} #{fbo.name}" itemValue="#{fbo.icao}"/>
+                      </p:selectOneMenu>
+
+                      <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_routeIstOeffentlich}" />
+                      <p:selectBooleanButton id="id_RouteIsPublic" value="#{airrouteBean.selectedFlugrouten.oeffentlich}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+
+                      <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_istEineBusinessLounge}" />
+                      <p:selectBooleanButton id="id_bsEdit" value="#{airrouteBean.selectedFlugrouten.useBusinessLounge}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+                      <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_EcoAktiv}" />
+                      <p:selectBooleanButton id="id_ecoAktivEdit" value="#{airrouteBean.selectedFlugrouten.ecoAktiv}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+
+                      <p:outputLabel value="Max. Eco"/>
+                      <p:outputLabel id="maxPaxEdit" value="#{airrouteBean.selectedFlugrouten.maxPax}" />
+
+                      <p:outputLabel value="Max. BC"/>
+                      <p:outputLabel id="maxBCEdit" value="#{airrouteBean.selectedFlugrouten.maxBusiness}" />
+
+                      <p:outputLabel value="Max. Cargo"/>
+                      <p:outputLabel id="maxCargoEdit" value="#{airrouteBean.selectedFlugrouten.maxCargo}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerJedenPiloten}" />
+                      <p:inputText value="#{airrouteBean.selectedFlugrouten.bonusFuerPiloten}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerPilotDerFluggesellschaft}:" />
+                      <p:inputText value="#{airrouteBean.selectedFlugrouten.bonusFuerAirlinePiloten}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_provision}:" />
+                      <p:inputText value="#{airrouteBean.selectedFlugrouten.provision}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bezeichnungDerPassagiere}" />
+                      <p:inputTextarea value="#{airrouteBean.selectedFlugrouten.passengersTitle}" rows="5" cols="40" style="width: 95%"/>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_kommentar}" />
+                      <p:inputTextarea rows="4" cols="30" value="#{airrouteBean.selectedFlugrouten.bemerkung}" style="width: 95%"/>
+
+                    </p:panelGrid>
+
+                  </p:tab>
+
+                  <p:tab id="tab_ausfuehrung" title="Ausführungsdaten">
+
+                    <p:panelGrid columns="2" style="width: 100%">
+
+                      <h:outputLabel value="Route einmalige ausführen"/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}" >
+                        <p:ajax event="change" update="cal_1_edit pnl_tage1 sonPilotEdit" listener="#{airrouteBean.clearFelder()}"/>
+                      </p:selectBooleanCheckbox>
+
+                      <h:outputLabel value="Einmalige Ausführung am" />
+                      <p:calendar id="cal_1_edit" value="#{airrouteBean.selectedFlugrouten.ausfuehrungAm}"  
+                                  pattern="dd.MM.yyyy HH:mm"  disabled="#{not airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}" />
+
+                      <h:outputText value="Pilot"/>
+                      <p:selectOneMenu id="sonPilotEdit" value="#{airrouteBean.selectedFlugrouten.idPilot}" style="width: 95%" disabled="#{not airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}">
+                        <f:selectItem itemLabel="Kein Pilot" itemValue="-1"/>
+                        <f:selectItems value="#{airrouteBean.pilotenFluggesellschaft}" var="pl" itemLabel="#{pl.callname}" itemValue="#{pl.iduser}"/>
+                      </p:selectOneMenu>
+
+                    </p:panelGrid>
+
+                    <p:panelGrid id="pnl_tage1" columns="2" style="width: 100%"  >
+
+                      <h:outputLabel value="Route jeweils ausführen"/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.mo}" itemLabel="Montags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.di}" itemLabel="Dienstags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.mi}" itemLabel="Mittwochs" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.don}" itemLabel="Donnerstags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.fr}" itemLabel="Freitags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.sa}" itemLabel="Samstags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                      <h:outputLabel value=""/>
+                      <p:selectBooleanCheckbox value="#{airrouteBean.selectedFlugrouten.so}" itemLabel="Sonntags" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+
+                      <h:outputLabel value="Generierungen pro Tag"/>
+                      <p:selectOneMenu value="#{airrouteBean.selectedFlugrouten.wiederholungen}" style="width: 95%" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}">
+                        <f:selectItem itemLabel="1" itemValue="1" />
+                        <f:selectItem itemLabel="2" itemValue="2" />
+                        <f:selectItem itemLabel="3" itemValue="3" />
+                        <f:selectItem itemLabel="4" itemValue="4" />
+                        <f:selectItem itemLabel="5" itemValue="5" />
+                        <f:selectItem itemLabel="6" itemValue="6" />
+                        <f:selectItem itemLabel="7" itemValue="7" />
+                        <f:selectItem itemLabel="8" itemValue="8" />
+                        <f:selectItem itemLabel="9" itemValue="9" />
+                        <f:selectItem itemLabel="10" itemValue="10" />
+                      </p:selectOneMenu>
+
+                      <h:outputLabel value="Letzte Ausführung am" />
+                      <p:calendar id="cal_2_edit" value="#{airrouteBean.selectedFlugrouten.letzteAusfuehrungAm}"  timeZone="#{loginMB.timeZone}"
+                                  pattern="dd.MM.yyyy" disabled="#{airrouteBean.selectedFlugrouten.ausfuehrungPerDatum}"/>
+                    </p:panelGrid>
+
+                  </p:tab>
+
+                </p:tabView>                
+
+
+
+              </h:form>        
+
+            </p:dialog> 
+
+          </h:form>        
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_neueRoute" widgetVar="wdg_neueRoute" header="#{sprache.Fluggesellschaften_Routen_NeueRoute_dlg}" closable="false" width="800">
+
+          <h:form id="frm_neueRoute">
+            <p:toolbar id="tlb_neueRoute">
+              <p:toolbarGroup id="tbg_neueRoute">
+                <p:commandButton value="#{sprache.Fluggesellschaften_Routen_NeueRoute_btn_speichern}"  action="#{airrouteBean.createFlugroute()}" icon="ui-icon-disk" oncomplete="PF('wdg_neueRoute').hide()" update="frm_daten" />
+                <p:commandButton value="#{sprache.Fluggesellschaften_Routen_NeueRoute_btn_schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_neueRoute').hide()" update="frm_daten"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:tabView id="tabv_route"  activeIndex="0">
+              <p:tab title="Routendaten">
+
+                <p:panelGrid columns="2" style="width: 100%">
+
+                  <h:outputText value="Flugzeug"/>
+                  <p:selectOneMenu value="#{airrouteBean.frmFlugzeugID}" style="width: 95%">
+                    <f:selectItem itemLabel="Flugzeug auswählen..." itemValue="-1"/>
+                    <f:selectItems value="#{airrouteBean.airlineFlugzeug}" var="flz" itemLabel="#{flz.type}" itemValue="#{flz.idMietKauf}"/>
+                    <p:ajax event="change" listener="#{airrouteBean.maxWerteWaehlen()}" update="frm_neueRoute"/>
+                  </p:selectOneMenu>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_name}" />
+                  <p:inputText value="#{airrouteBean.frmName}" style="width: 95%" />
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_artDerRoute}:" />
+                  <p:selectOneMenu id="son_routenartCreatet" value="#{airrouteBean.frmRoutenArt}" style="width:95%">
+                    <f:selectItems value="#{airrouteBean.routenArt}" />
+                    <p:ajax event="change" listener="#{airrouteBean.maxWerteWaehlen()}" />
+                    <p:ajax event="change" listener="#{airrouteBean.checkRoutenArt()}" update="son_routenartCreatet id_bsCreate id_ecoAktivCreate" />
+                  </p:selectOneMenu>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_fboVonIcao}" />
+                  <p:selectOneMenu value="#{airrouteBean.frmVonIcao}" style="width: 95%">
+                    <f:selectItems value="#{airrouteBean.terminals}" var="fbo" itemLabel="#{fbo.icao} #{fbo.name}" itemValue="#{fbo.icao}"/>
+                  </p:selectOneMenu>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_nachIcao}" />
+                  <p:selectOneMenu value="#{airrouteBean.frmNachIcao}" style="width: 95%">
+                    <f:selectItems value="#{airrouteBean.terminals}" var="fbo" itemLabel="#{fbo.icao} #{fbo.name}" itemValue="#{fbo.icao}"/>
+                  </p:selectOneMenu>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_routeIstOeffentlich}" />
+                  <p:selectBooleanButton id="id_RouteIsPublic" value="#{airrouteBean.frmOeffentlich}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_istEineBusinessLounge}" />
+                  <p:selectBooleanButton id="id_bsCreate" value="#{airrouteBean.frmBusinessLounge}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+                  <h:outputText value="#{sprache.Fluggesellschaften_Routen_tbl_EcoAktiv}" />
+                  <p:selectBooleanButton id="id_ecoAktivCreate" value="#{airrouteBean.frmEcoAktiv}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px"/>
+
+
+                  <p:outputLabel value="Max. Eco"/>
+                  <p:outputLabel value="#{airrouteBean.frmMaxPax}" />
+
+                  <p:outputLabel value="Max. BC"/>
+                  <p:outputLabel value="#{airrouteBean.frmMaxBusiness}" />
+
+                  <p:outputLabel value="Max. Cargo"/>
+                  <p:outputLabel value="#{airrouteBean.frmMaxCargo}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerJedenPiloten}" />
+                  <p:inputText value="#{airrouteBean.frmBonusFuerPiloten}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bonusFuerPilotDerFluggesellschaft}:" />
+                  <p:inputText value="#{airrouteBean.frmBonusFuerAirlinePiloten}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_provision}:" />
+                  <p:inputText value="#{airrouteBean.frmProvision}" />
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_bezeichnungDerPassagiere}" />
+                  <p:inputTextarea value="#{airrouteBean.frmpassengersTitle}" rows="5" cols="40" style="width: 95%"/>
+
+                  <p:outputLabel value="#{sprache.Fluggesellschaften_Routen_NeueRoute_lbl_kommentar}" />
+                  <p:inputTextarea rows="4" cols="30" value="#{airrouteBean.frmBemerkung}" style="width: 95%"/>
+
+                </p:panelGrid>
+
+              </p:tab>
+
+              <p:tab id="tab_ausfuehrung" title="Ausführungsdaten">
+
+                <p:panelGrid columns="2" style="width: 100%">
+
+                  <h:outputLabel value="Route einmalige ausführen"/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmausfuehrungPerDatum}" >
+                    <p:ajax event="change" update="cal_1 png_tage2 sonPilotCreate" listener="#{airrouteBean.clearFelder()}"/>
+                  </p:selectBooleanCheckbox>
+
+                  <h:outputLabel value="Einmalige Ausführung am" />
+                  <p:calendar id="cal_1" value="#{airrouteBean.frmausfuehrungAm}" timeZone="#{loginMB.timeZone}" 
+                              pattern="dd.MM.yyyy HH:mm" disabled="#{not airrouteBean.frmausfuehrungPerDatum}" />
+
+                  <h:outputText value="Pilot"/>
+                  <p:selectOneMenu id="sonPilotCreate" value="#{airrouteBean.frmPilot}" style="width: 95%" disabled="#{not airrouteBean.frmausfuehrungPerDatum}">
+                    <f:selectItem itemLabel="Kein Pilot" itemValue="-1"/>
+                    <f:selectItems value="#{airrouteBean.pilotenFluggesellschaft}" var="pl" itemLabel="#{pl.callname}" itemValue="#{pl.iduser}"/>
+                  </p:selectOneMenu>
+
+
+                </p:panelGrid>
+
+                <p:panelGrid id="png_tage2" columns="2" style="width: 100%"  >
+
+                  <h:outputLabel value="Route jeweils ausführen"/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmmo}" itemLabel="Montags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmdi}" itemLabel="Dienstags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmmi}" itemLabel="Mittwochs" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmdo}" itemLabel="Donnerstags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmfr}" itemLabel="Freitags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmsa}" itemLabel="Samstags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+                  <h:outputLabel value=""/>
+                  <p:selectBooleanCheckbox value="#{airrouteBean.frmso}" itemLabel="Sonntags" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+
+                  <h:outputLabel value="Generierungen pro Tag"/>
+                  <p:selectOneMenu value="#{airrouteBean.frmwiederholungen}" style="width: 95%" disabled="#{airrouteBean.frmausfuehrungPerDatum}" >
+                    <f:selectItem itemLabel="1" itemValue="1" />
+                    <f:selectItem itemLabel="2" itemValue="2" />
+                    <f:selectItem itemLabel="3" itemValue="3" />
+                    <f:selectItem itemLabel="4" itemValue="4" />
+                    <f:selectItem itemLabel="5" itemValue="5" />
+                    <f:selectItem itemLabel="6" itemValue="6" />
+                    <f:selectItem itemLabel="7" itemValue="7" />
+                    <f:selectItem itemLabel="8" itemValue="8" />
+                    <f:selectItem itemLabel="9" itemValue="9" />
+                    <f:selectItem itemLabel="10" itemValue="10" />
+                  </p:selectOneMenu>
+
+                  <h:outputLabel value="Letzte Ausführung am" />
+                  <p:calendar id="cal_2" value="#{airrouteBean.frmletzteAusfuehrungAm}" timeZone="#{loginMB.timeZone}" 
+                              pattern="dd.MM.yyyy" disabled="#{airrouteBean.frmausfuehrungPerDatum}" />
+
+
+                </p:panelGrid>
+
+              </p:tab>
+
+            </p:tabView>
+
+          </h:form>
+
+        </p:dialog>         
+
+        <p:dialog id="dlg_Routenauslastung" widgetVar="wdg_Routenauslastung" header="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_header}" closeOnEscape="true" width="640" height="250" >
+          <h:form id="frm_Routenauslastung">
+            <p:toolbar id="tlb_Routenauslastung">
+              <p:toolbarGroup id="tbg_Routenauslastung" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_btn_RoutenAktivieren}" action="#{airrouteBean.onRoutenAuslastungRoutenAktivieren()}" icon="fa fa-play"
+                                 update="frm_daten:routenTable" />
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_btn_RoutenDeaktivieren}" action="#{airrouteBean.onRoutenAuslastungRoutenDeativieren()}" icon="fa fa-power-off"
+                                 update="frm_daten:routenTable" />
+
+              </p:toolbarGroup>
+            </p:toolbar>
+            <p></p>
+
+            <div style="font-size: 1.2em">
+              #{airrouteBean.selectedFlugrouten.vonIcao} - #{airrouteBean.selectedFlugrouten.fromAirportLandCity}
+            </div>
+            <div style="text-indent: 20px; font-size: 1.2em">
+              #{airrouteBean.selectedFlugrouten.nachicao} - #{airrouteBean.selectedFlugrouten.toAirportLandCity}
+            </div>
+            <p></p>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_lbl_PassagiereEconomy}" style="font-size: 150%"/>
+              <h:outputLabel value="#{airrouteBean.auslastungPax}" style="font-size: 150%; float: right" />
+
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_lbl_PassagiereBC}" style="font-size: 150%"/>
+              <h:outputLabel value="#{airrouteBean.auslastungBC}" style="font-size: 150%; float: right" />
+
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Routen_dlg_RoutenAuslastung_lbl_Cargo}" style="font-size: 150%"/>
+              <h:outputLabel value="#{airrouteBean.auslastungCargo}" style="font-size: 150%; float: right">
+                <f:convertNumber pattern="#,##0 #{sprache.kg}"  />
+              </h:outputLabel>
+
+            </p:panelGrid>
+
+            <br></br>
+
+            <p:progressBar value="#{airrouteBean.gesamtAuslastung}" style="width: 100%;height: 25px;" labelTemplate="{value} %"/>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <ui:include src="/users/dialogs/dlgAuftraege.xhtml"/>
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+
+      </p:layout>
+
+    </h:body>
+  </f:view>
+
+</html>
+

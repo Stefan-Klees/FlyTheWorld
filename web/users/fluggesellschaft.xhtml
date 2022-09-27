@@ -1,0 +1,489 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{sprache.Fluggesellschaften_pnl}</title>
+
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="#{sprache.Fluggesellschaften_pnl}">
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_daten">
+            <p:toolbar id="tlb_daten">
+
+              <p:toolbarGroup id="tbg_daten1" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_btn_aktualisieren}" action="#{airlineBean.onRefresh()}"  
+                                 update="frm_daten" icon="fa fa-refresh"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_neueFluggesellschaft}" onclick="PF('dlg_AirlineEstablish').show()" icon="ui-icon-plusthick"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_fluggesellschaftLoeschen}" action="#{airlineBean.deleteAirline()}" icon="ui-icon-trash" update="frm_daten" 
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowFluggesellschaftLoeschen}">
+                  <p:confirm header="#{sprache.Fluggesellschaften_Warnung_fluggesellschaftLoeschen}" message="#{sprache.Fluggesellschaften_Warnung_fluggesellschaftLoeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_fluggesellschaftBearbeiten}" icon="fa fa-pencil" onclick="PF('dlg_AirlineEdit').show()" 
+                                 rendered="#{not empty airlineBean.selectedAirline}" update="frm_AirlineEdit" disabled="#{not airlineBean.allowFluggesellschaftBearbeiten}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_routenFestlegen}" action="#{airrouteBean.onChangeRouten()}" icon="fa fa-sitemap"  
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowRouten}" />
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_JobsErstellen}" icon="fa fa-list"  action="fluggesellschaft_jobs.xhtml" 
+                                 actionListener="#{fgJobBean.setAktuelleFluggesellschaft(airlineBean.selectedAirline)}"
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowRouten}" >
+                </p:commandButton>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_pilotenVerwalten}" action="fluggesellschaft_piloten.xhtml" icon="fa fa-id-card"  
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowPiloten}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_flugzeugeVerwalten}" action="fluggesellschaft_flugzeuge.xhtml" icon="fa fa-plane"  
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowFlugzeuge}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_managerVerwalten}" action="fluggesellschaft_manager"  icon="fa fa-users" 
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowManager}"/>
+
+                <p:commandButton title="#{sprache.Fluggesellschaften_btn_bankkonto}" action="fluggesellschaft_banking.xhtml" icon="fa fa-money"  
+                                 rendered="#{not empty airlineBean.selectedAirline}" disabled="#{not airlineBean.allowBank}"/>              
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:dataTable id="airlineTable" 
+                         widgetVar="airlineTable"
+                         var="airlineItems"
+                         value="#{airlineBean.airlines}"
+                         rowKey="#{airlineItems.idFluggesellschaft}"
+                         selection="#{airlineBean.selectedAirline}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="10"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25"
+                         lazy="true" selectionMode="single">
+
+
+
+              <p:ajax listener="#{airlineBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{airlineBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column headerText="" width="96" style="text-align: center;">
+                <p:graphicImage url="#{airlineItems.logoURL}" width="96"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_name}" width="180" style="text-align: center;">
+                <h:outputText value='#{airlineItems.name}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_icao}" style="text-align: center;">
+                <h:outputText value='#{airlineItems.icao}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_icaoCode}" style="text-align: center;">
+                <h:outputText value='#{airlineItems.icaoCode}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_FlottenZustand}" style="text-align: center;">
+                #{airlineBean.onWertermittlung(airlineItems.idFluggesellschaft)}
+                <h:outputLabel value="#{airlineBean.FGSummen[0] / 100.0}">
+                  <f:convertNumber pattern="0.00 %"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_FlottenWert}" style="text-align: center;" >
+                <h:outputLabel value="#{airlineBean.FGSummen[1]}">
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_TPIPAX}" style="text-align: center;" >
+                #{airlineBean.onTraffikIndex(airlineItems.idFluggesellschaft)}
+                <h:outputLabel value="#{airlineBean.traffikIndexPax/100.0}">
+                  <f:convertNumber pattern="#,##0.00 %"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_Paxe}" style="text-align: center;" >
+                <h:outputLabel value="#{airlineItems.geflogeneJobs}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_TPICARGO}" style="text-align: center;" >
+                <h:outputLabel value="#{airlineBean.traffikIndexCargo/100.0}">
+                  <f:convertNumber pattern="#,##0.00 %"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_Cargo}" style="text-align: center;" >
+                <h:outputLabel value="#{airlineItems.geflogenesCargo}">
+                  <f:convertNumber pattern="#,##0"/>
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_tbl_bankkonto}" style="text-align: center;">
+                <h:outputText value='#{airlineItems.bankKonto}'/>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.Bank_tbl_kontostand}" style="text-align: right;">
+                <h:outputText value='#{airlineBean.getBankKontoStand(airlineItems.bankKonto)}'>
+                  <f:convertNumber pattern="#,##0 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+
+            </p:dataTable>
+
+
+            <p:dialog id="dlg_AirlineEdit" widgetVar="dlg_AirlineEdit" header="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_dlg_Header}" closable="true" 
+                      closeOnEscape="true" rendered="#{not empty airlineBean.selectedAirline}" >
+
+              <h:form id="frm_AirlineEdit">
+
+                <p:toolbar>
+                  <p:toolbarGroup align="left">
+                    <p:commandButton title="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_btn_speichern}" actionListener="#{airlineBean.saveAirline()}" icon="fa fa-save" update="frm_daten" />
+                    <p:commandButton value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_btn_kostenstelle}" icon="fa fa-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+                    <p:commandButton value="#{sprache.Fluggesellschaften_dlg_AirlineEdit_btn_Bonusregeln}" icon="fa fa-plus" oncomplete="PF('wdg_bonusSystem').show()" update="frm_bonusSystem"/>
+                    <p:commandButton title="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_btn_schliessen}" icon="fa fa-close" oncomplete="PF('dlg_AirlineEdit').hide()" update=":frm_daten"/>
+                    <p:commandButton title="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_btn_aktualisieren}" icon="fa fa-refresh" update="frm_AirlineEdit frm_daten:airlineTable"/>
+
+                  </p:toolbarGroup>
+                </p:toolbar>
+
+                <p:panelGrid columns="2">
+                  <p:column>
+                    <p:panelGrid columns="2">
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_name}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.name}" size="80" maxlength="250"/>
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_icao}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.icao}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_stadt}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.stadt}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_land}" />
+
+                      <p:selectOneMenu var="country" value="#{airlineBean.selectedAirline.land}" filterMatchMode="contains" filter="true" style="width: 150px">
+                        <f:selectItem itemLabel="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_cbo_LandAuswaehlen}" itemValue=""/>
+                        <f:selectItems value="#{airlineBean.allCountrys}" itemLabel="#{country}" itemValue="#{country}"/>
+                      </p:selectOneMenu>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_icaoCode}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.icaoCode}" size="10" maxlength="3" />
+
+                      <h:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_kostenstelle}"/>
+                      <p:selectOneMenu id="som_Kostenstelle" value="#{airlineBean.selectedAirline.kostenstelle}" style="width: 95%" filter="true" filterMatchMode="contains" >
+                        <f:selectItem itemLabel="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_cbo_kostenstelleAuswaehlen}" itemValue="0"/>
+                        <f:selectItems var="kst" value="#{statistikBean.kostenstellen}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                      </p:selectOneMenu>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_bankKontoname}" />
+                      <p:outputLabel value="#{airlineBean.selectedAirline.bankKontoName}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_bankkonto}" />
+                      <p:outputLabel value="#{airlineBean.selectedAirline.bankKonto}" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_logoDerFluggesellschaft}" />
+                      <p:inputText id="txtLogo" value="#{airlineBean.frmAirlineLogo}" maxlength="250" size="80" />
+
+                      <h:outputLabel value=""/>
+                      <p:commandButton value="Upload" onclick="PF('wdg_GrafikUpload').show()" />
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_stdBonus1}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.stdBonus1}" size="10"/>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_stdBonus2}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.stdBonus2}" size="10"/>
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_stdProvision}" />
+                      <p:inputText value="#{airlineBean.selectedAirline.stdProvision}" size="10"/>
+
+
+                      <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_FluggesellschaftID}" />
+                      <p:outputLabel value="#{airlineBean.selectedAirline.idFluggesellschaft}" />
+                      <h:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_BesitzerID}" />
+                      <h:outputLabel value="#{airlineBean.selectedAirline.userid}" />
+                      <h:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftBearbeiten_lbl_nameDesBesitzers}" />
+                      <h:outputLabel value="#{airlineBean.selectedAirline.besitzerName}" />
+                    </p:panelGrid>
+                  </p:column>
+
+                  <p:column>
+                    <p:panelGrid columns="2">
+                      <f:facet name="header">
+                        Standard Kostenstellen
+                      </f:facet>
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_BuchungsgebuehrFluggesellschaft}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstBuchungsgebuehr}" required="true" requiredMessage="min value = 0" />
+
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_bonuszahlungAnPilot}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstBonusPilot}" required="true" requiredMessage="min value = 0"/>
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_gehaltCrew}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstGehaltCrew}" required="true" requiredMessage="min value = 0"/>
+
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_kostenAbfertigung}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstAbfertigung}" required="true" requiredMessage="min value = 0"/>
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_kostenLandungsgebuehr}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstLandegebuehr}" required="true" requiredMessage="min value = 0"/>
+
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_provision}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstProvisionFluggesellschaft}" required="true" requiredMessage="min value = 0"/>
+
+                      <h:outputLabel value="#{sprache.Terminal_msg_Bankbuchung_treibstoffkostenerstattung}"/>
+                      <h:inputText value="#{airlineBean.selectedAirline.kstTreibstoffkostenErstattung}" required="true" requiredMessage="min value = 0"/>
+
+                    </p:panelGrid>
+
+                    <div align="center">
+                      <h2>Logo</h2>
+                      <p>
+                        <p:graphicImage id="grafikLogo" url="#{airlineBean.frmAirlineLogo}" style="width: 256px" />
+                      </p>
+                    </div>
+
+                  </p:column>
+
+
+                </p:panelGrid>
+
+              </h:form>
+
+
+            </p:dialog> 
+
+          </h:form>        
+
+
+          <p:dialog id="dlg_GrafikUpload" widgetVar="wdg_GrafikUpload" header="Grafik Upload" width="640">
+            <h:form id="frm_GrafikUpload">
+              <p:fileUpload  fileUploadListener="#{airlineBean.onGrafikUpload}"  mode="advanced" oncomplete="PF('wdg_GrafikUpload').hide();" dragDropSupport="false" 
+                             update="frm_daten:airlineTable frm_daten:frm_AirlineEdit:txtLogo frm_daten:frm_AirlineEdit:grafikLogo" sizeLimit="512000" fileLimit="10" allowTypes="/(\.|\/)(jpe?g|png)$/" />
+            </h:form>
+          </p:dialog>
+
+
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_AirlineEstablish" widgetVar="dlg_AirlineEstablish"  header="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_dlg}" closable="true" >
+
+          <h:form id="frm_AirlineEstablish">
+
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton  value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_btn_erstellen}" action="#{airlineBean.createAirline()}" icon="fa fa-save" update=":frm_daten" oncomplete="PF('dlg_AirlineEstablish').hide()"/>
+                <p:commandButton value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_btn_schliessen}" icon="fa fa-close" oncomplete="PF('dlg_AirlineEstablish').hide()" update=":frm_daten"/>
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_lbl_name}" />
+              <p:inputText value="#{airlineBean.airlineName}" size="80" maxlength="250" />
+
+              <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_lbl_BankKontoName}" />
+              <p:inputText value="#{airlineBean.airlineBankAccountName}" size="80" maxlength="250" />
+
+              <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_icaoDesFirmensitzes}" />
+              <p:inputText value="#{airlineBean.homeICAO}" size="10" maxlength="5" />
+
+              <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_icaoCode}" />
+              <p:inputText value="#{airlineBean.ICAOCode}" size="10" maxlength="3" required="true" requiredMessage="ICAO Code muss angegeben werden...."/>
+
+              <p:outputLabel value="#{sprache.Fluggesellschaften_FluggesellschaftGruenden_logoDerFluggesellschaft}" />
+              <p:inputText value="#{airlineBean.airlineLogo}" maxlength="250" size="100"/>
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:dialog> 
+
+        <p:dialog id="dlg_kostenstelle" widgetVar="wdg_kostenstelle" header="#{sprache.Fluggesellschaften_Kostenstelle_dlg}" width="700">
+          <h:form id="frm_kostenstelle">
+            <p:toolbar id="tlb_kostenstelle">
+              <p:toolbarGroup id="tbg_kostenstelle">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Kostenstelle_btn_speichern}" action="#{statistikBean.createKostenStelleFuerFluggesellschaft()}" icon="fa fa-save" update="kst_data"/>
+                <p:commandButton title="#{sprache.Fluggesellschaften_Kostenstelle_btn_schliessen}" onclick="PF('wdg_kostenstelle').hide()" icon="fa fa-close"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Kostenstelle_lbl_bezeichnung} "/><h:inputText value="#{statistikBean.frmBezeichnung}" size="80" maxlength="250"/>
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Kostenstelle_lbl_kostenstelle}"/><h:inputText value="#{statistikBean.frmKostenStelle}" size="15"/>
+            </p:panelGrid>
+
+            <p:dataTable id="kst_data" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" var="kst" scrollable="true" scrollHeight="480">
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-remove" title="#{sprache.Fluggesellschaften_Kostenstelle_btn_loeschen}" action="#{statistikBean.deleteKostenstelle()}" update="kst_data" >
+                  <f:setPropertyActionListener value="#{kst}" target="#{statistikBean.selectedKostenstelle}"  />
+                  <p:confirm header="#{sprache.Fluggesellschaften_Kostenstelle_Warnung_KostenstelleLoeschen}" message="#{sprache.Fluggesellschaften_Kostenstelle_Warnung_KostenstelleLoeschen} ?" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>                
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Kostenstelle_tbl_kostenstelle}" width="60" style="text-align: center">
+                <h:outputText value="#{kst.kostenstelle}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Kostenstelle_tbl_bezeichnung}" style="text-align: center">
+                <h:outputText value="#{kst.bezeichnung}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_bonusSystem" widgetVar="wdg_bonusSystem" header="Bonusregeln für fliegendes Personal" width="800">
+          <h:form id="frm_bonusSystem">
+            <p:toolbar id="tlb_bonusSystem">
+              <p:toolbarGroup id="tbg_bonusSystem" align="left">
+                <p:commandButton title="#{sprache.Fluggesellschaften_dlg_bonusSystem_btn_neu}" icon="fa fa-plus" action="#{airlineBean.onCreateBonus()}" update="frm_bonusSystem"/>
+                <p:commandButton title="#{sprache.Fluggesellschaften_dlg_bonusSystem_btn_speichern}" icon="fa fa-save" action="#{airlineBean.onEditBonus()}" update="frm_bonusSystem" />
+                <p:commandButton title="#{sprache.Fluggesellschaften_Routen_NeueRoute_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_bonusSystem').hide();"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_Name}" />
+              <h:inputText value="#{airlineBean.frmBonusName}" size="80" maxlength="80"/>
+              <h:outputLabel value="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_Minuten}" />
+              <h:inputText value="#{airlineBean.frmBonusZeit}" size="10"/>
+              <h:outputLabel value="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_BonusPRZ}" />
+              <h:inputText value="#{airlineBean.frmBonusProzent}" size="10" />
+              <h:outputLabel value="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_URLAbzeichen}" />
+              <h:inputText value="#{airlineBean.frmBonusUrlAbzeichen}" size="80" maxlength="250"/>
+            </p:panelGrid>
+
+
+            <p:dataTable id="bonusTable" var="bonus" value="#{airlineBean.boni}" scrollHeight="450" scrollable="true" 
+                         emptyMessage="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_emptyMessage}">
+
+              <p:column width="10">
+                <p:commandButton icon="fa fa-pencil" title="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_btn_bearbeiten}" action="#{airlineBean.readBoni()}" update="frm_bonusSystem" >
+                  <f:setPropertyActionListener value="#{bonus}" target="#{airlineBean.currentBonus}"  />
+                </p:commandButton>
+
+                <p:commandButton icon="fa fa-trash" title="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_btn_loeschen}" action="#{airlineBean.onDeletBonus()}" update="frm_bonusSystem" >
+                  <f:setPropertyActionListener value="#{bonus}" target="#{airlineBean.currentBonus}"  />
+                  <p:confirm header="#{sprache.Fluggesellschaften_dlg_bonusSystem_lbl_loeschen_confirm_header}" message="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_loeschen_confirm_message}" icon="ui-icon-alert" />
+                </p:commandButton>
+
+
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_lbl_name}" width="150">
+                <h:outputLabel value="#{bonus.bonusname}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_lbl_Bonus}" width="40">
+                <h:outputLabel value="#{bonus.bonus}" style="float: right">
+                  <f:convertNumber pattern="#,##0.00" />
+                </h:outputLabel>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_lbl_Zeit}" width="40">
+                <h:outputLabel value="#{bonus.zeit}" style="float: right"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_dlg_bonusSystem_tbl_lbl_Abzeichen}" width="50">
+                <p:graphicImage value="#{bonus.urlabzeichen}" height="50" style="float: right"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+
+          </h:form>
+
+
+
+
+
+        </p:dialog>
+
+
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </f:view>
+</html>
+

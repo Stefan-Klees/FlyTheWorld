@@ -1,0 +1,348 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{flugzeugeMietKaufBean.airlineName} - #{sprache.Fluggesellschaften_Bank_pnl}</title>
+
+    </h:head>
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="#{flugzeugeMietKaufBean.airlineName} - #{sprache.Fluggesellschaften_Bank_pnl}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_suche">
+            #{bankingBean.onFluggesellschaftBanking()}
+            #{bankingBean.onRefresh()}
+            <p:toolbar>
+              <p:toolbarGroup align="right">
+                <p:panelGrid columns="8" style="width: 100%">
+                  <h:outputLabel value="VWZ."/><h:inputText value="#{bankingBean.frmVerwendungsZweck}"/>
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_lbl_Kostenstelle}"/>
+                  <p:selectOneMenu id="suche_kostenstelle" value="#{bankingBean.frmKostenstelle}"  filter="true" filterMatchMode="contains" >
+                    <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Bank_cbo_Kostenstelle}" itemValue="0"/>
+                    <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+                    <p:ajax event="change" listener="#{bankingBean.onSucheDetail()}" update="frm_daten"/>
+                  </p:selectOneMenu>
+                  <p:commandButton icon="ui-icon-search" action="#{bankingBean.onSucheDetail()}" update="frm_daten"/>
+
+                  <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_lbl_sucheUeberDatum} : "/>
+                  <p:calendar value="#{bankingBean.suchText}" id="cal1" pattern="dd.MM.yyyy"/>
+                  <p:commandButton icon="ui-icon-search" action="#{bankingBean.onSucheStarten()}" update="frm_daten"/>
+                </p:panelGrid>
+              </p:toolbarGroup>
+            </p:toolbar>
+          </h:form>            
+
+
+          <h:form id="frm_daten">
+            <p:toolbar>
+              <p:toolbarGroup align="left">
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_btn_zurueck}" action="fluggesellschaft.xhtml?faces-redirect=true" icon="ui-icon-arrowreturn-1-w" />
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_btn_neueUeberweisung}" async="true" onclick="PF('wdg_Transfer').show()" icon="ui-icon-document" disabled="#{not bankingBean.allowBankTransfer}"/>
+                <p:commandButton value="#{sprache.Bank_btn_Termine}" async="true" oncomplete="PF('wdg_Terminueberweisung').show()" icon="fa fa-calendar" update="frm_Terminueberweisung"/>
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_btn_zeigeAlleBuchungen}" action="#{bankingBean.onViewAll()}" icon="ui-icon-document" update=":frm_daten"/>
+
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_btn_KostenstelleZuweisen}" icon="fa fa-calculator" oncomplete="PF('wdg_fibu').show();" update="frm_fibu" disabled="#{not bankingBean.allowBankBuchhaltung}">
+                </p:commandButton>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:dataTable id="bankingTable"
+                         widgetVar="bankingTable"
+                         var="bankingItems"
+                         value="#{bankingBean.kontouebersicht}"
+                         rowKey="#{bankingItems.primanota}"
+                         selection="#{bankingBean.selectedData}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rows="15"
+                         scrollable="true"
+                         rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100"
+                         lazy="false"
+                         selectionMode="multiple">
+
+
+              <p:ajax listener="#{bankingBean.onRowSelect}" event="rowSelect" update=":frm_daten frm_fibu"/>
+              <p:ajax listener="#{bankingBean.onRowUnselect}" event="rowUnselect" update=":frm_daten frm_fibu"/>
+
+
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_auftraggeber}" style="text-align: center;" >
+                <h:outputText value='#{bankingItems.absenderName}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_auftraggeberKontoNummer}" style="text-align: center;" >
+                <h:outputText value='#{bankingItems.absenderKonto}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_empfaenger}" style="text-align: center;" >
+                <h:outputText value='#{bankingItems.empfaengerName}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_empfaengerKontoNummer}" style="text-align: center;" >
+                <h:outputText value='#{bankingItems.empfaengerKonto}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_verwendungszweck}" style="text-align: center;" width="450" >
+                <h:outputText escape="false" value='#{bankingItems.verwendungsZweck}' />
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_datumUhrzeit}" width="80" style="text-align: right;" sortBy="#{bankingItems.ueberweisungsDatum}" >
+                <h:outputText value='#{bankingItems.ueberweisungsDatum}'>
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_kostenstelle}" width="85" style="text-align: right;" sortBy="#{bankingItems.kostenstelle}">
+                <h:outputText value='#{bankingItems.kostenstelle}'/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_einnahmen}" style="text-align: right;" sortBy="#{bankingItems.betrag}" width="100">
+                <h:outputText value='#{bankingItems.betrag}' rendered="#{bankingItems.betrag ge 0.0}" >
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_tbl_ausgaben}" style="text-align: right;" sortBy="#{bankingItems.betrag}" width="100">
+                <h:outputText value='#{bankingItems.betrag}' rendered="#{bankingItems.betrag le 0.0}">
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+            </p:dataTable>
+
+
+            <p:panelGrid columns="2" style="margin-left: 10px; margin-top: 15px;" >
+
+              <p:panelGrid columns="2" >
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_lbl_einnahmen} :" />
+                <h:outputLabel value="#{bankingBean.bankSaldo[2]}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_lbl_ausgaben} :" />
+                <h:outputLabel value="#{bankingBean.bankSaldo[1]}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputLabel>
+
+                <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_lbl_kontostand} :" />
+                <h:outputLabel value="#{bankingBean.bankSaldo[0]}" style="float: right">
+                  <f:convertNumber pattern="#,##0 &euro;" />
+                </h:outputLabel>
+
+              </p:panelGrid>
+
+              <h:commandLink style="float: left">
+                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Fluggesellschaften_Bank_btn_CSVExport}"/>
+                <p:dataExporter type="csv" target="bankingTable" fileName="Airline-Banking"  pageOnly="false" />
+              </h:commandLink>
+            </p:panelGrid>  
+
+          </h:form>        
+
+
+        </p:layoutUnit>
+
+
+        <p:dialog id="dlg_Transfer" widgetVar="wdg_Transfer" header="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_dlg}" width="740" closable="true">
+          <h:form id="frm_TransferEdit">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_btn_ueberweisungAbsenden}" action="#{bankingBean.onTransfer()}" 
+                                 oncomplete="PF('wdg_Transfer').hide()" icon="ui-icon-check" update="frm_daten frm_menue:lbl_banksaldo frm_Terminueberweisung" />
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_Transfer').hide()"/>
+              </f:facet>
+            </p:toolbar>
+            <p:panelGrid columns="2" style="width: 100%">
+              <p:outputLabel value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_lbl_auftraggeber} :" /><p:outputLabel value="#{bankingBean.frmAuftraggeber}"/>
+              <p:outputLabel value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_lbl_auftraggeberKontoNummer} :" /><p:outputLabel value="#{bankingBean.frmAuftraggeberKonto}"/>
+
+              <p:outputLabel value="#{sprache.Bank_Ueberweisungsdaten_lbl_empfaengerKontoNummer}" />
+
+
+
+              <p:selectOneMenu value="#{bankingBean.frmEmpfaengerKonto}" filter="true" filterMatchMode="contains" editable="true" >
+                <f:selectItems var="empf" value="#{bankingBean.empfaenger}"  itemValue="#{empf.empfaengerKonto}" itemLabel="#{empf.empfaengerKonto} #{empf.empfaengerName}"/>
+              </p:selectOneMenu>
+
+
+
+              <p:outputLabel value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_lbl_empfaenger} :" /><p:outputLabel value="#{bankingBean.frmEmpfaenger}"/>
+              <p:outputLabel value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_lbl_betrag} :" /><p:inputText value="#{bankingBean.frmUeberweisungsBetrag}" size="12"/>
+              <p:outputLabel value="#{sprache.Fluggesellschaften_Bank_NeueUeberweisung_lbl_verwendungszweck} :" /><p:inputTextarea value="#{bankingBean.frmVerwendungsZweck}" rows="4" cols="60"/>
+              <p:outputLabel value="#{sprache.Bank_dlg_Transfer_lbl_Terminueberweisung}"/><p:selectBooleanButton value="#{bankingBean.frmTerminUeberweisung}" offLabel="#{sprache.nein}" onLabel="#{sprache.ja}"  />
+              <p:outputLabel value="#{sprache.Bank_Ueberweisungsdaten_lbl_ausfuehrungsdatum}"/><p:calendar value="#{bankingBean.frmAusfuehrungstermin}" id="cal2" timeZone="#{loginMB.timeZone}" pattern="dd.MM.yyyy HH:mm"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog> 
+
+
+        <p:dialog id="dlg_fibu" widgetVar="wdg_fibu" header="#{sprache.Fluggesellschaften_Bank_BuchungAendern_dlg}" width="600" >
+          <h:form id="frm_fibu">
+            <p:toolbar id="tlb__fibu">
+              <p:toolbarGroup id="tbg_fibu">
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_btn_speichern}" action="#{bankingBean.onFibuSpeichern()}" icon="ui-icon-disk" update=":frm_daten" />
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_btn_schliessen}" icon="ui-icon-close" oncomplete="PF('wdg_fibu').hide()" update=":frm_daten"/>
+                <p:commandButton value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_btn_kostenstelleHinzufuegen}" icon="ui-icon-plus" oncomplete="PF('wdg_kostenstelle').show()" update="frm_kostenstelle"/>
+                <p:commandButton title="#{sprache.Fluggesellschaften_Bank_BuchungAendern_btn_aktualisieren}" icon="ui-icon-refresh" update="som_Kostenstelle"/>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_lbl_kostenstelle}"/>
+            <p:selectOneMenu id="som_Kostenstelle" value="#{bankingBean.frmKostenstelle}" style="width: 95%" filter="true" filterMatchMode="contains" >
+              <f:selectItem itemLabel="#{sprache.Fluggesellschaften_Bank_BuchungAendern_cbo_KostenstelleWaehlen}" itemValue="0"/>
+              <f:selectItems var="kst" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" itemLabel="#{kst.bezeichnung}" itemValue="#{kst.kostenstelle}"/>
+            </p:selectOneMenu>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_kostenstelle" widgetVar="wdg_kostenstelle" header="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_dlg}" width="700">
+          <h:form id="frm_kostenstelle">
+            <p:toolbar id="tlb_kostenstelle">
+              <p:toolbarGroup id="tbg_kostenstelle">
+                <p:commandButton title="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_btn_speichern}" action="#{statistikBean.createKostenStelleFuerFluggesellschaft()}" icon="fa fa-save" update="kst_data"/>
+                <p:commandButton title="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_btn_schliessen}" onclick="PF('wdg_kostenstelle').hide()" icon="fa fa-close"/>
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_lbl_bezeichnung} "/><h:inputText value="#{statistikBean.frmBezeichnung}" size="80" maxlength="250"/>
+              <h:outputLabel value="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_lbl_kostenstelle}"/><h:inputText value="#{statistikBean.frmKostenStelle}" size="15"/>
+            </p:panelGrid>
+
+            <p:dataTable id="kst_data" value="#{statistikBean.kostenstellenFuerFluggesellschaft}" var="kst" scrollable="true" scrollHeight="480">
+
+              <p:column style="width:32px;text-align: center">
+                <p:commandButton icon="fa fa-remove" title="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_btn_Loeschen}" action="#{statistikBean.deleteKostenstelle()}" update="kst_data" >
+                  <f:setPropertyActionListener value="#{kst}" target="#{statistikBean.selectedKostenstelle}"  />
+                  <p:confirm header="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_Warnung_Loeschen}" message="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_Warnung_Loeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+              </p:column>                
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_tbl_kostenstelle}" width="60" style="text-align: center">
+                <h:outputText value="#{kst.kostenstelle}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.Fluggesellschaften_Bank_BuchungAendern_Kostenstelle_tbl_bezeichnung}" style="text-align: center">
+                <h:outputText value="#{kst.bezeichnung}"/>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_Terminueberweisung" widgetVar="wdg_Terminueberweisung" header="#{sprache.Bank_dlg_Terminueberweisung_header}" width="1200" >
+          <h:form id="frm_Terminueberweisung">
+            <p:toolbar id="tlb_Terminueberweisung">
+              <p:toolbarGroup id="tbg_Terminueberweisung" align="left">
+                <p:commandButton title="#{sprache.Bank_dlg_Terminueberweisung_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_Terminueberweisung').hide();" />
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_termine" widgetVar="wdg_tbl_termine" var="term" value="#{bankingBean.termine}"
+                         sortMode="multiple"
+                         scrollHeight="450"
+                         scrollable="true"
+                         emptyMessage="#{sprache.Bank_dlg_Terminueberweisung_tbl_emptyMessage}">
+
+              <p:column width="20">
+                <p:commandButton title="#{sprache.Bank_dlg_Terminueberweisung_tbl_btn_loeschen}" icon="fa fa-trash" action="#{bankingBean.deleteTerminUeberweisung()}" update="tbl_termine">
+                  <p:confirm header="#{sprache.Bank_dlg_Terminueberweisung_tbl_confirm_header}" message="#{sprache.Bank_dlg_Terminueberweisung_tbl_confirm_message}" icon="ui-icon-alert" />
+                  <f:setPropertyActionListener target="#{bankingBean.selectedTermin}" value="#{term}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_tbl_verwendungszweck}" width="250">
+                <h:outputText value="#{term.verwendungsZweck}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_dlg_Terminueberweisung_tbl_lbl_Termin}" width="80" style="text-align: center">
+                <h:outputText value="#{term.ausfuehrungsDatum}" >
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_tbl_auftraggeberKontoNummer}" width="80">
+                <h:outputText value="#{term.absenderKonto}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_tbl_auftraggeber}" width="150">
+                <h:outputText value="#{term.absenderName}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_tbl_empfaengerKontoNummer}" width="80">
+                <h:outputText value="#{term.empfaengerKonto}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_tbl_empfaenger}" width="150">
+                <h:outputText value="#{term.empfaengerName}" />
+              </p:column>
+
+              <p:column headerText="#{sprache.Bank_Ueberweisungsdaten_lbl_betrag}" width="90" style="text-align: right">
+                <h:outputText value="#{term.betrag}" >
+                  <f:convertNumber pattern="#,##0.00 &euro;"/>
+                </h:outputText>
+              </p:column>
+
+            </p:dataTable>
+
+          </h:form>
+        </p:dialog>
+      </p:layout>
+
+    </h:body>
+  </f:view>
+</html>

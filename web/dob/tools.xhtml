@@ -1,0 +1,238 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW MOD (Administration - Tools)</title>
+  </h:head>
+
+  <c:set var="ifAllow" value="#{loginMB.allowToolsOpen}" />
+  <c:if test="${ifAllow==true}" >
+
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="Member of Development (Administration - Tools)">        
+
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+
+          <h:form id="frm_daten">
+
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+
+            <p:ribbon>
+              <p:tab title="Flugzeug">
+                <p:ribbonGroup label="Flug und Flugzeugoptionen">
+                  <p:commandButton title="Flugzeug zu User" onclick="PF('wdg_FlugzeugZuUser').show();" icon="fa fa-user" styleClass="ui-ribbon-bigbutton" type="button"/>
+                  <p:commandButton title="Flugzeug Umsetzen" onclick="PF('wdg_FlugzeugUmsetzen').show();" icon="fa fa-exchange" styleClass="ui-ribbon-bigbutton" type="button"/>
+                  <p:commandButton title="Flugzeug Tankfüllung" onclick="PF('wdg_FlugzeugTankfuellung').show();" icon="fa fa-fire-extinguisher" styleClass="ui-ribbon-bigbutton" type="button"/>
+                  <p:commandButton title="Flugzeugalter (Airframe) setzen" onclick="PF('wdg_FlugzeugAirframe').show();" icon="fa fa-plane" styleClass="ui-ribbon-bigbutton" type="button"/>
+                  <p:commandButton title="Flugzeug aus der Luft holen (entsperren)" onclick="PF('wdg_FlugzeugAusDerLuftHolen').show();" icon="fa fa-plane" styleClass="ui-ribbon-bigbutton" type="button"/>
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="Benutzer">
+                <p:ribbonGroup label="Benutzer Aktionen">
+                  <p:commandButton title="Flug eines User Zurücksetzen" onclick="PF('wdg_FlugZuruecksetzen').show();" styleClass="ui-ribbon-bigbutton" type="button"/>
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="XACARS">
+                <p:ribbonGroup label="XACARS Optionen">
+                  <p:commandButton title="ACARS Aufräumen" action="#{flugzeugBean.onAcarsAufraeumen()}" icon="fa fa-trash" styleClass="ui-ribbon-bigbutton"/>  
+                </p:ribbonGroup>
+              </p:tab>
+
+              <p:tab title="System">
+                <p:ribbonGroup >
+                  <p:commandButton value="Perfom GC" action="#{configBean.onGC()}" icon="fa fa-trash" styleClass="ui-ribbon-bigbutton"/>  
+                  <p:commandButton value="SQL-Editor" onclick="PF('wdg_SqlEditor').show();" icon="fa fa-pencil" styleClass="ui-ribbon-bigbutton"/>  
+                </p:ribbonGroup>
+              </p:tab>
+
+            </p:ribbon>            
+
+          </h:form>        
+
+          <p:dialog id="dlg_FlugzeugZuUser" widgetVar="wdg_FlugzeugZuUser" closable="true" header="Flugzeug einem User zurordnen">
+            <h:form id="frm_FlugzeugZuUser">
+              <p:toolbar id="tlb_FlugzeugZuUser">
+                <p:toolbarGroup id="tbg_FlugzeugZuUser">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugEinemUserZuordnen()}" value="Flugzeug zuordnen" oncomplete="PF('wdg_FlugzeugZuUser').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugZuUser').hide()" />
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+                <h:outputLabel value="User ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobUserID}" size="10"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+          <p:dialog id="dlg_FlugzeugTankfuellung" widgetVar="wdg_FlugzeugTankfuellung" closable="true" header="Flugzeug Tankfüllung">
+            <h:form id="frm_tankfuellung">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugTankfuellung()}" value="Flugzeug Tankfüllung setzen" oncomplete="PF('wdg_FlugzeugTankfuellung').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugTankfuellung').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+                <h:outputLabel value="neue Tankfüllung (kg)"/><h:inputText value="#{flugzeugeMietKaufBean.dobTankfuellung}" size="10"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+          <p:dialog id="dlg_FlugzeugUmsetzen" widgetVar="wdg_FlugzeugUmsetzen" closable="true" header="Flugzeug Umsetzen">
+            <h:form id="frm_FlugzeugUmsetzen">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugUmsetzen()}" value="Flugzeug Umsetzen" oncomplete="PF('wdg_FlugzeugUmsetzen').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugUmsetzen').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+                <h:outputLabel value="neuer Standort"/><h:inputText value="#{flugzeugeMietKaufBean.dobNeuerFlugzeugStandort}" size="10"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+          <p:dialog id="dlg_FlugzeugAirframe" widgetVar="wdg_FlugzeugAirframe" closable="true" header="Flugzeugalter (Airframe) setzen">
+            <h:form id="frm_FlugzeugAirframe">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugAirframeSetzen()}" value="Flugzeug (Airframe) schreiben in Minuten (Std. * 60)" oncomplete="PF('wdg_FlugzeugAirframe').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugAirframe').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+                <h:outputLabel value="Airframe"/><h:inputText id="air" value="#{flugzeugeMietKaufBean.dobAirframe}" size="10"/>
+                <p:tooltip for="air" value="Alter des Flugzeuges in Minuten eingeben. Berechnung Betriebsstunden*Minute. Beispiel: (15000*60)"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+
+          <p:dialog id="dlg_FlugzeugAusDerLuftHolen" widgetVar="wdg_FlugzeugAusDerLuftHolen" closable="true" header="Flugzeug aus der Luft holen">
+            <h:form id="frm_FlugzeugAusDerLuftHolen">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugAusDerLuftHolen()}" value="Flugzeug jetzt aus der Luft holen" oncomplete="PF('wdg_FlugzeugAusDerLuftHolen').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugAusDerLuftHolen').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+
+          <p:dialog id="dlg_FlugZuruecksetzen" widgetVar="wdg_FlugZuruecksetzen" closable="true" header="Flug eines Users Zurücksetzen">
+            <h:form id="frm_FlugZuruecksetzen">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton action="#{flugzeugeMietKaufBean.onUserFlugZuruecksetzen()}" value="Flug zurücksetzen" oncomplete="PF('wdg_FlugZuruecksetzen').hide()" />
+                  <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugZuruecksetzen').hide()" />
+                </f:facet>
+              </p:toolbar>
+
+              <p:panelGrid columns="2">
+                <h:outputLabel value="User ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobUserID}" size="10"/>
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_SqlEditor" widgetVar="wdg_SqlEditor" header="SQL Editor" width="1024" height="640">
+          <h:form id="frm_SqlEditor">
+            <p:toolbar id="tlb_SqlEditor">
+              <p:toolbarGroup id="tbg_SqlEditor" align="left">
+                <p:commandButton title="Schliessen" icon="fa fa-close" onclick="PF('wdg_SqlEditor').hide();"/>
+                <p:commandButton title="Abfrage ausführen" icon="fa fa-check" action="#{configBean.onModAbfrageAusfuehren()}">
+                  <p:confirm header="Abfrage ausführen" message="Abfrage wirklich ausführen, delete oder updates können nicht wiederhergestellt werden." icon="ui-icon-alert" />
+                </p:commandButton>
+
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="1" style="width: 100%">
+              <p:column>
+                <p:selectOneMenu id="sel_sqlEditor" value="#{configBean.sqlAbfrage}"  filter="true" filterMatchMode="contains" autoWidth="true">
+                  <f:selectItem itemValue="" itemLabel="Bitte eine Abfrage auswählen" noSelectionOption="true"/>
+                  <f:selectItems var="abfragen" value="#{configBean.sqlAbfragen}" itemValue="#{abfragen.modsqlbefehl}" itemLabel="#{abfragen.bezeichnung}"/>
+                  <p:ajax event="change" update="sqlText"/>
+                </p:selectOneMenu>
+              </p:column>
+
+              <p:column>
+                <h:inputTextarea id="sqlText" value="#{configBean.sqlAbfrage}" rows="15" style="width: 98%"/>
+              </p:column>
+
+            </p:panelGrid>
+
+
+          </h:form>
+        </p:dialog>
+
+
+      </p:layout>
+    </h:body>
+
+  </c:if>
+</html>
+

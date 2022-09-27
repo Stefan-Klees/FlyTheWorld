@@ -1,0 +1,753 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    #{fgJobBean.onStart()}
+
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+
+      <title>#{fgJobBean.aktuelleFluggesellschaft.name} - Jobs</title>
+
+      <style>
+        .ui-dialog {
+          position: fixed !important;
+        }
+      </style>
+
+      <h:outputStylesheet library="css" name ="job.css"/>
+      
+    </h:head>
+    <h:body>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+        <p:layoutUnit position="center" closable="false" header="#{fgJobBean.aktuelleFluggesellschaft.name} - Jobs">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_daten">
+
+            <p:toolbar id="tlb_daten">
+              <p:toolbarGroup id="tbg_daten" align="left">
+                <p:commandButton value="#{sprache.Fluggesellschaften_Routen_btn_zurueck}" action="fluggesellschaft.xhtml?faces-redirect=true" icon="ui-icon-arrowreturn-1-w" />
+                <p:commandButton value="#{sprache.JobBoerse_btn_NeuenJoberstellen}" action="#{fgJobBean.createJob()}" update="jobTable dlg_jobs tlb_daten" oncomplete="PF('wdg_jobs').show()"/>
+                <p:commandButton value="#{sprache.JobBoerse_btn_JobBearbeiten}" onclick="PF('wdg_jobs').show()" disabled="#{empty fgJobBean.selectedJob}" update="frm_jobs" rendered="#{not fgJobBean.selectedJob.freigabe}"/>
+                <p:commandButton value="#{sprache.JobBoerse_btn_Jobloeschen}" action="#{fgJobBean.deleteJob()}" update="frm_daten" disabled="#{empty fgJobBean.selectedJob}">
+                  <p:confirm header="#{sprache.JobBoerse_cnf_Jobwirklichloeschen}" message="#{sprache.JobBoerse_cnf_msgJobwirklichloeschen}" icon="ui-icon-alert" />
+                </p:commandButton>
+                <p:commandButton value="#{sprache.JobBoerse_btn_JobTemplates}" onclick="PF('wdg_template').show()" update="frm_template"/>
+              </p:toolbarGroup>
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:dataTable id="jobTable" 
+                         widgetVar="wdg_JobTable" 
+                         var="jobItems"
+                         value="#{fgJobBean.aktiveJobs}"
+                         rowKey="#{jobItems.idjobs}"
+                         selection="#{fgJobBean.selectedJob}"
+                         paginator="true"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                         rowsPerPageTemplate="1,5,10,15,20,25"
+                         rows="5"
+                         selectionMode="single"
+                         emptyMessage="Keine Jobs vorhanden" 
+                         >
+
+              <p:ajax listener="#{fgJobBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+              <p:ajax listener="#{fgJobBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+              <p:column width="15" exportable="false" >
+                <p:rowToggler />
+              </p:column>
+
+              <p:column headerText="#{sprache.Hangar_tbl_kennung}" width="80">
+                <h:outputText value="#{fgJobBean.getFlugzeugKennung(jobItems.flugzeugid)}"  />
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Flugzeug}" width="150">
+                <p:graphicImage value="#{fgJobBean.getFlugzeugBild(jobItems.flugzeugid)}" style="height: 100px;" />
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Erstelltvon}" width="100">
+                <h:outputText value="#{jobItems.erzeugtvonuser}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Erstelltam}" width="80">
+                <h:outputText value="#{jobItems.erstelltam}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Ablaufdatum}" width="80">
+                <h:outputText value="#{jobItems.ablaufdatum}">
+                  <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                </h:outputText>
+              </p:column>
+
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Freigegeben}" width="80">
+                <h:outputText value="#{sprache.ja}" rendered="#{jobItems.freigabe eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{jobItems.freigabe eq false}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_tbl_Kommentar}" width="250">
+                <h:outputText value="#{jobItems.kommentar}"/>
+              </p:column>
+
+              
+              
+              <p:rowExpansion>
+                <h:outputText escape="false" value="#{jobItems.beschreibung}"/>
+              </p:rowExpansion>
+
+            </p:dataTable>
+
+          </h:form>        
+
+        </p:layoutUnit>
+
+        <p:dialog id="dlg_jobs" widgetVar="wdg_jobs" header="#{sprache.JobBoerse_dlg_jobs_header}" width="1200" height="850" >
+          <h:form id="frm_jobs">
+            <p:toolbar id="tlb_jobs">
+              <p:toolbarGroup id="tbg_jobs">
+                <p:commandButton value="#{sprache.JobBoerse_dlg_jobs_btn_speichern}" icon="fa fa-save" action="#{fgJobBean.saveJob()}" update="frm_daten:jobTable" />
+                <p:commandButton value="#{sprache.JobBoerse_dlg_jobs_btn_Loeschen}" icon="fa fa-trash" action="#{fgJobBean.deleteJob()}" oncomplete="PF('wdg_jobs').hide()" update="frm_daten" >
+                  <p:confirm header="#{sprache.JobBoerse_cnf_Jobwirklichloeschen}" message="#{sprache.JobBoerse_cnf_msgJobwirklichloeschen}" icon="fa fa-alert"/>
+                </p:commandButton>
+                <p:commandButton value="#{sprache.JobBoerse_dlg_jobs_btn_Flugzeugbeladen}" icon="fa fa-plane" oncomplete="PF('wdg_Auftraege').show()" update="frm_Auftraege" />
+                <p:commandButton value="#{sprache.JobBoerse_dlg_jobs_btn_JobFreigeben}" icon="fa fa-check" action="#{fgJobBean.jobFreigeben()}" oncomplete="PF('wdg_jobs').hide();" update="frm_daten" >
+                  <p:confirm header="#{sprache.JobBoerse_dlg_jobs_cnf_JobwirklichFreigeben}" message="#{sprache.JobBoerse_dlg_jobs_cnf_msgJobwirklichFreigeben}" icon="fa fa-alert"/>
+                </p:commandButton>
+                <p:commandButton value="#{sprache.JobBoerse_dlg_jobs_btn_Templateladen}" icon="fa fa-th-large" onclick="PF('wdg_loadtemplate').show()" update="frm_loadtemplate"/>
+                <p:commandButton title="#{sprache.JobBoerse_dlg_jobs_btn_Schliessen}" icon="fa fa-close" oncomplete="PF('wdg_jobs').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_JobErstelltvon}"/>
+              <h:outputText value="#{fgJobBean.selectedJob.erzeugtvonuser}"  style="width: 150px"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_JobErstelltam}"/>
+              <h:outputText value="#{fgJobBean.selectedJob.erstelltam}" style="width: 150px">
+                <f:convertDateTime type="both" pattern="dd.MM.yyyy HH:mm:ss" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+              </h:outputText>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_Jobistgueltigbis}"/>
+              <p:calendar id="Ablauf" value="#{fgJobBean.selectedJob.ablaufdatum}" pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{loginMB.timeZone}" style="width: 250px"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_Jobbeschreibung}"/>
+              <p:editor  id="Beschreibung" value="#{fgJobBean.selectedJob.beschreibung}" style="width: 100%;" height="500" />
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_ExternerLinkzumJob}"/>
+              <h:inputText value="#{fgJobBean.selectedJob.extlink}" maxlength="250" style="width: 100%"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_FlugzeugfuerJob}"/>
+              <p:selectOneMenu id="FlugzeugID" value="#{fgJobBean.selectedJob.flugzeugid}" style="width: 95%" filter="true" filterMatchMode="contains" 
+                               rendered="#{not empty fgJobBean.selectedJob}" >
+                <f:selectItems var="Flugzeug" value="#{fgJobBean.flugzeugeFG}" itemValue="#{Flugzeug.idMietKauf}" itemLabel="[#{Flugzeug.registrierung}]  #{Flugzeug.aktuellePositionICAO} - #{Flugzeug.type}" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_jobs_lbl_Notizen}"/>
+              <h:inputTextarea value="#{fgJobBean.selectedJob.kommentar}" style="width: 100%" rows="5" />
+
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_Auftraege" widgetVar="wdg_Auftraege" header="#{sprache.JobBoerse_dlg_Auftraege_Beladung}" width="1600" >
+          <h:form id="frm_Auftraege">
+            <p:toolbar id="tlb_Auftraege">
+              <p:toolbarGroup id="tbg_Auftraege">
+                <p:panelGrid columns="9">
+                <p:commandButton value="#{sprache.JobBoerse_dlg_Auftraege_btn_AllesEinladen}" icon="fa fa-plus" action="#{fgJobBean.onAllesEinladen()}" update="frm_Summen frm_Auftraege"/>
+                <p:commandButton value="#{sprache.JobBoerse_dlg_Auftraege_btn_AllesAusladen}" icon="fa fa-minus" action="#{fgJobBean.onAllesAusladen()}" update="frm_Summen frm_Auftraege"/>
+                <p:commandButton value="#{sprache.JobBoerse_dlg_Auftraege_btn_BoniundProvision}" icon="fa fa-money" oncomplete="PF('wdg_boni').show()" update="frm_boni"/>
+                <p:commandButton title="#{sprache.JobBoerse_dlg_Auftraege_btn_Summenfenster}" icon="fa fa-calculator" action="#{fgJobBean.onFlugzeugDaten()}" oncomplete="PF('wdg_summen').show()" update="frm_Summen"/>
+                <p:commandButton title="#{sprache.JobBoerse_dlg_Auftraege_btn_Schliessen}" icon="fa fa-close" oncomplete="PF('wdg_Auftraege').hide()" />
+
+                <h:outputLabel value="#{sprache.JobBoerse_dlg_Auftraege_lbl_FilterArrival}"/>
+                <p:selectOneMenu value="#{fgJobBean.arrivalFilter}" filter="true" filterMatchMode="contains" autoWidth="true">
+                  <f:selectItem itemLabel="#{sprache.JobBoerse_dlg_Auftraege_cbo_Filter_AlleAnzeigen}" itemValue=""/>
+                  <f:selectItems value="#{fgJobBean.filteredArrivals}" var="filter" itemValue="#{filter.toIcao}" itemLabel="#{filter.toIcao} - #{filter.toAirportLandCity}"/>
+                  <p:ajax event="change" update="tbl_Verfuegbare" />
+                </p:selectOneMenu>
+              
+                <h:outputLabel value="#{sprache.JobBoerse_dlg_Auftraege_lbl_FilterLadung}"/>
+                <p:selectOneMenu value="#{fgJobBean.ladungFilter}" filter="true" filterMatchMode="contains" autoWidth="true">
+                  <f:selectItem itemLabel="#{sprache.JobBoerse_dlg_Auftraege_cbo_FilterLadung_AlleAnzeigen}" itemValue="-1"/>
+                  <f:selectItem itemLabel="Pax" itemValue="1"/>
+                  <f:selectItem itemLabel="Cargo" itemValue="2"/>                  
+                  <p:ajax event="change" update="tbl_Verfuegbare" />
+                </p:selectOneMenu>
+
+                
+                </p:panelGrid>
+              
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" layout="grid" style="margin: 2px; float: top; width: 100%">
+
+              <p:dataTable id="tbl_Verfuegbare" 
+                           value="#{fgJobBean.verfuegbareAuftraege}" 
+                           var="VerfuegbareItems"
+                           rowKey="#{VerfuegbareItems.idassignement}"
+                           scrollable="true"
+                           scrollHeight="500"
+                           emptyMessage="Keine Auftraege vorhanden" >
+
+                <f:facet name="header">
+                  #{sprache.JobBoerse_dlg_Auftraege_tlb_header}
+                </f:facet>
+
+                <p:column width="15" exportable="false" >
+                  <p:rowToggler />
+                </p:column>
+
+                <p:column width="25">
+                  <p:commandButton icon="fa fa-plus" action="#{fgJobBean.onAuftragZurBeladung()}" update="frm_Auftraege frm_Summen" disabled="#{fgJobBean.selectedJob.freigabe}">
+                    <f:setPropertyActionListener target="#{fgJobBean.selectedVerfuegbarerAuftrag}" value="#{VerfuegbareItems}"/>
+                  </p:commandButton>
+                </p:column>
+
+                <p:column headerText="#{sprache.JobBoerse_dlg_Auftraege_tlb_Arrival}"  style="text-align: center;" >
+                  <h:outputText value="#{VerfuegbareItems.toIcao}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{VerfuegbareItems.routenArt==1}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{VerfuegbareItems.routenArt==4}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.routenArt==2 and not (VerfuegbareItems.type==5)}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.type==5}"/>                
+                  <h:outputText value="TRF" rendered="#{VerfuegbareItems.routenArt==3}" />
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_menge}" width="150" style="text-align: right;">
+                  <h:outputText value="#{VerfuegbareItems.comment} #{VerfuegbareItems.ammount} #{sprache.kg}" rendered="#{VerfuegbareItems.routenArt==2}" >
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputText>
+                  <h:outputText value="#{VerfuegbareItems.ammount} #{VerfuegbareItems.comment}" rendered="#{VerfuegbareItems.routenArt==1}" />
+                  <h:outputText value="#{VerfuegbareItems.ammount}" rendered="#{VerfuegbareItems.routenArt==3}" />
+                  <h:outputText value="#{VerfuegbareItems.ammount}  BC #{VerfuegbareItems.comment}" rendered="#{VerfuegbareItems.routenArt==4}" />
+                  <h:outputText value=" *" rendered="#{VerfuegbareItems.gesplittet}"/>
+                </p:column>
+
+                <p:column width="50" style="text-align: right" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                  </f:facet>
+                  <h:outputText value='#{VerfuegbareItems.gewichtPax}' rendered="#{VerfuegbareItems.routenArt == 1 or VerfuegbareItems.routenArt == 4 }">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                  <h:outputText value='-' rendered="#{VerfuegbareItems.routenArt == 2 or VerfuegbareItems.routenArt == 3}"/>
+                </p:column>
+
+                <p:column width="50" style="text-align: right" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                  </f:facet>
+                  <h:outputText value='#{VerfuegbareItems.gepaeck}' rendered="#{VerfuegbareItems.routenArt == 1 or VerfuegbareItems.routenArt == 4 }">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                  <h:outputText value='-' rendered="#{VerfuegbareItems.routenArt == 2 or VerfuegbareItems.routenArt == 3}"/>
+                </p:column>
+
+                <p:column width="60" style="text-align: right;" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                  </f:facet>
+                  <h:outputText id="payText" value='#{VerfuegbareItems.pay}'>
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputText>
+
+                  <p:tooltip for="payText" >
+
+                    <p:panelGrid columns="2">
+                      <h:outputLabel value="Per unit: "/>
+                      <h:outputText value='#{VerfuegbareItems.pay / VerfuegbareItems.ammount}' style="float:right">
+                        <f:convertNumber pattern="#,##0 &euro;"/>
+                      </h:outputText>
+
+                      <h:outputLabel value="Per unit/mile: "/>
+                      <h:outputText value='#{(VerfuegbareItems.pay / VerfuegbareItems.ammount) / VerfuegbareItems.distance}' style="float:right">
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:panelGrid>
+
+                  </p:tooltip>
+
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_laeuftAb}" style="text-align: center;" >
+                  <h:outputText value='#{VerfuegbareItems.expires}'>
+                    <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:rowExpansion>
+                  <p:panelGrid columns="2" layout="tabular" style="width: 100%">
+
+                    <h:outputText value="#{sprache.Auftragsplanung_tbl_bonus1}" style="width: 30%;"/>
+                    <h:outputText value='#{VerfuegbareItems.bonusoeffentlich}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_bonus2}"/>
+                    <h:outputText value='#{VerfuegbareItems.bonusclosed}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputLabel value ="#{sprache.Auftragsplanung_tbl_provision}"/>
+                    <h:outputText value='#{VerfuegbareItems.provision}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.Auftragsplanung_tbl_vonIcao} :" />
+                    <h:outputText value="#{VerfuegbareItems.fromIcao}  #{VerfuegbareItems.fromName} - #{VerfuegbareItems.fromAirportLandCity} "/>
+                    <h:outputText value="#{sprache.Auftragsplanung_tbl_nachIcao} :"/>
+                    <h:outputText value="#{VerfuegbareItems.toIcao} #{VerfuegbareItems.toName} - #{VerfuegbareItems.toAirportLandCity}"/>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_meilen}"/>
+                    <h:outputText value='#{VerfuegbareItems.distance}'/>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_kurs}"/>
+                    <h:outputText value='#{VerfuegbareItems.direct}'/>
+                    <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{VerfuegbareItems.direct}.png" />
+
+                  </p:panelGrid>
+                </p:rowExpansion>
+
+              </p:dataTable>
+
+              <p:dataTable id="tbl_JobAuftraege" 
+                           value="#{fgJobBean.selectierteAuftraege}" 
+                           var="SelectierteItems" 
+                           rowKey="#{SelectierteItems.idassignement}"
+                           scrollable="true"
+                           scrollHeight="500"
+                           emptyMessage="Keine Auftraege vorhanden" >
+
+                <f:facet name="header">
+                  #{sprache.JobBoerse_dlg_Auftraege_tlb_headerGeladen}
+                </f:facet>
+
+                <p:column width="15" exportable="false" >
+                  <p:rowToggler />
+                </p:column>
+
+                <p:column width="25">
+                  <p:commandButton icon="fa fa-minus" action="#{fgJobBean.onAuftragRausAusBeladung()}" update="frm_Auftraege frm_Summen" disabled="#{fgJobBean.selectedJob.freigabe}">
+                    <f:setPropertyActionListener target="#{fgJobBean.selectedSelectierterAuftrag}" value="#{SelectierteItems}"/>
+                  </p:commandButton>
+                </p:column>
+
+                <p:column headerText="#{sprache.JobBoerse_dlg_Auftraege_tlb_Arrival}"  style="text-align: center;" >
+                  <h:outputText value="#{SelectierteItems.toIcao}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{SelectierteItems.routenArt==1}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{SelectierteItems.routenArt==4}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.routenArt==2 and not (SelectierteItems.type==5)}"/>
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.type==5}"/>                
+                  <h:outputText value="TRF" rendered="#{SelectierteItems.routenArt==3}" />
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_menge}" width="150" style="text-align: right;">
+                  <h:outputText value="#{SelectierteItems.comment} #{SelectierteItems.ammount} #{sprache.kg}" rendered="#{SelectierteItems.routenArt==2}" >
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputText>
+                  <h:outputText value="#{SelectierteItems.ammount} #{SelectierteItems.comment}" rendered="#{SelectierteItems.routenArt==1}" />
+                  <h:outputText value="#{SelectierteItems.ammount}" rendered="#{SelectierteItems.routenArt==3}" />
+                  <h:outputText value="#{SelectierteItems.ammount} BC #{SelectierteItems.comment}" rendered="#{SelectierteItems.routenArt==4}" />
+                  <h:outputText value=" *" rendered="#{SelectierteItems.gesplittet}"/>
+                </p:column>
+
+                <p:column width="50" style="text-align: right" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                  </f:facet>
+                  <h:outputText value='#{SelectierteItems.gewichtPax}' rendered="#{SelectierteItems.routenArt == 1 or SelectierteItems.routenArt == 4 }">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                  <h:outputText value='-' rendered="#{SelectierteItems.routenArt == 2 or SelectierteItems.routenArt == 3}"/>
+                </p:column>
+
+                <p:column width="50" style="text-align: right" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                  </f:facet>
+                  <h:outputText value='#{SelectierteItems.gepaeck}' rendered="#{SelectierteItems.routenArt == 1 or SelectierteItems.routenArt == 4 }">
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                  <h:outputText value='-' rendered="#{SelectierteItems.routenArt == 2 or SelectierteItems.routenArt == 3}"/>
+                </p:column>
+
+                <p:column width="60" style="text-align: right;" >
+                  <f:facet name="header">
+                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                  </f:facet>
+                  <h:outputText id="payText" value='#{SelectierteItems.pay}'>
+                    <f:convertNumber pattern="#,##0 &euro;"/>
+                  </h:outputText>
+
+                  <p:tooltip for="payText" >
+
+                    <p:panelGrid columns="2">
+                      <h:outputLabel value="Per unit: "/>
+                      <h:outputText value='#{SelectierteItems.pay / SelectierteItems.ammount}' style="float:right">
+                        <f:convertNumber pattern="#,##0 &euro;"/>
+                      </h:outputText>
+
+                      <h:outputLabel value="Per unit/mile: "/>
+                      <h:outputText value='#{(SelectierteItems.pay / SelectierteItems.ammount) / SelectierteItems.distance}' style="float:right">
+                        <f:convertNumber pattern="#,##0.00 &euro;"/>
+                      </h:outputText>
+                    </p:panelGrid>
+
+                  </p:tooltip>
+
+                </p:column>
+
+                <p:column headerText="#{sprache.Auftragsplanung_tbl_laeuftAb}" style="text-align: center;" >
+                  <h:outputText value='#{SelectierteItems.expires}'>
+                    <f:convertDateTime   pattern="dd.MM.yyyy HH:mm" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:rowExpansion>
+                  <p:panelGrid columns="2" layout="grid" style="width: 100%">
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_bonus1}"/>
+                    <h:outputText value='#{SelectierteItems.bonusoeffentlich}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_bonus2}"/>
+                    <h:outputText value='#{SelectierteItems.bonusclosed}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputLabel value ="#{sprache.Auftragsplanung_tbl_provision}"/>
+                    <h:outputText value='#{SelectierteItems.provision}'>
+                      <f:convertNumber pattern="0.00"/>
+                    </h:outputText>
+
+                    <h:outputText value="#{sprache.Auftragsplanung_tbl_vonIcao} :" />
+                    <h:outputText value="#{SelectierteItems.fromIcao}  #{SelectierteItems.fromName} - #{SelectierteItems.fromAirportLandCity} "/>
+                    <h:outputText value="#{sprache.Auftragsplanung_tbl_nachIcao} :"/>
+                    <h:outputText value="#{SelectierteItems.toIcao} #{SelectierteItems.toName} - #{SelectierteItems.toAirportLandCity}"/>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_meilen}"/>
+                    <h:outputText value='#{SelectierteItems.distance}'/>
+
+                    <h:outputLabel value="#{sprache.Auftragsplanung_tbl_kurs}"/>
+                    <h:outputText value='#{SelectierteItems.direct}'/>
+                    <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{SelectierteItems.direct}.png" />
+
+                  </p:panelGrid>
+                </p:rowExpansion>
+
+              </p:dataTable>
+
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:dialog>
+
+        <p:dialog id="dlg_summen" widgetVar="wdg_summen" header="#{sprache.Auftragsplanung_dlg_summen_header}" width="450" closeOnEscape="true" resizable="false" >
+          <h:form id="frm_Summen">
+            <p:toolbar id="tlb_summen">
+              <p:toolbarGroup id="tbg_summen" align="left">
+                <p:commandButton title="#{sprache.btn_aktualisieren}" icon="fa fa-refresh" update="frm_Summen" />
+                <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" oncomplete="PF('wdg_summen').hide();" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid id="pnl_flugzeug" columns="3" style="width: 100%">
+
+              <f:facet name="header">
+                <h:outputLabel value="#{fgJobBean.flugzeugTyp}" />
+              </f:facet>
+
+              <h:outputLabel value="" />
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_Verfuegbar}" style="float: right"/>
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_Rest}" style="float: right"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_SitzeEconomy}" />
+              <h:outputLabel value="#{fgJobBean.sitzeEconomy}" style="float: right"/>
+              <h:outputLabel value="#{fgJobBean.sitzeEconomy - fgJobBean.mengeECOSelect}" style="float: right"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_SitzeBusiness}" />
+              <h:outputLabel value="#{fgJobBean.sitzeBusiness}" style="float: right"/>
+              <h:outputLabel value="#{fgJobBean.sitzeBusiness - fgJobBean.mengeBCSelected}" style="float: right"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_Payload}" />
+              <h:outputLabel value="#{fgJobBean.maxPayload}" style="float: right"/>
+              <h:outputLabel value="#{fgJobBean.maxPayload - (fgJobBean.mengeCargoSelected + fgJobBean.gewichtGepaeckSelected 
+                                      + fgJobBean.gewichtPassagiereEcoSelect + fgJobBean.gewichtPassagiereBCSelected) }" style="float: right"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_MaxCargo}" />
+              <h:outputLabel value="#{fgJobBean.cargoVerfuegbar}" style="float: right"/>
+              <h:outputLabel value="#{fgJobBean.cargoVerfuegbar - (fgJobBean.mengeCargoSelected + fgJobBean.gewichtGepaeckSelected)}" style="float: right"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_summen_lbl_Auftragswert}" style="font-weight: bolder" />
+              <h:outputLabel value="#{fgJobBean.auftragswertSelected}" style="float: right; font-weight: bolder">
+                <f:convertNumber pattern="#,##0 &euro;" />
+              </h:outputLabel>
+              <h:outputLabel value="" style="float: right; font-weight: bolder"/>
+
+            </p:panelGrid>
+
+          </h:form>
+        </p:dialog>        
+
+        <p:dialog id="dlg_boni" widgetVar="wdg_boni" header="#{sprache.JobBoerse_dlg_boni_header}" width="450" closeOnEscape="true">
+          <h:form id="frm_boni">
+            <p:toolbar id="tlb_boni">
+              <p:toolbarGroup id="tbg__boni">
+                <p:commandButton value="#{sprache.JobBoerse_dlg_boni_btn_NeueWerteUebernehmen}" action="#{fgJobBean.onChangeBoniProvision()}" oncomplete="PF('wdg_boni').hide()" update="frm_Auftraege">
+                  <p:confirm header="#{sprache.JobBoerse_dlg_boni_cnf_NeueWerteUebernehmen}" message="#{sprache.JobBoerse_dlg_boni_cnf_msgNeueWerteUebernehmen}" icon="ui-icon-alert"/>  
+                </p:commandButton>
+                <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" onclick="PF('wdg_boni').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 100%">
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_boni_lbl_Bonus1}"/>
+              <h:inputText value="#{fgJobBean.bonusAllePiloten}"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_boni_lbl_Bonus2}"/>
+              <h:inputText value="#{fgJobBean.bonusFGPilot}"/>
+
+              <h:outputLabel value="#{sprache.JobBoerse_dlg_boni_lbl_Provision}"/>
+              <h:inputText value="#{fgJobBean.provision}"/>
+
+            </p:panelGrid>
+
+          </h:form>
+
+        </p:dialog>
+
+
+        <p:dialog id="dlg_template" widgetVar="wdg_template" header="#{sprache.JobBoerse_dlg_template_header}" width="1150" position="200,50" >
+          <h:form id="frm_template">
+            <p:toolbar id="tlb_template">
+              <p:toolbarGroup id="tbg_template" align="left">
+                <p:commandButton title="#{sprache.JobBoerse_dlg_template_btn_NeuesTemplate}" action="#{fgJobBean.createTemplate()}" update="frm_template" icon="fa fa-plus"/>
+                <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" onclick="PF('wdg_template').hide()" />
+              </p:toolbarGroup>
+            </p:toolbar>
+
+            <p:dataTable id="tbl_vorlage" var="vorlage" value="#{fgJobBean.templates}"
+                         rowKey="#{vorlage.idjobtemplate}"
+                         scrollable="true"
+                         scrollHeight="150"
+                         emptyMessage="#{sprache.JobBoerse_dlg_template_tbl_emptyMessage}" >
+
+              <p:column>
+                <p:commandButton title="#{sprache.JobBoerse_dlg_template_btn_Templatebearbeiten}" icon="fa fa-pencil" update="frm_template" >
+                  <f:setPropertyActionListener value="#{vorlage}" target="#{fgJobBean.selectedTemplate}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_template_lbl_Bezeichnung}">
+                <h:outputText value="#{vorlage.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="Geteilt">
+                <h:outputText value="#{sprache.ja}" rendered="#{vorlage.tausch eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{vorlage.tausch eq false}"/>                
+              </p:column>
+
+            </p:dataTable>
+
+            <p:panel id="pnl_template" header="#{sprache.JobBoerse_dlg_template_pnl_header}" rendered="#{not empty fgJobBean.selectedTemplate}" >
+              <p:toolbar id="tlb_pnl_template">
+                <p:toolbarGroup id="tbg_pnl_template">
+                  <p:commandButton title="#{sprache.JobBoerse_dlg_template_pnl_btn_Templatespeichern}" icon="fa fa-save" action="#{fgJobBean.saveTemplate()}" update="frm_template"/>
+                  <p:commandButton title="#{sprache.JobBoerse_dlg_template_pnl_btn_Templateloeschen}" icon="fa fa-trash" action="#{fgJobBean.deleteTemplate()}" update="frm_template">
+                    <p:confirm header="#{sprache.JobBoerse_dlg_template_pnl_cnf_Templateloeschen}" message="#{sprache.JobBoerse_dlg_template_pnl_cnf_msgTemplatewirklichloeschen}" icon="ui-icon-alert" />
+                  </p:commandButton>
+
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:panelGrid columns="2" style="width: 100%;">
+                <h:outputLabel value="#{sprache.JobBoerse_dlg_template_pnl_lbl_Bezeichnung}"/> <h:inputText value="#{fgJobBean.selectedTemplate.bezeichnung}" style="width: 98%"/>
+                <p:column>
+                  <h3>#{sprache.JobBoerse_dlg_template_pnl_lbl_Variablen}</h3>
+                  #contact#<br></br>
+                  #expirydate#<br></br>
+                  #arrival#<br></br>
+                  #arrivalICAO#<br></br>
+                  #departure#<br></br>
+                  #departureICAO#<br></br>
+                  #miles#<br></br>
+                  #airline#<br></br>
+                  #airlinelogo#<br></br>
+                  #aircraft#<br></br>
+                  #fuellOB#<br></br>
+                  #aircraftImage#<br></br>
+                  #kmp%#<br></br>
+                  #kmppay#<br></br>
+                  #kmppay1#<br></br>
+                  #kmppay2#<br></br>                  
+                  #bonusPublic#<br></br>
+                  #bonusPublicInclKMP1#<br></br>
+                  #bonusAirline#<br></br>
+                  #bonusAirlineInclKMP2#<br></br>
+                  #bonusTotal#<br></br>
+                  #bonusTotalInclKMP#<br></br>
+                  #payloadKG#<br></br>
+                  #provision#<br></br>
+                  #paxECO#<br></br>
+                  #paxBC#<br></br>
+                  #totalPax#<br></br>
+                  #cargo#<br></br>
+                  #pay#<br></br>
+                </p:column>
+
+                <p:column>
+                  <p:editor  id="pnl_template_editor" value="#{fgJobBean.selectedTemplate.beschreibung}"  height="650" style="width: 100%;"/>
+                </p:column>
+                <h:outputLabel value="Teilen"/><p:selectBooleanButton value="#{fgJobBean.selectedTemplate.tausch}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />
+              </p:panelGrid>
+
+            </p:panel>
+
+          </h:form>
+        </p:dialog>
+
+
+        <p:dialog id="dlg_loadtemplate" widgetVar="wdg_loadtemplate" header="#{sprache.JobBoerse_dlg_loadtemplate_Templateauswaehlen}" width="800" >
+          <h:form id="frm_loadtemplate">
+            <p:dataTable id="tbl_vorlage" var="vorlage" value="#{fgJobBean.templates}"
+                         rowKey="#{vorlage.idjobtemplate}"
+                         scrollable="true"
+                         scrollHeight="200"
+                         emptyMessage="#{sprache.JobBoerse_dlg_loadtemplate_tbl_emptyMessage}" >
+              <f:facet name="header">
+                #{sprache.JobBoerse_dlg_loadtemplate_tbl_vorlage_Header}
+              </f:facet>
+              
+              <p:column width="25">
+                <p:commandButton title="#{sprache.JobBoerse_dlg_loadtemplate_btn_TemplateUebernehmen}" action="#{fgJobBean.loadTemplate()}" icon="fa fa-check" update="frm_jobs" oncomplete="PF('wdg_loadtemplate').hide();">
+                  <f:setPropertyActionListener value="#{vorlage}" target="#{fgJobBean.importTemplate}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_loadtemplate_lbl_Bezeichnung}">
+                <h:outputText value="#{vorlage.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_loadtemplate_tbl_vorlage_geteilt}" width="80">
+                <h:outputText value="#{sprache.ja}" rendered="#{vorlage.tausch eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{vorlage.tausch eq false}"/>                
+              </p:column>
+            </p:dataTable>
+
+            <p:dataTable id="tbl_geteilt" var="geteilt" value="#{fgJobBean.templatesTausch}"
+                         rowKey="#{vorlage.idjobtemplate}"
+                         scrollable="true"
+                         scrollHeight="200"
+                         emptyMessage="#{sprache.JobBoerse_dlg_loadtemplate_tbl_emptyMessage}" >
+
+              <f:facet name="header">
+                #{sprache.JobBoerse_dlg_loadtemplate_tbl_geteilt_Header}
+              </f:facet>
+              
+              <p:column width="25">
+                <p:commandButton title="#{sprache.JobBoerse_dlg_loadtemplate_btn_TemplateUebernehmen}" action="#{fgJobBean.loadTemplate()}" icon="fa fa-check" update="frm_jobs" oncomplete="PF('wdg_loadtemplate').hide();">
+                  <f:setPropertyActionListener value="#{geteilt}" target="#{fgJobBean.importTemplate}"/>
+                </p:commandButton>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_loadtemplate_lbl_Bezeichnung}">
+                <h:outputText value="#{geteilt.bezeichnung}"/>
+              </p:column>
+
+              <p:column headerText="#{sprache.JobBoerse_dlg_loadtemplate_tbl_vorlage_geteilt}" width="80">
+                <h:outputText value="#{sprache.ja}" rendered="#{geteilt.tausch eq true}"/>
+                <h:outputText value="#{sprache.nein}" rendered="#{geteilt.tausch eq false}"/>                
+              </p:column>
+            </p:dataTable>
+            
+            
+          </h:form>
+        </p:dialog>
+
+
+
+
+        <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+          <f:facet name="default">
+            <h:outputText value="Status: StandBy" />
+          </f:facet>
+
+          <f:facet name="start">
+            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          </f:facet>
+
+          <f:facet name="complete">
+            <h:outputText value="Status: Completed" />
+          </f:facet>
+        </p:ajaxStatus>
+
+        <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+        <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </p:dialog>
+
+      </p:layout>
+
+    </h:body>
+  </f:view>
+
+</html>
+

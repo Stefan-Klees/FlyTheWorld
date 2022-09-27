@@ -1,0 +1,574 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>#{sprache.Heliport_Seitentitel}</title>
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+      <style type="text/css">
+        .ui-accordion .ui-accordion-content {
+          padding: 0px;
+        }
+
+      </style>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          if (!Notification) {
+            alert('Desktop notifications not available in your browser.');
+            return;
+          }
+
+          if (Notification.permission !== "granted")
+            Notification.requestPermission();
+        });
+
+        function benachrichtige(meldungstext) {
+
+          if (Notification.permission !== "granted")
+            Notification.requestPermission();
+          else {
+
+            var meldung = meldungstext;
+
+            if (meldung !== "") {
+              var notification = new Notification('FTW-Luftrettung (Air-Rescue)', {icon: "http://www.ftw-sim.de/images/FTW/icons/helikopter.png", body: meldung});
+            }
+          }
+
+        }
+      </script>
+
+
+
+    </h:head>
+
+    <h:body>
+
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+        <p:layoutUnit position="center" closable="false" >
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <div align="center">
+            <p:graphicImage value="http://www.ftw-sim.de/images/ftw-background/luftrettungHome.jpg" width="100%" height="100%"/>
+          </div>
+
+          <h:form id="frm_kopf">
+
+            #{newTerminalLuftrettung.onPruefeAufLaufendenEinsatz()}
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+          </h:form>
+
+          <h:form id="frm_timer" rendered="#{not newTerminalLuftrettung.istAuftragVorhanden}">
+
+            <pe:timer id="id_randomTimer" singleRun="false"  visible="false" timeout="#{newTerminalLuftrettung.interval}" 
+                      listener="#{newTerminalLuftrettung.onNachAuftragSuchen()}" onsuccess="location.reload();" rendered="#{newTerminalLuftrettung.startOn}" />
+
+            <pe:timer id="id_timer" singleRun="false"  visible="false" timeout="5" update="frm_timer"/>
+
+          </h:form>
+
+
+        </p:layoutUnit>
+
+      </p:layout>
+
+
+      <p:dialog id="dlg_Start" widgetVar="wdg_Start" header="#{sprache.Heliport_dlg_Start_header}" rendered="#{!newTerminalLuftrettung.istAuftragVorhanden}" width="1024" position="450,80"  visible="true" closable="false">
+        <h2>#{sprache.Heliport_dlg_Start_Dienstantritt}</h2>
+
+        <h:form id="frm_Start">
+
+          <p:dataTable id="tbl_stationen"
+                       widgetVar="wdg_tbl_stationen"
+                       var="stationenList" 
+                       value="#{newTerminalLuftrettung.stationen}" 
+                       rowKey="#{stationenList.idRettungsstationen}"
+                       paginator="true"
+                       paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                       rows="15"
+                       rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,60,100,500"
+                       emptyMessage="#{sprache.Heliport_tbl_emptyMessage}"
+                       >
+
+            <p:column style="width:32px;text-align: center">
+              <p:commandButton icon="fa fa-ambulance" title="#{sprache.Heliport_dlg_tbl_Auswahl}" action="#{newTerminalLuftrettung.onStart()}" 
+                               onclick="PF('wdg_Start').hide();" oncomplete="PF('wdg_Station').show();" >
+                <f:setPropertyActionListener value="#{stationenList}" target="#{newTerminalLuftrettung.selectedStation}" />
+              </p:commandButton>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_name}" width="350">
+              <h:outputText value="#{stationenList.nameRettungsstatione}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_kuerzel}" style="text-align: center">
+              <h:outputText value="#{stationenList.kuerzel}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_Stadt}" style="text-align: center">
+              <h:outputText value="#{stationenList.stadt}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_Land}" style="text-align: center">
+              <h:outputText value="#{stationenList.land}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_Bundesland}" style="text-align: center">
+              <h:outputText value="#{stationenList.bundesland}"/>
+            </p:column>
+
+            <p:column headerText="#{sprache.Heliport_tbl_lbl_Szenerie}" style="text-align: center">
+              <h:outputLink  target="_blank" value="#{stationenList.sceneryURL}" title="#{sprache.Heliport_tbl_lbl_DownLink} #{stationenList.sceneryURL}" rendered="#{stationenList.sceneryURL ne ''}" >
+                Scenery
+              </h:outputLink>
+              <h:outputText value="N/A" rendered="#{stationenList.sceneryURL eq ''}" />
+            </p:column>
+
+          </p:dataTable>
+
+        </h:form>
+      </p:dialog>
+
+      <p:dialog id="dlg_Station" widgetVar="wdg_Station" header="#{sprache.Heliport_dlg_Start_header}" 
+                visible="#{newTerminalLuftrettung.istAuftragVorhanden}" width="1200" height="500" closable="false">
+        <h:form id="frm_Station">
+
+          <p:toolbar id="tlb_Station">
+            <p:toolbarGroup id="tbg_Station">
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Start_btn_verlassen}" icon="fa fa-close" action="#{newTerminalLuftrettung.onAuftragAbbrechen()}"  
+                               oncomplete="location.reload();">
+                <p:confirm header="#{sprache.Heliport_dlg_Start_WarnungSubVerlassen}" message="#{sprache.Heliport_dlg_Start_WarnungVerlassen}" icon="ui-icon-alert" />
+              </p:commandButton>
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Start_btn_Tanken}" icon="fa fa-fire-extinguisher" oncomplete="PF('wdg_tankstelle').show()" 
+                               disabled="#{newTerminalLuftrettung.tankstelleGesperrt}" update="frm_tankstelle frm_summe"/>
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Start_btn_StandortHubschrauber}" icon="fa fa-info" 
+                               onclick="PF('wdg_map').show()" oncomplete="drawErrorFix();" update="frm_map"/>
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Start_btn_EinsatzKarte}" icon="fa fa-info" action="#{newTerminalLuftrettung.onEinsatzDaten()}" disabled="#{not newTerminalLuftrettung.istAuftragVorhanden}"
+                               onclick="PF('wdg_map_Einsatz').show()" oncomplete="drawErrorFixEinsatz()" update="frm_mapEinsatz"/>
+
+              <p:commandButton title="#{sprache.Terminal_btn_AcarsFluginfoAnzeige}" icon="fa fa-plane" disabled="#{not newTerminalLuftrettung.istAuftragVorhanden}" 
+                               onclick="PF('wdg_AcarsFlightInfo').show()" action="#{newTerminalLuftrettung.onEinsatzDaten()}" update="frm_AcarsInfo" />
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Station_btn_aufnahme}" icon="fa fa-heartbeat" update="frm_Station" action="#{newTerminalLuftrettung.onUnfallOrt()}" />
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Station_btn_einliefern}" icon="fa fa-user-md" update="frm_Station" action="#{newTerminalLuftrettung.onKlinikOrt()}" />              
+
+              <p:commandButton title="#{sprache.Heliport_dlg_Station_btn_beenden}" icon="fa fa-check" update="frm_Station" action="#{newTerminalLuftrettung.onStationsOrt()}" oncomplete="location.reload();" />              
+
+            </p:toolbarGroup>
+          </p:toolbar>
+
+          <p:panelGrid columns="1" style="width: 100%" rendered="#{newTerminalLuftrettung.istAuftragVorhanden}">
+            <h:outputText escape="false" value="#{newTerminalLuftrettung.selectedEinsatz.einsatzmeldung}" style="text-align: center; font-size: 1.5em;" rendered="#{not empty newTerminalLuftrettung.einsaetze}" />
+          </p:panelGrid>
+
+          <div align="center">
+
+            <h1>#{newTerminalLuftrettung.txtEinsatzMeldung}</h1>
+            <p></p>
+
+            <p:panel id="pnl_status" closable="false" rendered="#{newTerminalLuftrettung.istAuftragVorhanden}">
+              <p:panelGrid columns="2">
+
+                <h:outputLabel value="#{sprache.Heliport_dlg_Station_pnl_info_aufnahme}"/>
+                <h:outputLabel value="#{sprache.ja}" rendered="#{newTerminalLuftrettung.lfdAuftrag.unfallorterreicht}"/>
+                <h:outputLabel value="#{sprache.nein}" rendered="#{not newTerminalLuftrettung.lfdAuftrag.unfallorterreicht}"/>
+
+                <h:outputLabel value="#{sprache.Heliport_dlg_Station_pnl_info_einlieferung}"/>
+                <h:outputLabel value="#{sprache.ja}" rendered="#{newTerminalLuftrettung.lfdAuftrag.klinikerreicht}"/>
+                <h:outputLabel value="#{sprache.nein}" rendered="#{not newTerminalLuftrettung.lfdAuftrag.klinikerreicht}"/>
+
+                <h:outputLabel value="#{sprache.Heliport_dlg_Station_pnl_info_BasisErreicht}"/>
+                <h:outputLabel value="#{sprache.ja}" rendered="#{newTerminalLuftrettung.lfdAuftrag.standorterreicht}"/>
+                <h:outputLabel value="#{sprache.nein}" rendered="#{not newTerminalLuftrettung.lfdAuftrag.standorterreicht}"/>
+
+              </p:panelGrid>
+
+              <pe:timer id="id_poll" singleRun="false"  visible="false" timeout="#{newTerminalLuftrettung.acarsUeberwachungTimer}" 
+                        listener="#{newTerminalLuftrettung.onAcarsUeberwachung()}" ontimercomplete="benachrichtige('#{newTerminalLuftrettung.meldung}');"
+                        update="frm_Station frm_Station:pnl_status" rendered="#{newTerminalLuftrettung.istAuftragVorhanden}"/>
+
+              <div>
+                <p>
+                  <p:commandButton value="#{sprache.Heliport_dlg_Station_pnl_info_btn_beenden}" icon="fa fa-check" action="#{newTerminalLuftrettung.onAbrechnung()}"  
+                                   oncomplete="location.reload();" rendered="#{newTerminalLuftrettung.acarsFlugBeendet}"/>
+                </p>
+              </div>
+            </p:panel>
+          </div>
+
+        </h:form>
+      </p:dialog>
+
+      <p:dialog id="dlg_tankstelle" widgetVar="wdg_tankstelle" header="#{sprache.Terminal_Tankstelle_dlg_header}"  width="1024" height="600">
+
+        <h:form id="frm_tankstelle">
+
+          <div id="div_grafik" align="center" style="padding: 0px; ">
+            <p:graphicImage value="#{newTerminalLuftrettung.tankstellenGrafik}" width="640"  alt=" #{image}" title="#{image}"/>
+          </div>
+
+        </h:form>
+
+        <div id="div_summe" align="center" style="padding-left: 0px; padding-top: 40px; ">
+
+          <h:form id="frm_summe">
+
+            <p:panelGrid columns="3" style="width: 60%" >
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_aktuelleTankfuellung}" style="font-size: 1.2em; width: 150px;"/>
+              <h:outputLabel value="#{newTerminalLuftrettung.aktuelleTankfuellung}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+              </h:outputLabel>
+              <h:outputLabel value=""/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TanksFuellenBisMax} #{newTerminalLuftrettung.maxTankkapazitaet} #{sprache.kg}" style="font-size: 1.2em; width: 150px;"/>
+              <h:inputText value="#{newTerminalLuftrettung.tankBisFuellstandKG}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{newTerminalLuftrettung.onTankenBerechneBisFüllstandKg()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankMengeEinfuellen} #{sprache.kg} " style="font-size: 1.2em; width: 150px;" />
+              <h:inputText value="#{newTerminalLuftrettung.tankMengeKilo}" style="text-align: right"  >
+                <f:convertNumber pattern="#,##0"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{newTerminalLuftrettung.onTankenBerechneKilo()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_TankFuellenBisProzent}" style="font-size: 1.2em;"/>
+              <h:inputText value="#{newTerminalLuftrettung.tankMengeProzent}" style="text-align: right" >
+                <f:convertNumber pattern="#,##0.00"/>
+              </h:inputText>
+              <p:commandButton icon="fa fa-calculator" action="#{newTerminalLuftrettung.onTankenBerechneProzentTankfüllung()}" update="frm_tankstelle frm_summe"/>
+
+              <h:outputLabel value="#{sprache.Terminal_Tankstelle_lbl_Betrag}" style="font-size: 1.2em;"/>
+
+              <h:outputLabel value="#{newTerminalLuftrettung.tankstelleSumme}" style="font-size: 1.2em; float: right">
+                <f:convertNumber pattern="#,##0.00 &euro;"/>
+              </h:outputLabel>
+              <h:outputLabel value=""/>
+
+            </p:panelGrid>
+
+            <p></p>
+
+            <p:commandButton id="cmd5" value="#{sprache.Heliport_dlg_Tankstelle_btn_Auftanken}" action="#{newTerminalLuftrettung.onTankenBezahlen()}" update="frm_summe"/>
+            <p:commandButton value="#{sprache.Terminal_Tankstelle_btn_schliessen}" oncomplete="PF('wdg_tankstelle').hide();"/>
+
+          </h:form>
+
+        </div>
+
+      </p:dialog>      
+
+      <p:dialog id="dlg_map" widgetVar="wdg_map" header="#{sprache.Heliport_dlg_Stationskarte_header}" width="800" height="800" resizable="false" >
+
+        <h:form id="frm_map">
+
+          <p:panelGrid columns="1" style="width: 100%">
+
+            <div id="stationsMap" style="width: 100%; height: 780px;">
+
+              <script>
+
+                var zoom = 16;
+
+                function drawErrorFix() {
+                  mymap.setView(new L.LatLng(#{newTerminalLuftrettung.selectedStation.breitengrad}, #{newTerminalLuftrettung.selectedStation.laengengrad}), zoom);
+                  mymap.invalidateSize(true);
+                }
+
+
+                var heliPort = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconSize: [48, 48],
+                  popupAnchor: [0, -10]
+                });
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [38, 95],
+                  popupAnchor: [0, -10]
+                });
+                var mymap = L.map('stationsMap').setView(new L.LatLng(#{newTerminalLuftrettung.selectedStation.breitengrad}, #{newTerminalLuftrettung.selectedStation.laengengrad}), zoom);
+
+                L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19}).addTo(mymap);
+
+                var marker = new L.marker([#{newTerminalLuftrettung.selectedStation.breitengrad}, #{newTerminalLuftrettung.selectedStation.laengengrad}],
+                        {
+                          icon: heliPort}).addTo(mymap).bindPopup('#{newTerminalLuftrettung.selectedStation.nameRettungsstatione} #{configBean.BR} #{configBean.BR} Latitude: #{newTerminalLuftrettung.selectedStation.breitengrad} #{configBean.BR} Longitude: #{newTerminalLuftrettung.selectedStation.laengengrad}');
+
+
+              </script>
+
+            </div>
+
+          </p:panelGrid>
+
+        </h:form>
+
+      </p:dialog>
+
+      <p:dialog id="dlg_map_Einsatz" widgetVar="wdg_map_Einsatz" header="#{sprache.Heliport_dlg_EinsatzKarte_header}" width="800" height="800" resizable="false" >
+
+        <h:form id="frm_mapEinsatz">
+
+          <pe:timer id="id_MapRefreshTimer" singleRun="false" visible="false" listener="#{newTerminalLuftrettung.onEinsatzDaten()}" 
+                    timeout="#{newTerminalLuftrettung.acarsUeberwachungTimer}" update="panelMap"/>
+
+
+          <p:toolbar id="tlb_mapEinsatz">
+            <p:toolbarGroup id="tbg_mapEinsatz">
+              <p:commandButton title="#{sprache.btn_FensterSchliessen}" icon="fa fa-close" onclick="PF('wdg_map_Einsatz').hide()" />
+              <p:commandButton title="#{sprache.btn_aktualisieren}" icon="fa fa-refresh" actionListener="#{newTerminalLuftrettung.onEinsatzDaten()}" update="panelMap" />                              
+            </p:toolbarGroup>
+
+            <p:toolbarGroup align="right">
+              <p:panelGrid columns="2">
+                <p:outputLabel value="#{sprache.LiveFlugverfolgung_lbl_zoom}"/> 
+                <p:selectOneMenu value="#{newTerminalLuftrettung.zoom}"  style="width: 100px" >
+                  <f:selectItem itemLabel="8" itemValue="8" noSelectionOption="true" />
+                  <f:selectItem itemLabel="9" itemValue="9" noSelectionOption="true" />
+                  <f:selectItem itemLabel="10" itemValue="10" noSelectionOption="true" />
+                  <f:selectItem itemLabel="11" itemValue="11" noSelectionOption="true" />
+                  <f:selectItem itemLabel="12" itemValue="12" noSelectionOption="true" />
+                  <f:selectItem itemLabel="13" itemValue="13" noSelectionOption="true" />
+                  <f:selectItem itemLabel="14" itemValue="14" noSelectionOption="true" />
+                  <f:selectItem itemLabel="15" itemValue="15" noSelectionOption="true" />
+                  <f:selectItem itemLabel="16" itemValue="16" noSelectionOption="true" />
+                  <f:selectItem itemLabel="17" itemValue="17" noSelectionOption="true" />
+                  <f:selectItem itemLabel="18" itemValue="18" noSelectionOption="true" />
+                  <f:selectItem itemLabel="19" itemValue="19" noSelectionOption="true" />
+                  <p:ajax event="change" update="panelMap"/>
+                </p:selectOneMenu>
+              </p:panelGrid>
+            </p:toolbarGroup>
+          </p:toolbar>
+
+
+          <p:panelGrid id="panelMap" columns="1" style="width: 100%">
+
+            <div id="einsatzMap" style="width: 100%; height: 700px;">
+
+              
+              
+              <script>
+
+                function drawErrorFixEinsatz() {
+                  mapEinsatz.setView(new L.LatLng(#{newTerminalLuftrettung.frmStationBreitenGrad}, #{newTerminalLuftrettung.frmStationLaengenGrad}), #{newTerminalLuftrettung.zoom});
+                  mapEinsatz.invalidateSize(true);
+                }
+
+
+                var heliPort = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconSize: [32, 32],
+                  popupAnchor: [0, -10]
+                });
+
+                var heli = L.icon({
+                  iconUrl: '#{newTerminalLuftrettung.iconFuerAircraft}',
+                  iconSize: [96, 96],
+                  popupAnchor: [0, -10]
+                });
+
+                var airportIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconSize: [38, 95],
+                  popupAnchor: [0, -10]
+                });
+
+                var ersteHilfeIcon = L.icon({
+                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/ersteHilfe.png',
+                  iconSize: [32, 32],
+                  popupAnchor: [0, -10]
+                });
+
+                var mapEinsatz = L.map('einsatzMap').setView(new L.LatLng(#{newTerminalLuftrettung.frmAktPosBreitenGrad}, #{newTerminalLuftrettung.frmAktPosLaengenGrad}), #{newTerminalLuftrettung.zoom});
+
+                L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19, attribution: '<a href="http://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap-Mitwirkende</a>'}).addTo(mapEinsatz);
+
+                var scale = L.control.scale().addTo(mapEinsatz);
+
+                var marker = new L.marker([#{newTerminalLuftrettung.frmUnfallBreitenGrad}, #{newTerminalLuftrettung.frmUnfallLaengenGrad}],
+                        {icon: ersteHilfeIcon
+                        }).addTo(mapEinsatz).bindPopup('#{newTerminalLuftrettung.frmPosTextUnfall}');
+
+                var marker = new L.marker([#{newTerminalLuftrettung.frmZielBreitenGrad}, #{newTerminalLuftrettung.frmZielLaengenGrad}],
+                        {
+                          icon: heliPort
+                        }).addTo(mapEinsatz).bindPopup('#{newTerminalLuftrettung.frmPostTextZiel}');
+
+                var marker = new L.marker([#{newTerminalLuftrettung.frmStationBreitenGrad}, #{newTerminalLuftrettung.frmStationLaengenGrad}],
+                        {
+                          icon: heliPort
+                        }).addTo(mapEinsatz).bindPopup('#{newTerminalLuftrettung.frmPostTextStation}');
+
+                var marker = new L.marker([#{newTerminalLuftrettung.frmAktPosBreitenGrad}, #{newTerminalLuftrettung.frmAktPosLaengenGrad}],{icon: heli}).addTo(mapEinsatz).bindPopup('#{newTerminalLuftrettung.frmPosTextAktuellePosition}');
+
+                #{newTerminalLuftrettung.visuelleRout}
+              </script>
+
+            </div>
+
+            <p:panelGrid columns="8">
+              <h:outputLabel value="HDG" /><h:outputLabel value="#{newTerminalLuftrettung.txtKurs}"/>
+              <h:outputLabel value="Distance" /><h:outputLabel value="#{newTerminalLuftrettung.txtEntfernung}"/>
+              <h:outputLabel value="Current HDG" /><h:outputLabel value="#{newTerminalLuftrettung.txtAktuellerKurs}"/>
+              <h:outputLabel value="Time remaining " /><h:outputLabel value="#{newTerminalLuftrettung.txtRestzeit}"/>
+            </p:panelGrid>
+
+          </p:panelGrid>
+
+        </h:form>
+
+      </p:dialog>
+
+
+      <p:dialog id="dlg_AcarsFlightInfo" widgetVar="wdg_AcarsFlightInfo" header="#{sprache.Terminal_AcarsFlightInfo_dlg_header}" closeOnEscape="true" closable="true" >
+        <h:form id="frm_AcarsInfo">
+          <p:panelGrid columns="3">
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Flugnummer}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.flugnummer}"/><h:outputLabel value=""/>
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Flugzeug}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.flugzeugtype}"/><h:outputLabel value=""/>
+            <h:outputLabel value="#{sprache.Hangar_tbl_kennung}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.flugzeugkennung}"/><h:outputLabel value=""/>
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_VonICAO}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.departureicao}"/><h:outputLabel value=""/>
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_NachICAO}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.arrivalicao}"/><h:outputLabel value=""/>
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Passagiere}"/> <h:outputLabel value="#{newTerminalLuftrettung.acp.paxanzahl}"/><h:outputLabel value=""/>
+
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GewichtderPassagiere}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtPassagiereTakeOff)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtPassagiereTakeOff}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GewichtDesGepaecks}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtGepaeckTakeOff)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtGepaeckTakeOff}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Cargo}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtCargoTakeOff)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtCargoTakeOff}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Payload}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtGepaeckTakeOff+newTerminalLuftrettung.gewichtCargoTakeOff+newTerminalLuftrettung.gewichtPassagiereTakeOff)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtGepaeckTakeOff+newTerminalLuftrettung.gewichtCargoTakeOff+newTerminalLuftrettung.gewichtPassagiereTakeOff}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_Tankfuellung}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtTreibstoff)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtTreibstoff}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>
+
+            <h:outputLabel value="#{sprache.Terminal_AcarsFlightInfo_lbl_GesamtladungGewicht}"/> <h:outputLabel value="#{newTerminalLuftrettung.getKG2Libs(newTerminalLuftrettung.gewichtTotal)}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.lbs}"/>
+            </h:outputLabel>
+            <h:outputLabel value="#{newTerminalLuftrettung.gewichtTotal}" style="float: right">
+              <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+            </h:outputLabel>                
+
+          </p:panelGrid>
+        </h:form>
+      </p:dialog>      
+
+      <p:dialog id="dlg_YAACARSInfo" widgetVar="wdg_YAACARSInfo" header="#{sprache.Heliport_dlg_YAACARSInfo_header}" modal="true" visible="true" closable="false" rendered="#{newTerminalLuftrettung.acarsFlugInUse}">
+        <h:form id="_YAACARSInfo">
+          <div align="center">
+            <p style="font-size: 1.2em"><h:outputText value="#{sprache.Heliport_dlg_YAACARSInfo_info}"/></p>
+            <p style="font-size: 1.4em">#{sprache.Heliport_dlg_YAACARSInfo_info1}</p>
+            <br></br>
+            <p:commandButton value="#{sprache.Heliport_dlg_YAACARSInfo_btn_schliessen}" action="/users/index.xhtml" />
+          </div>
+        </h:form>
+      </p:dialog>
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+  </f:view>
+</html>

@@ -1,0 +1,369 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+  <f:view locale="#{loginMB.locale}">
+    <h:head>
+       <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <title>FTW-#{sprache.mnu_Einstellungen}</title>
+    </h:head>
+    <h:body>
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+
+
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false" header="#{loginMB.username} #{sprache.Benutzer_Einstellungen_header}">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          <h:form id="frm_einstellungen">
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            #{userBean.userDatenUndRangabzeichen()}
+
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton id="dummy" style="display: none;"/>
+                <p:commandButton type="button" icon="fa fa-refresh" update="frm_einstellungen" />
+                <p:commandButton type="button" value="#{sprache.Benutzer_Einstellungen_btn_PasswortAendern}" disabled="#{loginMB.demoUser}" onclick="PF('dlg_passwort').show()" icon="ui-icon-key" />
+                <p:commandButton value="#{sprache.Benutzer_Einstellungen_btn_Speichern}" action="#{userBean.saveUserSettings()}" icon="ui-icon-disk"  >
+                  <f:setPropertyActionListener target="#{loginMB.tabellenzeilen}" value="#{userBean.selectedUser.tabellenzeilen}"/>
+                </p:commandButton>
+                <p:commandButton type="button" value="Upload Banner Template" disabled="#{loginMB.demoUser}" onclick="PF('wdg_banner').show()" icon="fa fa-upload" title="Bannervorlage hochladen Max. 150 KB"/>
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="margin-left: 10px;margin-top: 10px" >
+              <f:facet name="header">
+                FTW - #{sprache.Benutzer_Einstellungen_header}
+              </f:facet>
+
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_ftwID}"/><h:outputText value="#{userBean.selectedUser.idUser}"/>   
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_FTWBenutzername}"/><h:outputText value="#{userBean.selectedUser.name1}"/>   
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_ErscheinungsbildTesten}"/>
+              <p:selectOneMenu value="#{loginMB.theme}" style="width: 150px">
+                <p:ajax event="change" async="false" oncomplete="location.reload();" />                    
+                <f:selectItem itemLabel="Afterdark" itemValue="afterdark"/>
+                <f:selectItem itemLabel="Afternoon" itemValue="afternoon"/>
+                <f:selectItem itemLabel="Afterwork" itemValue="afterwork"/>
+                <f:selectItem itemLabel="Black-TIE" itemValue="black-tie"/>
+                <f:selectItem itemLabel="Blitzer" itemValue="blitzer"/>
+                <f:selectItem itemLabel="Blue Sky" itemValue="bluesky"/>
+                <f:selectItem itemLabel="Bootstrap" itemValue="bootstrap"/>
+                <f:selectItem itemLabel="Casablanka" itemValue="casablanca"/>
+                <f:selectItem itemLabel="Cruze" itemValue="cruze"/>
+                <f:selectItem itemLabel="Cuptertino" itemValue="cupertino"/>                  
+                <f:selectItem itemLabel="Dark Hive" itemValue="dark-hive"/>                  
+                <f:selectItem itemLabel="Dot LUV" itemValue="dot-luv"/>
+                <f:selectItem itemLabel="Eggplant" itemValue="eggplant"/>
+                <f:selectItem itemLabel="Excite Bike" itemValue="excite-bike"/>
+                <f:selectItem itemLabel="flick" itemValue="flick"/>
+                <f:selectItem itemLabel="X Glass" itemValue="glass-x"/>
+                <f:selectItem itemLabel="Home" itemValue="home"/>
+                <f:selectItem itemLabel="Hot Sneaks" itemValue="hot-sneaks"/>
+                <f:selectItem itemLabel="Humanity" itemValue="humanity"/>
+                <f:selectItem itemLabel="Le Frog" itemValue="le-frog"/>
+                <f:selectItem itemLabel="Midnight" itemValue="midnight"/>
+                <f:selectItem itemLabel="Mint Choc" itemValue="mint-choc"/>
+                <f:selectItem itemLabel="Overcast" itemValue="overcast"/>
+                <f:selectItem itemLabel="Pepper Grinder" itemValue="pepper-grinder"/>
+                <f:selectItem itemLabel="Redmond" itemValue="redmond"/>
+                <f:selectItem itemLabel="Rocket" itemValue="rocket"/>
+                <f:selectItem itemLabel="Sam" itemValue="sam"/>
+                <f:selectItem itemLabel="Smoothness" itemValue="smoothness"/>
+                <f:selectItem itemLabel="South Street" itemValue="south-street"/>
+                <f:selectItem itemLabel="Start" itemValue="start"/>
+                <f:selectItem itemLabel="Sunny" itemValue="sunny"/>
+                <f:selectItem itemLabel="Swanky Pursy" itemValue="swanky-purse"/>
+                <f:selectItem itemLabel="Trontastic" itemValue="trontastic"/>
+                <f:selectItem itemLabel="UI Darkness" itemValue="ui-darkness"/>
+                <f:selectItem itemLabel="UI Lightness" itemValue="ui-lightness"/>
+                <f:selectItem itemLabel="Vader" itemValue="vader"/>
+              </p:selectOneMenu>
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_ErscheinungsbildAendern}"/>
+              <p:selectOneMenu value="#{userBean.theme}" style="width: 150px" >
+
+                <f:selectItem itemLabel="Afterdark" itemValue="afterdark"/>
+                <f:selectItem itemLabel="Afternoon" itemValue="afternoon"/>
+                <f:selectItem itemLabel="Afterwork" itemValue="afterwork"/>
+                <f:selectItem itemLabel="Black-TIE" itemValue="black-tie"/>
+                <f:selectItem itemLabel="Blitzer" itemValue="blitzer"/>
+                <f:selectItem itemLabel="Blue Sky" itemValue="bluesky"/>
+                <f:selectItem itemLabel="Bootstrap" itemValue="bootstrap"/>
+                <f:selectItem itemLabel="Casablanka" itemValue="casablanca"/>
+                <f:selectItem itemLabel="Cruze" itemValue="cruze"/>
+                <f:selectItem itemLabel="Cuptertino" itemValue="cupertino"/>                  
+                <f:selectItem itemLabel="Dark Hive" itemValue="dark-hive"/>                  
+                <f:selectItem itemLabel="Dot LUV" itemValue="dot-luv"/>
+                <f:selectItem itemLabel="Eggplant" itemValue="eggplant"/>
+                <f:selectItem itemLabel="Excite Bike" itemValue="excite-bike"/>
+                <f:selectItem itemLabel="flick" itemValue="flick"/>
+                <f:selectItem itemLabel="X Glass" itemValue="glass-x"/>
+                <f:selectItem itemLabel="Home" itemValue="home"/>
+                <f:selectItem itemLabel="Hot Sneaks" itemValue="hot-sneaks"/>
+                <f:selectItem itemLabel="Humanity" itemValue="humanity"/>
+                <f:selectItem itemLabel="Le Frog" itemValue="le-frog"/>
+                <f:selectItem itemLabel="Midnight" itemValue="midnight"/>
+                <f:selectItem itemLabel="Mint Choc" itemValue="mint-choc"/>
+                <f:selectItem itemLabel="Overcast" itemValue="overcast"/>
+                <f:selectItem itemLabel="Pepper Grinder" itemValue="pepper-grinder"/>
+                <f:selectItem itemLabel="Redmond" itemValue="redmond"/>
+                <f:selectItem itemLabel="Rocket" itemValue="rocket"/>
+                <f:selectItem itemLabel="Sam" itemValue="sam"/>
+                <f:selectItem itemLabel="Smoothness" itemValue="smoothness"/>
+                <f:selectItem itemLabel="South Street" itemValue="south-street"/>
+                <f:selectItem itemLabel="Start" itemValue="start"/>
+                <f:selectItem itemLabel="Sunny" itemValue="sunny"/>
+                <f:selectItem itemLabel="Swanky Pursy" itemValue="swanky-purse"/>
+                <f:selectItem itemLabel="Trontastic" itemValue="trontastic"/>
+                <f:selectItem itemLabel="UI Darkness" itemValue="ui-darkness"/>
+                <f:selectItem itemLabel="UI Lightness" itemValue="ui-lightness"/>
+                <f:selectItem itemLabel="Vader" itemValue="vader"/>
+              </p:selectOneMenu>
+
+              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_StandardTabellenZeilen}" />
+              <h:inputText value="#{userBean.selectedUser.tabellenzeilen}"   maxlength="8" size="5"/>
+
+              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Icongroesse}" />
+              <p:selectOneMenu value="#{userBean.selectedUser.iconSize}" style="width:150px" disabled="false">
+                <f:selectItem itemValue="16" itemLabel="16" />
+                <f:selectItem itemValue="24" itemLabel="24" />
+                <f:selectItem itemValue="32" itemLabel="32" />
+              </p:selectOneMenu>
+
+
+              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Sprache}" />
+              <p:selectOneMenu id="Sprache"  value="#{loginMB.language}" onchange="submit()" style="width:150px" disabled="false">
+                <f:selectItem itemValue="de" itemLabel="Deutsch" />
+                <f:selectItem itemValue="en" itemLabel="English" />
+                <f:selectItem itemValue="ru" itemLabel="Pусский" />
+                <f:selectItem itemValue="cz" itemLabel="český" />
+              </p:selectOneMenu>
+
+              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Zeitzone}" />
+              <p:selectOneMenu value="#{userBean.selectedUser.zeitZone}" style="width:150px" disabled="false" filterMatchMode="contains" filter="true">
+                <f:selectItems value="#{loginMB.zeitZonen}" />
+              </p:selectOneMenu>
+
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Kartenlayout}"/>
+              <p:selectOneMenu value="#{userBean.selectedUser.mapLayer}"  filter="true" filterMatchMode="contains" style="width: 180px;" >
+                <f:selectItem itemLabel="OpenStreetMap Mapnik" itemValue="OpenStreetMap.Mapnik" noSelectionOption="true" />
+                <f:selectItem itemLabel="OpenStreetMap topografische Ansicht" itemValue="OpenTopoMap" noSelectionOption="true" />
+                <f:selectItem itemLabel="Stamen Terrain" itemValue="Stamen.Terrain" noSelectionOption="true" />
+                <f:selectItem itemLabel="Stamen Toner Lite" itemValue="Stamen.TonerLite" noSelectionOption="true" />
+              </p:selectOneMenu>
+
+
+
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_sound}"/><p:selectBooleanButton value="#{userBean.selectedUser.sound}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />            
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_SummenFenster}"/><p:selectBooleanButton value="#{userBean.selectedUser.summenFensterAnzeigen}" onLabel="#{sprache.ja}" offLabel="#{sprache.nein}" onIcon="ui-icon-check" offIcon="ui-icon-close" style="width:60px" />            
+
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_DisplayName}"/>
+              <p:inputTextarea value="#{userBean.selectedUser.displayname}"  rows="3"  maxlength="250" style="width: 98%;"/>
+              
+              
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_BannerURL}"/>
+              <h:inputText disabled="true" value="#{userBean.selectedUser.banner}" maxlength="250" size="120"/>
+
+              <h:outputLabel value=""/>
+              <p:graphicImage url="http://www.ftw-sim.de/images/FTW/#{userBean.selectedUser.idUser}.png"/>
+              
+              
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_FTWSchluessel}"/><h:outputText value="#{userBean.selectedUser.readaccesskey}"/>
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_Bankkonto}"/><h:outputText value="#{userBean.selectedUser.bankKonto}"/>
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_Funktion}"/><h:outputText value="#{userBean.selectedUser.funktion}"/>
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_Lizenz}"/><h:outputText value="#{userBean.selectedUser.lizenz}"/>
+
+              <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_ManagerKuendigen} - #{userBean.managerInFG} "/>
+              <p:commandButton title="#{sprache.Benutzer_Einstellungen_lbl_ManagerKuendigen}" icon="fa fa-close" action="#{userBean.onManagerKuendigen()}" update="frm_einstellungen">
+                <p:confirm header="#{sprache.Benutzer_Einstellungen_confirm_ManagerKuendigen}" message="#{sprache.Benutzer_Einstellungen_confirm_ManagerKuendigen}" icon="ui-icon-alert" />
+              </p:commandButton>
+
+              <h:outputLabel escape="false" value="#{sprache.Benutzer_Einstellungen_lbl_RangText}#{userBean.rang}" style="font-weight: bolder; text-align: center"/>
+
+              <p:graphicImage id="rang" url="#{userBean.rangAbzeichenURL}" width="64" title="#{userBean.rang}" >
+                <p:tooltip for="rang">
+                  <p:graphicImage url="#{userBean.rangAbzeichenURL}" title="#{userBean.rang}" />
+                </p:tooltip>
+              </p:graphicImage>
+            </p:panelGrid>
+
+            <p:panelGrid columns="1" style="margin-left: 10px; margin-top: 10px; width: 50%" >
+              <f:facet name="header">
+                #{sprache.Benutzer_Einstellungen_lbl_TypeRatings}
+              </f:facet>
+
+              <p:dataTable id="typeratingTable" 
+                           widgetVar="typeratingTable"
+                           var="types"
+                           value="#{userBean.typeRatings}"
+                           rowKey="#{types.idUserTyperatings}"
+                           scrollable="true" scrollHeight="200">
+
+                <p:column headerText="#{sprache.Benutzer_Einstellungen_tbl_Typerating}">
+                  <h:outputText value="#{types.typeRating}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Benutzer_Einstellungen_tbl_Zeit}" style="text-align: right">
+                  <h:outputText value="#{types.minutenGeflogen / 60}">
+                    <f:convertNumber pattern="#,##0.00"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.Benutzer_Einstellungen_tbl_Erfuellt}">
+                  <h:outputText value="#{sprache.ja}" rendered="#{types.erfuellt}"/>
+                  <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_offen}" rendered="#{not types.erfuellt}"/>
+                </p:column>
+
+              </p:dataTable>
+
+
+
+              <p:dataTable id="tbl_favoriten" var="fav" value="#{userBean.userFavoriten}" 
+                           scrollable="true" scrollHeight="200"
+                           emptyMessage="#{sprache.Benutzer_Einstellungen_tbl_favoriten_emptyMessage}">
+
+                <p:column width="30">
+                  <p:commandButton title="#{sprache.Benutzer_Einstellungen_btn_FavoritLoeschen}" icon="fa fa-trash" action="#{userBean.onDeleteFavorit()}" update="tbl_favoriten">
+                    <f:setPropertyActionListener value="#{fav}" target="#{userBean.userFavorit}"/>
+                  </p:commandButton>
+                </p:column>
+
+                <p:column headerText="#{sprache.Benutzer_Einstellungen_tbl_favoriten}">
+                  <h:outputText value="#{fav.icao} - #{fav.bezeichnung}"/>
+                </p:column>
+
+
+              </p:dataTable>
+
+            </p:panelGrid>
+
+
+
+            <p:panelGrid columns="4" style="margin-left: 10px;margin-top: 10px">
+              <f:facet name="header">
+                #{sprache.Benutzer_Einstellungen_Statistik_header}
+              </f:facet>
+
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_Fluege}" /> <h:outputLabel value="#{userBean.selectedUser.flights}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_RettungsFluege}" /> <h:outputLabel value="#{userBean.selectedUser.flightrettung}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_Flugzeit}" /> <h:outputLabel value="#{userBean.selectedUser.flighttime/60}" style="float: right">
+                <f:convertNumber pattern="#,##0.00  #{sprache.stunden}"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_FlugzeitFG}" /> <h:outputLabel value="#{userBean.selectedUser.flugzeitenFG/60}" style="float: right">
+                <f:convertNumber pattern="#,##0.00  #{sprache.stunden}"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_Passagiere}" /> <h:outputLabel value="#{userBean.selectedUser.flightpaxes}" style="float: right">
+                <f:convertNumber pattern="#,##0"/>
+              </h:outputLabel>
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_Cargo}" /> <h:outputLabel value="#{userBean.selectedUser.flightcargo}" style="float: right">
+                <f:convertNumber pattern="#,##0 #{sprache.kg}" />
+              </h:outputLabel>
+              <h:outputLabel value="#{sprache.Benutzer_Einstellungen_Statistik_header_lbl_Meilen}" /> <h:outputLabel value="#{userBean.selectedUser.flightmiles}" style="float: right">
+                <f:convertNumber pattern="#,##0" />
+              </h:outputLabel>
+
+
+
+            </p:panelGrid>
+
+          </h:form>
+
+
+          <p:dialog id="dlg_passwort" widgetVar="dlg_passwort" closable="true" header="#{sprache.Benutzer_Einstellungen_dlg_PasswortAendern_pnl}">
+            <h:form id="frm_passwort">
+              <p:toolbar>
+                <f:facet name="left">
+                  <p:commandButton value="#{sprache.Benutzer_Einstellungen_dlg_PasswortAendern_btn_PasswortAendern}" action="#{userBean.passwortChange()}"  onclick="PF('dlg_passwort').hide()"/>
+                  <p:commandButton value="#{sprache.Benutzer_Einstellungen_dlg_PasswortAendern_btn_schliessen}" icon="ui-icon-pencil" onclick="PF('dlg_passwort').hide()" />
+                </f:facet>
+              </p:toolbar>
+              <p:panelGrid id="matchPanel" columns="2" >
+                <h:outputText value="#{sprache.Benutzer_Einstellungen_dlg_PasswortAendern_lbl_Passwort1}" />
+                <p:password id="pw1" value="#{userBean.passwort}" required="true" match="pw2" feedback="true" />
+                <h:outputText value="#{sprache.Benutzer_Einstellungen_dlg_PasswortAendern_lbl_Passwort2}" />
+                <p:password id="pw2" value="#{userBean.passwort}" required="true" feedback="true" />
+              </p:panelGrid>
+            </h:form>
+          </p:dialog>
+
+
+          <p:dialog id="dlg_banner" widgetVar="wdg_banner" header="Banner Upload" width="640">
+            <h:form id="frm_banner">
+              <p:fileUpload  fileUploadListener="#{userBean.onBannerUpload}" mode="advanced" oncomplete="PF('wdg_banner').hide();" dragDropSupport="false" 
+                             update="frm_einstellungen" sizeLimit="150000" fileLimit="1" allowTypes="/(\.|\/)(png)$/" />
+            </h:form>
+          </p:dialog>
+
+        </p:layoutUnit>
+      </p:layout>
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </f:view>
+</html>
+

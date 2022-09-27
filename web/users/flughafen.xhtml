@@ -1,0 +1,513 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+  <f:view locale="#{loginMB.locale}">
+
+    <h:head>
+ <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+      <h:outputScript library="js" name="leaflet/leaflet.js" />
+      <h:outputScript library="js" name="leaflet/leaflet-providers.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.polylineDecorator.js" />
+      <h:outputScript library="js" name="leaflet/leaflet.spin.js" />
+      <h:outputStylesheet library="js" name ="leaflet/leaflet.css"/>
+
+      <title>FTW-#{sprache.Flughafeninfo_Header}</title>
+
+      <style type="text/css">
+        td {
+          vertical-align: top
+        }
+      </style>
+
+
+    </h:head>
+
+    <h:body>
+
+      <p:growl autoUpdate="true" life="3000" showSummary="true"/>
+
+      <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+        <ui:include src="/users/menueMeldungen.xhtml"/>
+
+        <ui:fragment rendered="#{loginMB.newMenue}">
+          <ui:include src="/users/menue.xhtml" />
+        </ui:fragment>
+
+
+
+        <p:layoutUnit position="center" closable="false">
+
+          <ui:fragment rendered="#{not loginMB.newMenue}">
+            <ui:include src="/users/menueNew.xhtml"/>
+          </ui:fragment>
+
+          #{airportBean.findeFlughafen()}
+
+          <h:form id="frm_daten">
+            <p:toolbar id="tlb_daten">        
+
+              <p:toolbarGroup id="tbg_daten1" align="right">
+
+                <p:panelGrid columns="5">
+
+                  <p:progressBar value="#{airportBean.auslastung}" style="width: 120px" labelTemplate="{value} %"/>          
+
+                  <h:outputLabel value="#{sprache.Flughafeninfo_lbl_sucheNachIcao}" />
+                  <h:inputText id="icaosuche" value="#{airportBean.suchText}" />
+                  <p:commandButton icon="ui-icon-search" action="#{airportBean.findeFlughafen()}" update="frm_daten"/>
+
+                </p:panelGrid>
+              </p:toolbarGroup>
+
+              <p:toolbarGroup id="tbg_daten" align="left">
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_flughafenlog}"  onclick="PF('wdg_FlughafenLog').show()" update="frm_FlughafenLog" disabled="#{empty airportBean.selectedAirport}">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/flightinfo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_flughafenlog}" style="vertical-align: bottom; padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_terminals}" onclick="PF('wdg_terminals').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_terminals">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/terminal.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_terminals}" style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_tankstelle}" onclick="PF('wdg_tankstellen').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_tankstellen">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/tankstelle.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_tankstelle}" 
+                                  style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_fboObjekte}"  onclick="PF('wdg_FBOs').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_FBOs">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/fbo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_fboObjekte}" style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_FlugzeugeAmFlughafen} in #{airportBean.selectedAirport.name}" action="#{flugzeugeMietKaufBean.resetFlugzeugeAmflughafen()}"  disabled="#{empty airportBean.selectedAirport}"
+                               oncomplete="PF('wdg_Flugzeug').show();" update="dlg_Flugzeug" >
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_FlugzeugeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_AuftraegeAmFlughafen} in #{airportBean.selectedAirport.name}" action="/users/assignments.xhtml"  disabled="#{empty airportBean.selectedAirport}">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/assignment.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_AuftraegeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+                <p:commandLink title="#{sprache.Flughafeninfo_btn_bilder}" onclick="PF('wdg_PictureView').show()" update="frm_galleria" disabled="#{empty airportBean.selectedAirport}">
+                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/bilder.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_bilder}" style="vertical-align: bottom;padding: 4px"/>
+                </p:commandLink>
+
+              </p:toolbarGroup>
+
+
+            </p:toolbar>
+
+            <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+              <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+              <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+            </p:confirmDialog>
+
+            <p:panel rendered="#{not empty airportBean.selectedAirport}">
+
+              <p:panelGrid columns="2" style="width: 100%" >
+                <p:column style="width: 600px">
+                  <h1>#{airportBean.selectedAirport.name} - #{airportBean.selectedAirport.icao}</h1>
+                  <h2>
+                    <h:outputText value="#{airportBean.KlassenName(airportBean.selectedAirport.klasse)}" />
+                  </h2>
+                  <p>#{sprache.Flughafeninfo_Flughafendetail_lbl_hoehe}: #{airportBean.selectedAirport.hoehe}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_landebahnLaenge}: #{airportBean.selectedAirport.laengsteLandeBahn}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_bundesland}: #{airportBean.selectedAirport.bundesland}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_land}: #{airportBean.selectedAirport.land}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_stadt}: #{airportBean.selectedAirport.stadt}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_breitengrad}: #{airportBean.selectedAirport.latitude}</p>
+                  <p>#{sprache.Flughafeninfo_tbl_laengengrad}: #{airportBean.selectedAirport.longitude}</p>
+                  <p>#{sprache.Flughafeninfo_Flughafendetail_lbl_zustand}: #{airportBean.selectedAirport.zustand}</p>
+
+                  <p>#{sprache.Flughafeninfo_Flughafendetail_lbl_verfuegbar}: <h:outputLabel value="#{sprache.ja}" rendered="#{airportBean.selectedAirport.isActiv}"/>
+                    <h:outputLabel value="#{sprache.nein}" rendered="#{not airportBean.selectedAirport.isActiv}"/></p>
+
+                    <p>Nur aus der Luft versorgbar: <h:outputLabel value="#{sprache.ja}" rendered="#{airportBean.selectedAirport.luftversorgung}"/>
+                    <h:outputLabel value="#{sprache.nein}" rendered="#{not airportBean.selectedAirport.luftversorgung}"/></p>
+
+                    <p>Dispatched: <h:outputLabel value="#{sprache.ja}" rendered="#{airportBean.selectedAirport.dispatch}"/>
+                      <h:outputLabel value="#{sprache.nein}" rendered="#{not airportBean.selectedAirport.dispatch}"/></p>
+                    
+                    <p>#{sprache.Flughafeninfo_Flughafendetail_lbl_belag}: #{airportBean.getBelag(airportBean.selectedAirport.belag)}</p>
+                </p:column>
+
+                <p:column>
+                  <div style="float: left; width: 400px">
+                    <table width="100%">
+                      <tr>
+                        <td>
+                          <div id="airportMap" style="height: 400px; width: 600px"></div>
+                          <script>
+                            function drawErrorFix() {
+                              mymap.setView(new L.LatLng(#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}), 13);
+                              mymap.invalidateSize(true);
+                            }
+
+                            var mymap = L.map('airportMap').setView([#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}], 13);
+
+                            var airportIcon = L.icon({
+                              iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                              iconSize: [38, 95],
+                              popupAnchor: [0, -10]
+                            });
+
+                            L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19}).addTo(mymap);
+
+                            //L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright" target='_blank'>OpenStreetMap</a>'}).addTo(mymap);
+
+                            L.marker([#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}], {icon: airportIcon}).addTo(mymap).bindPopup('#{airportBean.selectedAirport.icao} - #{airportBean.selectedAirport.name} (#{airportBean.selectedAirport.land}) ');
+
+                            drawErrorFix();
+                          </script>
+
+
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                </p:column>
+
+
+                <p:column>
+
+                  <p>#{sprache.Flughafeninfo_tbl_passagiere}:
+                    <h:outputText value='#{airportBean.selectedAirport.maxpassagiereprotag}'>
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></p>
+
+                  <p>#{sprache.Flughafeninfo_tbl_PlusPaxe}
+                    <h:outputText value='#{airportBean.getTransferPax(airportBean.selectedAirport.icao)}'>
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></p>
+
+
+                  <p>
+                    #{sprache.Flughafeninfo_tbl_MaxMTOW}
+                    <h:outputText value='#{airportBean.selectedAirport.maxlandegewicht}'>
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText>
+                  </p> 
+                  
+                  <p>
+                    #{sprache.Flughafeninfo_tbl_MaxCargo}
+                    <h:outputText value='#{airportBean.selectedAirport.maxCargo}'>
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText>
+                  </p> 
+
+                  <p>#{sprache.Flughafeninfo_tbl_FBOAufschlag}
+                    <h:outputText value='#{airportBean.onFBOAufschlag(airportBean.selectedAirport.icao)/100}'>
+                      <f:convertNumber pattern="#,##0 %"/>
+                    </h:outputText></p>
+
+                  <h2>#{sprache.Flughafeninfo_tbl_MinMaxHeader}</h2>
+
+                  <p>#{sprache.Flughafeninfo_tbl_minPax}
+                    <h:outputText value="#{airportBean.getMinPax(airportBean.selectedAirport.klasse)}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></p>
+
+                  <p>#{sprache.Flughafeninfo_tbl_maxPax}
+                    <h:outputText value="#{airportBean.getMaxPax(airportBean.selectedAirport.klasse)}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText></p>
+
+                  <p>#{sprache.Flughafeninfo_tbl_minCargo}
+                    <h:outputText value="#{airportBean.getMinCargo(airportBean.selectedAirport.klasse)}">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText></p>
+
+                  <p>#{sprache.Flughafeninfo_tbl_MaxVCargo}
+                    <h:outputText value="#{airportBean.getMaxCargo(airportBean.selectedAirport.klasse)}">
+                      <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                    </h:outputText></p>
+
+                </p:column>
+
+                <p:column>
+
+                  <h2>#{sprache.Flughafeninfo_tbl_Airlines_Header}</h2>
+                  <p:column rendered="#{not empty airportBean.fluggesellschaften}">
+                    <div style="height: 150px; overflow: scroll;">
+                      <ui:repeat id="rep" var="fgs"  value="#{airportBean.fluggesellschaften}">
+                        <p>
+                          <p:graphicImage value="#{fgs.logoURL}" height="50" style="vertical-align: middle;"/>
+                          #{fgs.name} - #{fgs.land} (#{fgs.besitzerName})
+                        </p>
+                      </ui:repeat>
+                    </div>
+                  </p:column>
+
+                  <h2>#{sprache.Flughafeninfo_Flughafendetail_tbl_downloadLinks}</h2>
+
+                  <p><p:link value="Click for Free FSX Scenery" target="_blank" href="#{airportBean.selectedAirport.freeFSXSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.freeFSXSceneryUrl}" /></p>
+                  <p><p:link value="Click for Free P3D Scenery" target="_blank" href="#{airportBean.selectedAirport.freeP3DSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.freeP3DSceneryUrl}"/></p>
+
+                  <p><p:link value="Click for Free x-Plane Scenery" target="_blank" href="#{airportBean.selectedAirport.freeXPlaneSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.freeXPlaneSceneryUrl}"/></p>
+                  <p><p:link value="Click for Payware FSX Scenery" target="_blank" href="#{airportBean.selectedAirport.paywareFSXSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.paywareFSXSceneryUrl}"/></p>
+
+                  <p><p:link value="Click for Payware P3D Scenery" target="_blank" href="#{airportBean.selectedAirport.paywareP3DSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.paywareP3DSceneryUrl}" /></p>
+                  <p><p:link value="Click for Payware X-Plane Scenery" target="_blank" href="#{airportBean.selectedAirport.paywareXPlaneSceneryUrl}" rendered="#{not empty airportBean.selectedAirport.paywareXPlaneSceneryUrl}"/></p>
+
+                </p:column>                  
+              </p:panelGrid>                
+
+              <p:panelGrid columns="1" style="width: 100%">
+                <p:column>
+                  <h2>#{sprache.Flughafeninfo_Flughafendetail_tbl_notamInformation}</h2>
+                  <p><h:outputLabel escape="false" value="#{airportBean.selectedAirport.notem}"/></p>                
+                </p:column>
+              </p:panelGrid>
+
+
+
+              <div align="center">
+                <h2>Flughäfen im Umkreis von: #{airportBean.selectedAirport.icao} - #{airportBean.selectedAirport.name}</h2>
+                <div id="anflugMap" style="width: 80%; height: 750px;">
+
+                  #{mapsBean.setCurrentAirport(airportBean.selectedAirport)}
+
+                  <script type="text/javascript">
+
+                    function anflugMapdrawErrorFix() {
+                      anflugMap.setView(new L.LatLng(#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}), 8);
+                      anflugMap.invalidateSize(true);
+                    }
+
+                    var airportIcon = L.icon({
+                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                      iconSize: [48, 48],
+                      popupAnchor: [0, -10]
+                    });
+
+                    var homeIcon = L.icon({
+                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                      iconSize: [64, 64],
+                      popupAnchor: [0, -10]
+                    });
+
+                    var fahne = L.icon({
+                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_rot_32px.png',
+                      iconSize: [16, 24],
+                      popupAnchor: [0, -10]
+                    });
+
+                    var anflugMap = L.map('anflugMap').setView(new L.LatLng(#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}), 8);
+
+                            L.tileLayer.provider('#{loginMB.mapLayer}', {maxZoom: 19}).addTo(anflugMap);
+
+//                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom: 19, attribution: '© <a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'}).addTo(anflugMap);
+
+                    #{mapsBean.flughaefenVisuelleAnfluglisteFuerInfo}
+
+                    anflugMapdrawErrorFix();
+
+                  </script>
+
+                </div>              
+              </div>
+
+            </p:panel>
+
+          </h:form>        
+
+
+          <p:dialog id="dlg_PictureView" widgetVar="wdg_PictureView" header="#{sprache.Flughafeninfo_bilder_dlg_bilder}" closable="true" closeOnEscape="true">
+            <h:form id="frm_galleria">
+              <p:galleria value="#{airportBean.imageList}" var="images" autoPlay="false" >
+                <p:graphicImage value="#{images}" height="640" style="width: 640px; height: 480px;"/>
+              </p:galleria>
+            </h:form>
+          </p:dialog>
+
+
+
+          <p:dialog id="dlg_terminals" widgetVar="wdg_terminals" header="#{sprache.Flughafeninfo_Terminals_dlg_terminals}" responsive="true" width="840">
+            <h:form id="frm_terminals">
+              <p:toolbar id="tlb__terminals">
+                <p:toolbarGroup id="tbg__terminals">
+                  <p:commandButton title="#{sprache.Flughafeninfo_Terminals_btn_schliessen}" icon="fa fa-close" onclick="PF('wdg_terminals').hide();"/>
+                </p:toolbarGroup>
+              </p:toolbar>
+
+              <p:dataTable var="fbo" value="#{airportBean.terminals}" emptyMessage="No private terminals available">
+
+                <p:column headerText="#{sprache.Flughafeninfo_Terminals_tbl_name}">
+                  <h:outputLabel value="#{fbo.name}"/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Terminals_tbl_gebuehrProzent} %" width="90">
+                  <h:outputLabel value="#{fbo.terminalGebuehrInProzent}" style="float: right">
+                    <f:convertNumber pattern="#,##0.00"/>
+                  </h:outputLabel>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Terminals_tbl_maximalePassagiere}" width="90" >
+                  <h:outputLabel value="#{fbo.terminalMaxPax}" style="float: right">
+                    <f:convertNumber pattern="#,##0"/>
+                  </h:outputLabel>
+                </p:column>
+
+              </p:dataTable>
+
+
+            </h:form>
+
+
+
+          </p:dialog>
+
+          <p:dialog id="id_tankstellen" widgetVar="wdg_tankstellen" header="#{sprache.Flughafeninfo_Tankstelle_dlg_tankstelle}" width="840" closeOnEscape="true">
+
+            <h:form id="frm_tankstellen">
+
+              <p:toolbar >
+                <p:toolbarGroup align="left">
+                  <p:commandButton title="#{sprache.Flughafeninfo_Tankstelle_btn_schliessen}" icon="ui-icon-close" onclick="PF('wdg_tankstellen').hide()"/>
+                </p:toolbarGroup>
+              </p:toolbar> 
+
+              <p:dataTable id="fboUserTable" 
+                           widgetVar="fboUserTable"
+                           var="fboItems"
+                           value="#{airportBean.tankstellen}"
+                           scrollable="true" lazy="false"
+                           emptyMessage="There are no private fuel stations">
+
+                <p:column headerText="#{sprache.Flughafeninfo_Tankstelle_tbl_name}" style="text-align: center;" >
+                  <h:outputText value='#{fboItems.name}'/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Tankstelle_tbl_jetAPreis}" width="60" style="text-align: center;">
+                  <h:outputText value='#{fboItems.preisJETA}'>
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Tankstelle_tbl_bestandJetA}" width="60" style="text-align: center;">
+                  <h:outputText value='#{fboItems.bestandJETAkg}'>
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Tankstelle_tbl_avgasPreis}" width="60" style="text-align: center;">
+                  <h:outputText value='#{fboItems.preisAVGAS}'>
+                    <f:convertNumber pattern="#,##0.00 &euro;"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_Tankstelle_tbl_bestandAvgas}" width="60" style="text-align: center;">
+                  <h:outputText value='#{fboItems.bestandAVGASkg}'>
+                    <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
+                  </h:outputText>
+                </p:column>
+
+              </p:dataTable>
+
+            </h:form>
+
+          </p:dialog>
+
+
+          <p:dialog id="id_FBOs" widgetVar="wdg_FBOs" header="#{sprache.Flughafeninfo_fboObjekte_dlg_fbo}" width="840" closeOnEscape="true">
+
+            <h:form id="frm_FBOs">
+
+              <p:toolbar id="tlb_FBOs" >
+                <p:toolbarGroup id="tbg_FBOs">
+                  <p:commandButton title="#{sprache.Flughafeninfo_fboObjekte_btn_schliessen}" icon="ui-icon-close" onclick="PF('wdg_FBOs').hide()"/>
+                </p:toolbarGroup>
+              </p:toolbar> 
+
+
+              <p:dataTable id="fboTable" 
+                           widgetVar="fboTable"
+                           var="fboItems"
+                           value="#{airportBean.FBOs}"
+                           scrollable="true" lazy="false"
+                           emptyMessage="There are no FBO's">
+
+                <p:column headerText="#{sprache.Flughafeninfo_fboObjekte_tbl_name}" style="text-align: center;" >
+                  <h:outputText value='#{fboItems.objektName}'/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_fboObjekte_tbl_objekt}" style="text-align: center;" >
+                  <h:outputText value='#{fboItems.name}'/>
+                </p:column>
+
+                <p:column headerText="#{sprache.Flughafeninfo_fboObjekte_tbl_besitzer}" style="text-align: center;" >
+                  <h:outputText value='#{fboItems.userName}'/>
+                </p:column>
+
+
+              </p:dataTable>
+
+            </h:form>
+
+          </p:dialog>
+
+
+
+        </p:layoutUnit>
+
+
+
+
+        <ui:include src="/users/dialogs/dlgFlughafenLog.xhtml"/>
+
+        <ui:include src="/users/dialogs/dlgFlugzeuge.xhtml"/>
+
+
+      </p:layout>
+
+
+      <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+        <f:facet name="default">
+          <h:outputText value="Status: StandBy" />
+        </f:facet>
+
+        <f:facet name="start">
+          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        </f:facet>
+
+        <f:facet name="complete">
+          <h:outputText value="Status: Completed" />
+        </f:facet>
+      </p:ajaxStatus>
+
+      <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+      <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+      </p:dialog>
+
+
+    </h:body>
+
+  </f:view>
+</html>
+

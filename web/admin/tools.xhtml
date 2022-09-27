@@ -1,0 +1,430 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+  <h:head>
+     <!--
+  Fly the World
+  Wirtschaftsymulation für Flugsimulatoren
+  Copyright (C) 2016 Stefan Klees
+  stefan.klees@gmail.com
+ 
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+ 
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    -->
+
+    <title>FTW (Support - Tools)</title>
+  </h:head>
+
+  <h:body>
+
+    <p:layout style="min-width:100%; min-height:100%;" fullPage="true">
+
+      <ui:include src="/users/menueMeldungen.xhtml"/>
+
+      <ui:fragment rendered="#{loginMB.newMenue}">
+        <ui:include src="/users/menue.xhtml" />
+      </ui:fragment>
+
+      <p:layoutUnit position="center" closable="false" header="(Support - Tools)">
+
+        <ui:fragment rendered="#{not loginMB.newMenue}">
+          <ui:include src="/users/menueNew.xhtml"/>
+        </ui:fragment>
+
+
+        <h:form id="frm_daten">
+
+
+          <p:confirmDialog id="dlg_confirm" widgetVar="dlg_confirm" global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="#{sprache.ja}" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+            <p:commandButton value="#{sprache.nein}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+          </p:confirmDialog>
+
+
+          <p:ribbon>
+            <p:tab title="Flugzeug">
+              <p:ribbonGroup label="Flugzeugoptionen">
+                <p:commandButton value="Tankfüllung" onclick="PF('wdg_FlugzeugTankfuellung').show();" icon="fa fa-fire-extinguisher" type="button"/>
+                <p:commandButton value="Entsperren" onclick="PF('wdg_FlugzeugAusDerLuftHolen').show();" icon="fa fa-plane" type="button"/>
+              </p:ribbonGroup>
+            </p:tab>
+
+            <p:tab title="User">
+              <p:ribbonGroup label="Useroptionen">
+                <p:commandButton value="Charter Reset" onclick="PF('wdg_CharterReset').show();" type="button"/>
+                <p:commandButton value="Aufträge Reset" onclick="PF('wdg_UserAuftraegeLoeschen').show();" type="button"/>
+                <p:commandButton value="Aufträge Anzeigen" onclick="PF('wdg_UserAuftraege').show();" type="button"/>
+
+              </p:ribbonGroup>
+            </p:tab>
+
+
+          </p:ribbon>            
+
+
+          <p:accordionPanel activeIndex="-1">
+            <p:tab title="Benutzertabelle" >
+
+
+              <p:dataTable id="userTable" 
+                           widgetVar="userTable"
+                           var="userItems"
+                           value="#{userBean.user}"
+                           rowKey="#{userItems.idUser}"
+                           selection="#{userBean.selectedUser}"
+                           paginator="true"
+                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                           rows="20"
+                           scrollable="true"
+                           rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                           sortMode="multiple"
+                           selectionMode="single">
+
+                <p:ajax listener="#{userBean.onRowSelect}" event="rowSelect" update="frm_daten"/>
+                <p:ajax listener="#{userBean.onRowUnselect}" event="rowUnselect" update="frm_daten"/>
+
+                <p:column headerText="ID" width="150" style="text-align: center;" sortBy="#{userItems.idUser}" filterBy="#{userItems.idUser}">
+                  <h:outputText value='#{userItems.idUser}'/>
+                </p:column>
+
+                <p:column headerText="Gesperrt" width="30" style="text-align: center;" sortBy="#{userItems.gesperrt}">
+                  <h:outputText value='#{sprache.ja}' rendered="#{userItems.gesperrt}"/>
+                  <h:outputText value='#{sprache.nein}' rendered="#{not userItems.gesperrt}"/>
+                </p:column>
+
+                <p:column headerText="Name" sortBy="#{userItems.name}" filterBy="#{userItems.name}" filterMatchMode="contains">
+                  <h:outputText value='#{userItems.name}' />
+                </p:column>
+
+                <p:column headerText="Lizenz" width="60" sortBy="#{userItems.lizenz}">
+                  <h:outputText value='#{userItems.lizenz}'/>
+                </p:column>
+
+                <p:column headerText="Last Login" width="200" style="text-align: right" sortBy="#{userItems.lastlogon}">
+                  <h:outputText value='#{userItems.lastlogon}'>
+                    <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="Language" width="100">
+                  <h:outputText value='#{userItems.sprache}'/>
+                </p:column>
+
+                <p:column headerText="Zeitzone" width="100" >
+                  <h:outputText value='#{userItems.zeitZone}'/>
+                </p:column>
+
+                <p:column headerText="Role" width="100" >
+                  <h:outputText value='#{userItems.rolle}'/>
+                </p:column>
+
+              </p:dataTable>
+
+            </p:tab>
+          </p:accordionPanel>
+
+
+          <p:accordionPanel activeIndex="-1">
+            <p:tab title="FTW Flugtabelle" >
+
+              <p:dataTable id="flightTable" 
+                           widgetVar="flightTable"
+                           var="fluege"
+                           value="#{newTakeoffBean.listYaacarsFluege}"
+                           rowKey="#{fluege.idyaacarskopf}"
+                           paginator="true"
+                           paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                           rows="15"
+                           scrollable="true"
+                           rowsPerPageTemplate="5,10,15,20,25,30,35,40,50,100,200,500,1000"
+                           sortMode="multiple"
+                           >
+
+                <p:column width="15" exportable="false" >
+                  <p:rowToggler />
+                </p:column>
+
+                <p:column width="25">
+                  <p:commandButton title="Flug freigeben" icon="fa fa-check" action="#{newTakeoffBean.onFlugFreigebenSupport()}" update="flightTable" >
+                    <f:setPropertyActionListener target="#{newTakeoffBean.supportFreigabeFlug}" value="#{fluege}"/>
+                    <p:confirm header="Flug freigeben" message="Flug wirklich freigeben" icon="ui-icon-alert" />
+                  </p:commandButton>
+                </p:column>
+
+                <p:column width="25">
+                  <p:commandButton title="Flug löschen" icon="fa fa-trash" action="#{newTakeoffBean.onFlugLoeschenSupport()}" update="flightTable" >
+                    <f:setPropertyActionListener target="#{newTakeoffBean.supportFreigabeFlug}" value="#{fluege}"/>
+                    <p:confirm header="Flug löschen" message="Flug wirklich löschen" icon="ui-icon-alert" />
+                  </p:commandButton>
+                </p:column>
+
+                <p:column headerText="Abrechnung">
+                  <h:outputText value="Ja" rendered="#{fluege.flugOK}"/>
+                  <h:outputText value="Nein" rendered="#{not fluege.flugOK}"/>
+                </p:column>
+
+
+
+                <p:column headerText="UserID" filterBy="#{fluege.userid}" filterMatchMode="exact">
+                  <h:outputText value="#{fluege.userid}"/>
+                </p:column>
+
+                <p:column headerText="Name" filterBy="#{fluege.username}" filterMatchMode="contains">
+                  <h:outputText value="#{fluege.username}" />
+                </p:column>
+
+                <p:column headerText="FlugNr.">
+                  <h:outputText value="#{fluege.flugnummer}"/>
+                </p:column>
+
+                <p:column headerText="Erstellt am">
+                  <h:outputText value="#{fluege.flugerstelltam}">
+                    <f:convertDateTime   type="both" pattern="dd.MM.yyyy HH:mm" timeStyle="full" timeZone="#{loginMB.timeZone}"/>
+                  </h:outputText>
+                </p:column>
+
+                <p:column headerText="Ziel">
+                  <h:outputText value="#{fluege.departureicao} nach #{fluege.arrivalicao}"/>
+                </p:column>
+
+                <p:column headerText="Flugstatus" >
+                  <h:outputText value="In Vorbereitung" rendered="#{fluege.flugstatus eq 0}"/>
+                  <h:outputText value="Flug gestartet" rendered="#{fluege.flugstatus eq 1}"/>
+                  <h:outputText value="Flug beendet" rendered="#{fluege.flugstatus eq 2}"/>
+                </p:column>
+
+                <p:rowExpansion>
+
+                  <p:panelGrid columns="2" style="width: 50%;">
+
+                    <h:outputText value="Flugzeugtype"/>
+                    <h:outputText value="#{fluege.flugzeugtype}"/>
+
+                    <h:outputText value="Anzahl Paxe"/>
+                    <h:outputText value="#{fluege.paxanzahl}"/>
+
+                    <h:outputText value="Gewicht Paxe"/>
+                    <h:outputText value="#{fluege.paxgewicht}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Gewicht Cargo"/>
+                    <h:outputText value="#{fluege.cargogewicht}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Flugzeit Minuten"/>
+                    <h:outputText value="#{fluege.geflogenezeit}"/>
+
+                    <h:outputText value="Blockzeit Minuten"/>
+                    <h:outputText value="#{fluege.blockzeit}"/>
+
+                    <h:outputText value="Geflogene Meilen"/>
+                    <h:outputText value="#{fluege.geflogenemeilen}">
+                      <f:convertNumber pattern="#,##0"/>
+                    </h:outputText>
+
+                    <h:outputText value="Getankte Menge"/>
+                    <h:outputText value="#{fluege.tankmengekg}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Treibstoffverbrauch"/>
+                    <h:outputText value="#{fluege.verbrauchtetankmengekg}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Sollverbrauch Std."/>
+                    <h:outputText value="#{newTakeoffBean.getSollTankMenge(fluege.flugzeugid)}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Sollverbrauch auf Flugzeit"/>
+                    <h:outputText value="#{newTakeoffBean.getSollTankMenge(fluege.flugzeugid)*fluege.geflogenezeit/60}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                    <h:outputText value="Resttankmenge"/>
+                    <h:outputText value="#{fluege.resttankmengekg}">
+                      <f:convertNumber pattern="#,##0 (kg)"/>
+                    </h:outputText>
+
+                  </p:panelGrid>
+
+                </p:rowExpansion>
+
+
+              </p:dataTable>              
+
+            </p:tab>
+          </p:accordionPanel>
+
+
+        </h:form>        
+
+        <p:dialog id="dlg_FlugzeugTankfuellung" widgetVar="wdg_FlugzeugTankfuellung" closable="true" header="Flugzeug Tankfüllung">
+          <h:form id="frm_tankfuellung">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugTankfuellung()}" value="Flugzeug Tankfüllung setzen" oncomplete="PF('wdg_FlugzeugTankfuellung').hide()" />
+                <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugTankfuellung').hide()" />
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+              <h:outputLabel value="neue Tankfüllung (kg)"/><h:inputText value="#{flugzeugeMietKaufBean.dobTankfuellung}" size="10"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_FlugzeugAusDerLuftHolen" widgetVar="wdg_FlugzeugAusDerLuftHolen" closable="true" header="Flugzeug aus der Luft holen">
+          <h:form id="frm_FlugzeugAusDerLuftHolen">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{flugzeugeMietKaufBean.onFlugzeugAusDerLuftHolen()}" value="Flugzeug jetzt aus der Luft holen" oncomplete="PF('wdg_FlugzeugAusDerLuftHolen').hide()" />
+                <p:commandButton  value="Verlassen" onclick="PF('wdg_FlugzeugAusDerLuftHolen').hide()" />
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="Flugzeug ID"/><h:inputText value="#{flugzeugeMietKaufBean.dobFlugzeugID}" size="10"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_CharterReset" widgetVar="wdg_CharterReset" closable="true" header="Charterauftrag Resetten">
+          <h:form id="frm_CharterReset">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{configBean.onSupportCharterResetten()}" value="Charter-Auftrag resetten" oncomplete="PF('wdg_CharterReset').hide()" />
+                <p:commandButton  value="Verlassen" onclick="PF('wdg_CharterReset').hide()" />
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="User ID"/><h:inputText value="#{configBean.userid}" size="10"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+        <p:dialog id="dlg_UserAuftraegeLoeschen" widgetVar="wdg_UserAuftraegeLoeschen" closable="true" header="User Aufträge Resetten">
+          <h:form id="frm_UserAuftraegeLoeschen">
+            <p:toolbar>
+              <f:facet name="left">
+                <p:commandButton action="#{configBean.onSupportUserAuftraegeLoeschen()}" value="User Aufträge resetten" oncomplete="PF('wdg_UserAuftraegeLoeschen').hide()" />
+                <p:commandButton  value="Verlassen" onclick="PF('wdg_UserAuftraegeLoeschen').hide()" />
+              </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2">
+              <h:outputLabel value="User ID"/><h:inputText value="#{configBean.userid}" size="10"/>
+            </p:panelGrid>
+          </h:form>
+        </p:dialog>
+
+
+
+        <p:dialog id="dlg_UserAuftraege" widgetVar="wdg_UserAuftraege" header="User Aufträge" closable="true" width="1400">
+          <h:form id="frm_UserAuftraege">
+            <p:panelGrid columns="3">
+              <h:outputLabel value="User ID"/>
+              <h:inputText value="#{assignementBean.idFuerUserAuftraege}"/>
+              <p:commandButton  value="Suche ausführen" icon="fa fa-search"  update="tbl_UserAuftraege"/>
+            </p:panelGrid>
+
+            <p:dataTable id="tbl_UserAuftraege" widgetVar="tbl__UserAuftraege" value="#{assignementBean.userAuftraege}" var="positionen">
+
+              <p:column headerText="Lizenz">
+                <h:outputText value="#{positionen.lizenz}"/>
+              </p:column>
+
+              <p:column headerText="Klasse">
+                <h:outputText value="#{positionen.flugzeugklasse}"/>
+              </p:column>
+
+              <p:column headerText="Lizenz FLZ">
+                <h:outputText value="#{positionen.flugzeugLizenz}"/>
+              </p:column>
+
+              <p:column headerText="ID Airline">
+                <h:outputText value="#{positionen.idAirline}"/>
+              </p:column>
+
+              <p:column headerText="ID FLZ">
+                <h:outputText value="#{positionen.idaircraft}"/>
+              </p:column>
+
+              <p:column headerText="ID JOB">
+                <h:outputText value="#{positionen.idjob}"/>
+              </p:column>
+
+              <p:column headerText="ID Route">
+                <h:outputText value="#{positionen.idRoute}"/>
+              </p:column>
+
+              <p:column headerText="Aktiv">
+                <h:outputText value="#{positionen.active}"/>
+              </p:column>
+
+              <p:column headerText="Userlock">
+                <h:outputText value="#{positionen.userlock}"/>
+              </p:column>
+
+            </p:dataTable>
+
+
+          </h:form>
+
+        </p:dialog>
+
+
+
+
+
+
+
+      </p:layoutUnit>
+
+    </p:layout>
+  </h:body>
+
+
+  <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
+    <f:facet name="default">
+      <h:outputText value="Status: StandBy" />
+    </f:facet>
+
+    <f:facet name="start">
+      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+    </f:facet>
+
+    <f:facet name="complete">
+      <h:outputText value="Status: Completed" />
+    </f:facet>
+  </p:ajaxStatus>
+
+  <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
+
+  <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
+    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+  </p:dialog>
+
+
+</html>
+
