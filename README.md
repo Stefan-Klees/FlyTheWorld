@@ -1,6 +1,3 @@
-
-
-
 Fly the World Wirtschaftsymulation für Flugsimulatoren
 
 Copyright (C) 2016 Stefan Klees
