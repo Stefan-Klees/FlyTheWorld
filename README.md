@@ -10,4 +10,4 @@ You should have received a copy of the GNU General Public License along with thi
 
 
 
- <img src="http://street68.de/images/dev/ftw-github.jpg" alt="FTW Screenshot" width="500" height="600"> 
+ <img src="http://street68.de/images/dev/ftw-github.jpg" alt="FTW Screenshot" width="1920" height="1080"> 
