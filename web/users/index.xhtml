@@ -114,18 +114,6 @@
                   </p:toolbarGroup>
                 </p:toolbar>
 
-
-                <!--
-                <p:dock position="bottom">
-                  <p:menuitem value="FTW Discord Server" icon="http://www.ftw-sim.de/images/FTW/icons/discord.png" url="https://discord.gg/d9YQPGx" target="_blank"/>
-                  <p:menuitem value="FTW Portalsite" icon="http://www.ftw-sim.de/images/FTW/icons/home-location.png" url="#{configBean.websiteLink}" target="_blank"/>
-                  <p:menuitem value="FTW Hangar" icon="http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg" url="http://www.ftw-sim.de/forum/viewforum.php?f=32" target="_blank"/>
-                  <p:menuitem value="YAACARS Traking Client" icon="http://www.ftw-sim.de/images/FTW/icons/icon_flightinfo.svg" url="http://openair-alliance.eu/yaacars/doc/doku.php?id=start" target="_blank"/>
-                  <p:menuitem value="YAACARS Traking Client" icon="http://www.ftw-sim.de/images/FTW/icons/" url="https://openair-alliance.eu/ftw/doc/doku.php?id=start" target="_blank"/>
-                </p:dock>
-                -->
-
-
               </h:form>
             </f:facet>
           </p:toolbar>
@@ -149,7 +137,7 @@
               <p:toolbarGroup id="tbg_loggedUser">
 
                 <p:commandLink id="cbtdiscord_logged" action="#{loginMB.onDiscord()}" update="frm_loggedUser" title="#{sprache.Title_FTWDiscord}" style="vertical-align: bottom; padding: 4px">
-                  <p:graphicImage width="32" value="http://www.ftw-sim.de/images/FTW/icons/discord.png"/>
+                  <p:graphicImage width="32" value="#{configBean.domainURL}/images/FTW/icons/discord.png"/>
                 </p:commandLink>
 
 
@@ -158,7 +146,7 @@
 
             <p:panelGrid columns="3" >
 
-              <p:link target="_blank" href="https://discord.gg/d9YQPGx">
+              <p:link target="_blank" href="#{configBean.domainURL}">
                 <h:outputText value="Discord FTW" title="Discord - Fly the World" style="font-size: 1.3em;"/>
               </p:link>
 
@@ -170,7 +158,7 @@
                 <h:outputText value="YAACARS" title="YAACARS-Tracking-Client" style="font-size: 1.3em;"/>
               </p:link>
 
-              <p:link target="_blank" href="https://openair-alliance.eu/ftw/doc/doku.php?id=start" >
+              <p:link target="_blank" href="#{configBean.wiKi}" >
                 <h:outputText value="FTW Wiki" title="Fly the World - WIKI" style="font-size: 1.3em;"/>
               </p:link>
 
@@ -198,7 +186,7 @@
               </p:column>
 
               <p:column width="16" style="border: hidden; text-align: left">
-                <p:graphicImage width="24" value="http://www.ftw-sim.de/images/FTW/icons/discord.png" rendered="#{item.getAttribute('Discord-ON')}"  title="#{sprache.Title_FTWDiscordOnline}"/>
+                <p:graphicImage width="24" value="#{configBean.domainURL}/images/FTW/icons/discord.png" rendered="#{item.getAttribute('Discord-ON')}"  title="#{sprache.Title_FTWDiscordOnline}"/>
               </p:column>
               
               <p:column width="16" style="border: hidden; text-align: left">
@@ -209,7 +197,7 @@
               
               <p:column style="border: hidden; text-align: left" width="50">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/lizenz.png" height="#{loginMB.iconSize}" title="#{sprache.Benutzer_Einstellungen_lbl_Lizenz}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/lizenz.png" height="#{loginMB.iconSize}" title="#{sprache.Benutzer_Einstellungen_lbl_Lizenz}"/>
                 </f:facet>
                 <h:outputLabel value="#{item.getAttribute('Lizenz')}"/>
               </p:column>
@@ -234,7 +222,7 @@
             <table border='1' cellpadding="5" bgcolor="#616161" style="color: #E7FD42;">
               <f:facet name="header">
                 <div style="alignment-adjust: middle; font-size: 1.5em">
-                  <img src="http://www.ftw-sim.de/images/FTW/icons/departures.png"/> &nbsp; #{sprache.Index_Departure_header}
+                  <img src="#{configBean.domainURL}/images/FTW/icons/departures.png"/> &nbsp; #{sprache.Index_Departure_header}
                 </div>
               </f:facet>
 
@@ -311,7 +299,7 @@
             <table id="tbl_kopf" border='1' cellpadding="5" bgcolor="#616161" style="color: #E7FD42; height: 400px; overflow-y:scroll; width: 100%"  >
               <f:facet name="header">
                 <div style="alignment-adjust: middle; font-size: 1.5em">
-                  <img src="http://www.ftw-sim.de/images/FTW/icons/arrivals.png"/> &nbsp; #{sprache.Index_Top100_dlg_header}
+                  <img src="#{configBean.domainURL}/images/FTW/icons/arrivals.png"/> &nbsp; #{sprache.Index_Top100_dlg_header}
                 </div>
               </f:facet>
               <tr>

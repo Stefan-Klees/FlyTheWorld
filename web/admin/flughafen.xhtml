@@ -385,13 +385,13 @@
                 }
 
                 var homeIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/flugzeugeamflughafen.png',
                   iconSize: [64, 64],
                   popupAnchor: [0, -10]
                 });
 
                 var airportIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                   iconSize: [38, 95],
                   popupAnchor: [0, -10]
                 });
@@ -506,7 +506,7 @@
 
               <p:column headerText="Kurs" width="50" style="text-align: center;" >
                 <h:outputText value='#{anflugItems.kurs}'/>
-                <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{anflugItems.kurs}.png" />
+                <p:graphicImage height="24" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{anflugItems.kurs}.png" />
               </p:column>
 
               <p:column headerText="Breitengrad" style="text-align: center;">
@@ -627,19 +627,19 @@
               <script type="text/javascript">
 
                 var airportIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                   iconSize: [48, 48],
                   popupAnchor: [0, -10]
                 });
 
                 var homeIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/flugzeugeamflughafen.png',
                   iconSize: [64, 64],
                   popupAnchor: [0, -10]
                 });
 
                 var fahne = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_rot_32px.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/fahne_rot_32px.png',
                   iconSize: [16, 24],
                   popupAnchor: [0, -10]
                 });
@@ -741,7 +741,7 @@
       <p:ajaxStatus style="display:block;margin-bottom:2em;height:24px;">
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
       </p:ajaxStatus>
@@ -749,7 +749,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

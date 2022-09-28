@@ -683,7 +683,7 @@
             <script>
 
               var airportIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                 iconSize: [38, 95],
                 popupAnchor: [0, -10]
               });
@@ -716,7 +716,7 @@
           </f:facet>
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
           </f:facet>
 
           <f:facet name="complete">
@@ -727,7 +727,7 @@
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </p:dialog>
 
 

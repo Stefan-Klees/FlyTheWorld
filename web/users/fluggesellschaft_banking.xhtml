@@ -180,7 +180,7 @@
               </p:panelGrid>
 
               <h:commandLink style="float: left">
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Fluggesellschaften_Bank_btn_CSVExport}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Fluggesellschaften_Bank_btn_CSVExport}"/>
                 <p:dataExporter type="csv" target="bankingTable" fileName="Airline-Banking"  pageOnly="false" />
               </h:commandLink>
             </p:panelGrid>  

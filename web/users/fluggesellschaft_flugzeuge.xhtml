@@ -110,7 +110,7 @@
 
 
                 <h:commandLink id="cmd_export">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
                   <p:dataExporter type="csv" target="frm_daten:tbl_flugzeuge" fileName="Uebersicht_Airline_Flugzeuge"  pageOnly="false" />
                   <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                 </h:commandLink>
@@ -165,14 +165,14 @@
 
               <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.aktuellePositionICAO}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/location.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_aktuellerStandort}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/location.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_aktuellerStandort}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.aktuellePositionICAO}"/>
               </p:column>
 
               <p:column style="text-align: right;" width="40" sortBy="#{flugzeugItems.heimatICAO}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/home-location.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_HeimatFlughafen}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/home-location.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_HeimatFlughafen}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.heimatICAO}"/>
               </p:column>
@@ -184,7 +184,7 @@
 
               <p:column style="text-align: center;" width="100" sortBy="#{flugzeugItems.zustand}" exportable="false">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/zustand.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_ZustandDesFlugzeuges}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/zustand.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_ZustandDesFlugzeuges}"/>
                 </f:facet>
                 <p:progressBar value="#{flugzeugItems.zustand}" style="width: 100%" labelTemplate="{value} %"/>          
 
@@ -205,7 +205,7 @@
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.istGesperrt}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/plain-locked.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_gesperrt}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/plain-locked.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_gesperrt}"/>
                 </f:facet>
                 <h:outputText value="#{sprache.ja}" rendered="#{flugzeugItems.istGesperrt}"/>
                 <h:outputText value="#{sprache.nein}" rendered="#{ not flugzeugItems.istGesperrt}"/>
@@ -214,7 +214,7 @@
 
               <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.istMietbar}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/for-rent.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuMieten}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/for-rent.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuMieten}"/>
                 </f:facet>
                 <h:outputText value="#{sprache.ja} *" rendered="#{flugzeugItems.istMietbar and flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
                 <h:outputText value="#{sprache.nein} *" rendered="#{ not flugzeugItems.istMietbar and flugzeugItems.nurFuerAuftraegeDerFluggesellschaft}"/>
@@ -226,7 +226,7 @@
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.istZuVerkaufen}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/to-buy.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuKaufen}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/to-buy.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_zuKaufen}"/>
                 </f:facet>
                 <h:outputText value="#{sprache.ja}" rendered="#{flugzeugItems.istZuVerkaufen}"/>
                 <h:outputText value="#{sprache.nein}" rendered="#{ not flugzeugItems.istZuVerkaufen}"/>
@@ -234,7 +234,7 @@
 
               <p:column width="50" style="text-align: center;" sortBy="#{flugzeugItems.lizenz}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/lizenz.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_Lizenz}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/lizenz.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_Lizenz}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.lizenz}"/>
               </p:column>
@@ -242,7 +242,7 @@
 
               <p:column width="60" style="text-align: center;" sortBy="#{flugzeugItems.verkaufsPreis}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/preisschild.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_kaufpreis}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/preisschild.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_kaufpreis}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.verkaufsPreis}" style="float: right">
                   <f:convertNumber pattern="#,##0 &euro;"/>
@@ -251,28 +251,28 @@
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.maxAnzahlZuBelgenderSitze}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/max-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleSitze}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/max-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleSitze}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.maxAnzahlZuBelgenderSitze}" style="float: right"/>
               </p:column>
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.sitzeEconomy}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/eco-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeEconomy}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/eco-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeEconomy}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.sitzeEconomy}" style="float: right"/>
               </p:column>
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.sitzeBusinessClass}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/bc-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeBusinessClass}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/bc-seats.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_sitzeBusinessClass}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.sitzeBusinessClass}" style="float: right"/>
               </p:column>
 
               <p:column width="20" style="text-align: center;" sortBy="#{flugzeugItems.besatzung}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cockpit.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_cockpitOhnePilot}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/cockpit.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_cockpitOhnePilot}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.besatzung}" style="float: right"/>
               </p:column>
@@ -280,14 +280,14 @@
 
               <p:column width="40" style="text-align: center;">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/mietzeit.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleMietzeit}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/mietzeit.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_maximaleMietzeit}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugeMietKaufBean.getMietZeitText(flugzeugItems.maxMietzeitMinuten)}" style="float: right"/>
               </p:column>
 
               <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.mietpreisTrocken}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/rent-time.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_mietpreisProStunde}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/rent-time.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_mietpreisProStunde}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.mietpreisTrocken}" style="float: right">
                   <f:convertNumber pattern="#,##0 &euro;"/>
@@ -296,7 +296,7 @@
 
               <p:column width="40" style="text-align: center;" sortBy="#{flugzeugItems.pfand}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pfand.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_pfand}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/pfand.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_pfand}"/>
                 </f:facet>
                 <h:outputText value="#{flugzeugItems.pfand}" style="float: right">
                   <f:convertNumber pattern="#,##0 &euro;"/>
@@ -305,7 +305,7 @@
 
               <p:column width="200" style="text-align: center; padding: 0px;" sortBy="#{flugzeugeMietKaufBean.getUserName(flugzeugItems.idUserDerFlugzeugGesperrtHat)}" exportable="false" >
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/owner.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_eigentuemer}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/owner.png" height="#{loginMB.iconSize}" title="#{sprache.Hangar_tbl_eigentuemer}"/>
                 </f:facet>
                 <table>
                   <tr>
@@ -441,7 +441,7 @@
 
                         <p:column width="30" style="text-align: center;">
                           <f:facet name="header">
-                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cockpit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_anzahlSaftschubsen}"/>
+                            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cockpit.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_anzahlSaftschubsen}"/>
                           </f:facet>
 
                           <h:outputText value="#{skf.flugbegleiter}" style="float: right">
@@ -451,7 +451,7 @@
 
                         <p:column width="30" style="text-align: center;">
                           <f:facet name="header">
-                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_eco-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeEconomy}"/>
+                            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_eco-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeEconomy}"/>
                           </f:facet>
                           <h:outputText value="#{skf.sitzeEconomy}" style="float: right">
                             <f:convertNumber pattern="#,##0"/>
@@ -460,7 +460,7 @@
 
                         <p:column width="30" style="text-align: center;">
                           <f:facet name="header">
-                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_bc-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeBusinessClass}"/>
+                            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_bc-seats.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_sitzeBusinessClass}"/>
                           </f:facet>
                           <h:outputText value="#{skf.sitzeBusiness}" style="float: right">
                             <f:convertNumber pattern="#,##0"/>
@@ -469,7 +469,7 @@
 
                         <p:column width="80" style="text-align: center;">
                           <f:facet name="header">
-                            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_cargo}" />  
+                            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Hangar_Details_tbl_cargo}" />  
                           </f:facet>
                           <h:outputText value="#{skf.cargo}" style="float: right">
                             <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -549,7 +549,7 @@
 
 
                             var airportIcon = L.icon({
-                              iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                              iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                               iconSize: [38, 95],
                               popupAnchor: [0, -10]
                             });
@@ -1113,7 +1113,7 @@
               </p:toolbarGroup>
             </p:toolbar>
             <p:panelGrid columns="2" style="width: 100%">
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/systempilot.png" style="width: 250px;" alt=" #{image}" title="#{image}"/>
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/systempilot.png" style="width: 250px;" alt=" #{image}" title="#{image}"/>
 
               <p:panelGrid columns="2" style="width: 100%">
                 <h:outputLabel value="#{sprache.Hangar_Otto_lbl_zumFlughafenMitDerIcaoKennung}"/>
@@ -1207,7 +1207,7 @@
 
 
                 var airportIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                   iconSize: [38, 95],
                   popupAnchor: [0, -10]
                 });

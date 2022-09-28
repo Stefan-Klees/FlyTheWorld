@@ -65,7 +65,7 @@
             var meldung = meldungstext;
 
             if (meldung !== "") {
-              var notification = new Notification('FTW-Luftrettung (Air-Rescue)', {icon: "http://www.ftw-sim.de/images/FTW/icons/helikopter.png", body: meldung});
+              var notification = new Notification('FTW-Luftrettung (Air-Rescue)', {icon: "#{configBean.domainURL}'+'/images/FTW/icons/helikopter.png", body: meldung});
             }
           }
 
@@ -95,7 +95,7 @@
           </ui:fragment>
 
           <div align="center">
-            <p:graphicImage value="http://www.ftw-sim.de/images/ftw-background/luftrettungHome.jpg" width="100%" height="100%"/>
+            <p:graphicImage value="#{configBean.domainURL}/images/ftw-background/luftrettungHome.jpg" width="100%" height="100%"/>
           </div>
 
           <h:form id="frm_kopf">
@@ -334,13 +334,13 @@
 
 
                 var heliPort = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/heliport.png',
                   iconSize: [48, 48],
                   popupAnchor: [0, -10]
                 });
 
                 var airportIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                   iconSize: [38, 95],
                   popupAnchor: [0, -10]
                 });
@@ -415,7 +415,7 @@
 
 
                 var heliPort = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/heliport.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/heliport.png',
                   iconSize: [32, 32],
                   popupAnchor: [0, -10]
                 });
@@ -427,13 +427,13 @@
                 });
 
                 var airportIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                   iconSize: [38, 95],
                   popupAnchor: [0, -10]
                 });
 
                 var ersteHilfeIcon = L.icon({
-                  iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/ersteHilfe.png',
+                  iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/ersteHilfe.png',
                   iconSize: [32, 32],
                   popupAnchor: [0, -10]
                 });
@@ -554,7 +554,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -565,7 +565,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

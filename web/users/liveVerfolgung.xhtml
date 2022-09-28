@@ -161,7 +161,7 @@
               </h:outputText>
 
               <h:outputLabel value="#{sprache.LiveFlugverfolgung_lbl_Kurs} #{mapsBean.aktuellerPilotPosdaten.heading}"/>
-              <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{mapsBean.aktuellerPilotPosdaten.heading}.png"/>
+              <p:graphicImage height="24" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{mapsBean.aktuellerPilotPosdaten.heading}.png"/>
 
               <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_Hoehe} #{sprache.ft}"/>
               <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.agl}" style="float: right">
@@ -174,7 +174,7 @@
               </h:outputText>
 
               <h:outputText value="Wind  #{mapsBean.aktuellerPilotPosdaten.winddirection} / #{mapsBean.aktuellerPilotPosdaten.windspeed}"/>
-              <p:graphicImage height="24" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{mapsBean.windBlown}.png"/>
+              <p:graphicImage height="24" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{mapsBean.windBlown}.png"/>
 
               <h:outputText value="#{sprache.LiveFlugverfolgung_lbl_IAS} / #{sprache.LiveFlugverfolgung_lbl_TAS} / #{sprache.LiveFlugverfolgung_lbl_GS}"/>
               <h:outputText value="#{mapsBean.aktuellerPilotPosdaten.ias} / #{mapsBean.aktuellerPilotPosdaten.tas} / #{mapsBean.aktuellerPilotPosdaten.gs}" style="float: right"/>
@@ -258,19 +258,19 @@
               x.style.height = document.getElementById("layOut").offsetHeight - 10 + "px";
 
               var airportIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                 iconSize: [24, 24],
                 popupAnchor: [0, -10]
               });
 
               var paxIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_pax.svg',
                 iconSize: [38, 95],
                 popupAnchor: [0, -10]
               });
 
               var cargoIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_cargo.svg',
                 iconSize: [38, 95],
                 popupAnchor: [0, -10]
               });
@@ -314,14 +314,14 @@
         <p:ajaxStatus style="display:block;margin-bottom:2em;height:64px;">
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/loadingPoints.gif" />
           </f:facet>
         </p:ajaxStatus>
 
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" style="height: 128px;" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/loadingPoints.gif" style="height: 128px;" />
         </p:dialog>
 
       </p:layout>

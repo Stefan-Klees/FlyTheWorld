@@ -203,7 +203,7 @@
               <h:inputText disabled="true" value="#{userBean.selectedUser.banner}" maxlength="250" size="120"/>
 
               <h:outputLabel value=""/>
-              <p:graphicImage url="http://www.ftw-sim.de/images/FTW/#{userBean.selectedUser.idUser}.png"/>
+              <p:graphicImage url="#{configBean.domainURL}/images/FTW/#{userBean.selectedUser.idUser}.png"/>
               
               
               <h:outputText value="#{sprache.Benutzer_Einstellungen_lbl_FTWSchluessel}"/><h:outputText value="#{userBean.selectedUser.readaccesskey}"/>
@@ -347,7 +347,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -358,7 +358,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

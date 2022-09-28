@@ -91,7 +91,7 @@
                     <p:commandButton title="#{sprache.Kostenstellenauswertung_btn_aktualisieren}" icon="fa fa-refresh" update="frm_kostenstellenAuswertung:tbl_kostenTable frm_kostenstellenAuswertung:kostenSumme"/>
 
                     <h:commandLink >
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" style="margin-top: 5px;" height="32" title="#{sprache.Kostenstellenauswertung_btn_CSVExport}"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" style="margin-top: 5px;" height="32" title="#{sprache.Kostenstellenauswertung_btn_CSVExport}"/>
                       <p:dataExporter type="csv" target="frm_kostenstellenAuswertung:tbl_kostenTable" fileName="Kostenstellenauswertung_#{loginMB.username}"  pageOnly="false" />
                     </h:commandLink>
 
@@ -181,7 +181,7 @@
           </f:facet>
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
           </f:facet>
 
           <f:facet name="complete">
@@ -192,7 +192,7 @@
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </p:dialog>
 
       </p:layout>

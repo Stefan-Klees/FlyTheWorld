@@ -44,7 +44,7 @@
             <p:toolbar id="tlb_userFlugLog">
               <p:toolbarGroup id="tbg_userFlugLog" align="left">
                 <h:commandLink style="float: left">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Fluglogbuch_btn_csvExport}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Fluglogbuch_btn_csvExport}"/>
                   <p:dataExporter type="csv" target="logbuchTable" fileName="Fluglogbuch_#{loginMB.username}"  pageOnly="false" />
                 </h:commandLink>
               </p:toolbarGroup>

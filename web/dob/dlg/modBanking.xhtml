@@ -130,7 +130,7 @@
         </p:panelGrid>
 
         <h:commandLink style="float: left">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Bank_btn_exportNachCSV}"/>
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Bank_btn_exportNachCSV}"/>
           <p:dataExporter type="csv" target="bankingTable" fileName="Banking"  pageOnly="false" />
         </h:commandLink>
       </p:panelGrid>  
@@ -142,7 +142,7 @@
           <h:form id="frm_userBanksaldo">
 
             <h:commandLink id="cmd_export">
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
               <p:dataExporter type="csv" target="tbl_userBanksaldo" fileName="userBanksaldo.csv"  pageOnly="false" />
               <p:tooltip for="cmd_export" value="Datenexport CSV"/>
             </h:commandLink>

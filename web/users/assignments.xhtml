@@ -52,19 +52,19 @@
 
       <script>
         var airportIcon = L.icon({
-          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+          iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
           iconSize: [38, 95],
           popupAnchor: [0, -10]
         });
 
         var paxIcon = L.icon({
-          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+          iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_pax.svg',
           iconSize: [38, 95],
           popupAnchor: [0, -10]
         });
 
         var cargoIcon = L.icon({
-          iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+          iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_cargo.svg',
           iconSize: [38, 95],
           popupAnchor: [0, -10]
         });
@@ -118,17 +118,17 @@
                     <p:commandButton id="cmdFav" title="#{sprache.Auftragsplanung_btn_Favoriten}" action="#{assignementBean.onCreateFavorite()}" icon="fa fa-bookmark" update="favoriten"/>                  
 
                     <p:commandLink action="#{assignementBean.onAirportAgent()}" oncomplete="PF('wdg_AirportAgent').show()" update="frm_AirportAgent" disabled="#{assignementBean.existAgentjob}" >
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/agent.png" height="#{loginMB.iconSize}" title="#{sprach.Auftragsplanung_AirportAgent_btn_AirportAgent}" style="vertical-align: bottom;"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/agent.png" height="#{loginMB.iconSize}" title="#{sprach.Auftragsplanung_AirportAgent_btn_AirportAgent}" style="vertical-align: bottom;"/>
                       <f:setPropertyActionListener target="#{mapsBean.assignmentsAusAuftragsplanungAgent}" value="#{assignementBean.joblist}"/>
                     </p:commandLink>
 
                     <p:commandLink id="cha" oncomplete="PF('wdg_CharterAgent').show();"  update="frm_tools frm_CharterAgent" action="#{randomJobBean.onCharterAgentStart()}" disabled="#{not randomJobBean.istAllesKlarFuerJob}">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_charterauftrag.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_CharterAuftrag_btn_CharterAuftragAnfordern}" 
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_charterauftrag.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_CharterAuftrag_btn_CharterAuftragAnfordern}" 
                                       style="vertical-align: bottom;"/>
                     </p:commandLink>
 
                     <p:commandLink id="cmd411" onclick="PF('wdg_anflugziele').show();" update="openMap" > 
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_anflugziele.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_btn_Ziele}" style="vertical-align: bottom;"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_anflugziele.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_btn_Ziele}" style="vertical-align: bottom;"/>
                       <f:setPropertyActionListener target="#{mapsBean.assignmentsAusAuftragsplanung}" value="#{assignementBean.assignments}"/>
                     </p:commandLink>             
 
@@ -179,13 +179,13 @@
                   <p:panelGrid columns="8" style="height: 46px;">
 
                     <p:commandLink id="cmd6" action="#{flugzeugeMietKaufBean.resetFlugzeugeAmflughafen()}" oncomplete="PF('wdg_Flugzeug').show();" update="frm_flugzeug" disabled="#{assignementBean.reverse}">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_btn_flugzeugein} #{assignementBean.flughafenName}" style="vertical-align: bottom;"/>
+                      <p:graphicImage value= "#{configBean.domainURL}/images/FTW/icons/icon_flugzeugamairport.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_btn_flugzeugein} #{assignementBean.flughafenName}" style="vertical-align: bottom;"/>
                     </p:commandLink>
 
                     <p:commandButton title="#{sprache.Auftragsplanung_btn_SummenfensterAnzeigen}" action="#{loginMB.onSummenFensterAnzeigen()}" oncomplete="PF('wdg_summen').show()" icon="ui-icon-calculator"/>
 
                     <h:commandLink id="cmd_export">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
                       <p:dataExporter type="csv" target="frm_daten:assignement_Table" fileName="Auftragsuebersicht"  pageOnly="false" />
                       <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                     </h:commandLink>
@@ -305,16 +305,16 @@
 
 
               <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" sortBy="#{assignmentItems.routenArt}" width="30">
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==5}"/>                
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==5}"/>                
                 <h:outputText value="TRF"    rendered="#{assignmentItems.routenArt==3}" />
               </p:column>
 
               <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gewichtPax}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
                 </f:facet>
                 <h:outputText value='#{assignmentItems.gewichtPax}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4 }">
                   <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -324,7 +324,7 @@
 
               <p:column width="50" style="text-align: right" sortBy="#{assignmentItems.gepaeck}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
                 </f:facet>
                 <h:outputText value='#{assignmentItems.gepaeck}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4 }">
                   <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -334,7 +334,7 @@
 
               <p:column width="60" style="text-align: right;" sortBy="#{assignmentItems.pay}">
                 <f:facet name="header">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
                 </f:facet>
                 <h:outputText id="payText" value='#{assignmentItems.pay}'>
                   <f:convertNumber pattern="#,##0 &euro;"/>
@@ -364,7 +364,7 @@
 
               <p:column headerText="#{sprache.Auftragsplanung_tbl_kurs}" width="50" style="text-align: center;" sortBy="#{assignmentItems.direct}">
                 <h:outputText value='#{assignmentItems.direct}'/>
-                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
+                <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
               </p:column>
 
               <p:column headerText="#{sprache.Auftragsplanung_tbl_laeuftAb}" style="text-align: center;" sortBy="#{assignmentItems.expires}">
@@ -797,7 +797,7 @@
         </p:dialog>
 
 
-        <p:dialog id="dlg_AirportAgent" widgetVar="wdg_AirportAgent" header="#{sprache.Auftragsplanung_dlg_AirportAgent_header}" width="1300" height="800" closable="false" modal="true" style="background-image: URL('http://www.ftw-sim.de/images/FTW/images/ramp-manager.jpg');" >
+        <p:dialog id="dlg_AirportAgent" widgetVar="wdg_AirportAgent" header="#{sprache.Auftragsplanung_dlg_AirportAgent_header}" width="1300" height="800" closable="false" modal="true" style="background-image: URL('#{configBean.domainURL}/images/FTW/images/ramp-manager.jpg');" >
 
           <h:form id="frm_AirportAgent">
             <p:toolbar id="tlb_AirportAgent">
@@ -851,7 +851,7 @@
 
               <p:column headerText="#{sprache.Auftragsplanung_dlg_AirportAgent_tbl_Kurs}" style="text-align: center;" sortBy="#{joblist.kurs}">
                 <h:outputText value="#{joblist.kurs}"/>
-                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
+                <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
 
               </p:column>
 
@@ -919,7 +919,7 @@
         </p:dialog>
 
 
-        <p:dialog id="dlg_CharterAgent" widgetVar="wdg_CharterAgent" header="#{sprache.Auftragsplanung_dlg_CharterAgent_Header}" width="1300" height="800" closable="false" modal="true" style="background-image: URL('http://www.ftw-sim.de/images/FTW/images/ramp-manager.jpg');" >
+        <p:dialog id="dlg_CharterAgent" widgetVar="wdg_CharterAgent" header="#{sprache.Auftragsplanung_dlg_CharterAgent_Header}" width="1300" height="800" closable="false" modal="true" style="background-image: URL('#{configBean.domainURL}/images/FTW/images/ramp-manager.jpg');" >
 
           <h:form id="frm_CharterAgent">
             <p:toolbar id="tlb_CharterAgent">
@@ -978,7 +978,7 @@
 
               <p:column headerText="#{sprache.Auftragsplanung_dlg_AirportAgent_tbl_Kurs}" style="text-align: center;" sortBy="#{joblist.kurs}">
                 <h:outputText value="#{joblist.kurs}"/>
-                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
+                <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
 
               </p:column>
 
@@ -1010,7 +1010,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -1021,7 +1021,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

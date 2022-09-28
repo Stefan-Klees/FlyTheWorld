@@ -48,7 +48,7 @@
         <h:form id="j_security_check">
 
           <h:panelGrid columns="2">
-            <h:graphicImage value="http://www.ftw-sim.de/images/FTW/images/FTW-Logo.png" height="250" title="Logo created by FTW-User: TEKiJIA"/>
+            <h:graphicImage value="#{configBean.domainURL}/images/FTW/images/FTW-Logo.png" height="250" title="Logo created by FTW-User: TEKiJIA"/>
           <h:panelGrid columns="2" cellpadding="2">
             <h:outputLabel for="j_username" value="#{sprache.Login_lbl_BenutzerName} : "/>
             <p:inputText id="j_username" value="#{loginMB.username}" maxlength="80"/>

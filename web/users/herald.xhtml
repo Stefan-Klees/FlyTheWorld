@@ -60,7 +60,7 @@
 
 
           <h:form id="frm_herald" style="height: 100%">
-            <p:media value="http://www.ftw-sim.de/images/FTW/herald/#{newsBean.pdf}" width="100%" height="100%" rendered="#{not empty newsBean.pdf}"/>
+            <p:media value="#{configBean.domainURL}/images/FTW/herald/#{newsBean.pdf}" width="100%" height="100%" rendered="#{not empty newsBean.pdf}"/>
           </h:form>
 
         </p:layoutUnit>

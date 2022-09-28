@@ -87,33 +87,33 @@
               <p:toolbarGroup id="tbg_daten" align="left">
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_flughafenlog}"  onclick="PF('wdg_FlughafenLog').show()" update="frm_FlughafenLog" disabled="#{empty airportBean.selectedAirport}">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/flightinfo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_flughafenlog}" style="vertical-align: bottom; padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/flightinfo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_flughafenlog}" style="vertical-align: bottom; padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_terminals}" onclick="PF('wdg_terminals').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_terminals">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/terminal.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_terminals}" style="vertical-align: bottom;padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/terminal.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_terminals}" style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_tankstelle}" onclick="PF('wdg_tankstellen').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_tankstellen">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/tankstelle.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_tankstelle}" 
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/tankstelle.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_tankstelle}" 
                                   style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_fboObjekte}"  onclick="PF('wdg_FBOs').show()" disabled="#{empty airportBean.selectedAirport}" update="frm_FBOs">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/fbo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_fboObjekte}" style="vertical-align: bottom;padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/fbo.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_fboObjekte}" style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_FlugzeugeAmFlughafen} in #{airportBean.selectedAirport.name}" action="#{flugzeugeMietKaufBean.resetFlugzeugeAmflughafen()}"  disabled="#{empty airportBean.selectedAirport}"
                                oncomplete="PF('wdg_Flugzeug').show();" update="dlg_Flugzeug" >
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_FlugzeugeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/flugzeugeamflughafen.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_FlugzeugeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_AuftraegeAmFlughafen} in #{airportBean.selectedAirport.name}" action="/users/assignments.xhtml"  disabled="#{empty airportBean.selectedAirport}">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/assignment.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_AuftraegeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/assignment.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_AuftraegeAmFlughafen}" style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
                 <p:commandLink title="#{sprache.Flughafeninfo_btn_bilder}" onclick="PF('wdg_PictureView').show()" update="frm_galleria" disabled="#{empty airportBean.selectedAirport}">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/bilder.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_bilder}" style="vertical-align: bottom;padding: 4px"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/bilder.png" height="#{loginMB.iconSize}" title="#{sprache.Flughafeninfo_btn_bilder}" style="vertical-align: bottom;padding: 4px"/>
                 </p:commandLink>
 
               </p:toolbarGroup>
@@ -170,7 +170,7 @@
                             var mymap = L.map('airportMap').setView([#{airportBean.selectedAirport.latitude}, #{airportBean.selectedAirport.longitude}], 13);
 
                             var airportIcon = L.icon({
-                              iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                              iconUrl: '#{configBean.domainURL}/images/FTW/icons/icon_flugzeugamairport.svg',
                               iconSize: [38, 95],
                               popupAnchor: [0, -10]
                             });
@@ -299,19 +299,19 @@
                     }
 
                     var airportIcon = L.icon({
-                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                       iconSize: [48, 48],
                       popupAnchor: [0, -10]
                     });
 
                     var homeIcon = L.icon({
-                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/flugzeugeamflughafen.png',
+                      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/flugzeugeamflughafen.png',
                       iconSize: [64, 64],
                       popupAnchor: [0, -10]
                     });
 
                     var fahne = L.icon({
-                      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/fahne_rot_32px.png',
+                      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/fahne_rot_32px.png',
                       iconSize: [16, 24],
                       popupAnchor: [0, -10]
                     });
@@ -491,7 +491,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -502,7 +502,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

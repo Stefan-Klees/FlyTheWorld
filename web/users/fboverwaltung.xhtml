@@ -96,7 +96,7 @@
 
                   <p:commandLink title="#{sprache.FBOManagement_btn_TreibstoffBereitstellen}"  onclick="PF('wdg_tankstelle_faesser').show()" update="frm_tankstelle_faesser" 
                                  rendered="#{fboUserObjekteBean.frmTankstelle}" disabled="#{not fboUserObjekteBean.allowFBOTankstelleVerwalten}" >
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="#{sprache.FBOManagement_btn_TreibstoffBereitstellen}" 
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="#{sprache.FBOManagement_btn_TreibstoffBereitstellen}" 
                                     style="vertical-align: bottom; padding: 4px"/>
                   </p:commandLink>
 
@@ -107,12 +107,12 @@
                   <p:commandButton title="#{sprache.FBOManagement_btn_aktualisieren}" icon="fa fa-refresh" onclick="location.reload();" />
 
                   <p:link href="#{configBean.wikiFBO}" target="_blank" >
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" title="WiKi" height="#{loginMB.iconSize}" />
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/wiki.png" title="WiKi" height="#{loginMB.iconSize}" />
                   </p:link>
 
 
                   <h:commandLink id="cmd_export" >
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" />
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" />
                     <p:dataExporter type="csv" target="fboUserTable" fileName="FBO_Uebersicht"  pageOnly="false" />
                     <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                   </h:commandLink>
@@ -326,16 +326,16 @@
                   </p:column>
 
                   <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assi.routenArt==1}"/>
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assi.routenArt==4}"/>
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.routenArt==2 and not (assi.type==5)}"/>
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.type==5}"/>                
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{assi.routenArt==1}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assi.routenArt==4}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.routenArt==2 and not (assi.type==5)}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assi.type==5}"/>                
                     <h:outputText value="TRF"    rendered="#{assi.routenArt==3}" />
                   </p:column>
 
                   <p:column width="60" style="text-align: right;" sortBy="#{assi.pay}">
                     <f:facet name="header">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
                     </f:facet>
                     <h:outputText id="payText" value='#{assi.pay}'>
                       <f:convertNumber pattern="#,##0 &euro;"/>
@@ -365,7 +365,7 @@
                   <p:toolbarGroup id="tbg_hangar" align="left">
 
                     <h:commandLink id="cmd_exportStock">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: middle; padding: 10px;"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: middle; padding: 10px;"/>
                       <p:dataExporter type="csv" target="tbl_ServiceHangarLager" fileName="Stock_Service_Hangar"  pageOnly="false" />
                       <p:tooltip for="cmd_exportStock" value="Stock Service Hangar"/>
                     </h:commandLink>
@@ -741,7 +741,7 @@
             <div id="div_summe" style="float: top; padding: 0px;" align="center">
               <h2 align="center">#{fboUserObjekteBean.selectedFboUser.name}</h2>
 
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/fuel.jpg" style="width: 75%" />
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/fuel.jpg" style="width: 75%" />
 
               <p:panelGrid columns="2" style="border: hidden; padding: 0px;width: 100%">
                 <p:commandButton title="#{sprache.FBOManagement_TreibstoffBestellung_btn_schliessen}" icon="fa fa-close" oncomplete="PF('wdg_fuel').hide();"/>
@@ -825,7 +825,7 @@
           <h:form id="frm_ListeBestellungen">
 
             <h:commandLink id="cmd_export">
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
               <p:dataExporter type="csv" target="tbl_TankstellenBestellungen" fileName="Tankstellen-Bestellungen"  pageOnly="false" />
               <p:tooltip for="cmd_export" value="Datenexport CSV"/>
             </h:commandLink>
@@ -1098,7 +1098,7 @@
 
                 <p:toolbarGroup id="tbg_lgListRechts" align="right">
                   <h:commandLink id="cmd_export">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
                     <p:dataExporter type="csv" target="tbl_lqList" fileName="Uebersicht_Zahlungen"  pageOnly="false" />
                     <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                   </h:commandLink>
@@ -1245,7 +1245,7 @@
                 </h:outputLabel>
 
               </p:panelGrid>
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/fax.png" width="250" />            
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/fax.png" width="250" />            
             </p:panelGrid>
 
 
@@ -1276,7 +1276,7 @@
 
             <p:panelGrid columns="2" style="width: 100%">
 
-              <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png"  title="Treibstoff-Fässer bereitstellen" 
+              <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png"  title="Treibstoff-Fässer bereitstellen" 
                               style="vertical-align: center; padding: 4px; height: 50%"/>
 
               <p:panelGrid columns="2" style="width: 100%">
@@ -1529,7 +1529,7 @@
           </f:facet>
 
           <f:facet name="start">
-            <p:graphicImage id="ghi_status" value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+            <p:graphicImage id="ghi_status" value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
           </f:facet>
 
           <f:facet name="complete">
@@ -1540,7 +1540,7 @@
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </p:dialog>
 
 

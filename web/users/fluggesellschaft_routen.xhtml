@@ -86,7 +86,7 @@
                     </p:selectOneMenu>
 
                     <p:link href="#{configBean.wikiRouten}" target="_blank" >
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
                     </p:link>
 
 
@@ -125,11 +125,11 @@
                                      rendered="#{not empty airrouteBean.selectedFlugrouten}" disabled="#{not airrouteBean.allowRoutenBearbeiten}"/>
 
                     <p:link href="#{configBean.wikiRouten}" target="_blank" >
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/wiki.png" height="32" title="WiKi"/>
                     </p:link>
                     
                     <h:commandLink id="cmd_export">
-                      <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="32" title="#{sprache.Fluggesellschaften_Routen_btn_CSVExport}"/>
+                      <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="32" title="#{sprache.Fluggesellschaften_Routen_btn_CSVExport}"/>
                       <p:dataExporter type="csv" target="frm_daten:routenTable" fileName="Routenuebersicht"  pageOnly="false" />
                       <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                     </h:commandLink>
@@ -230,9 +230,9 @@
 
               <p:column width="10" style="text-align: right;" sortBy="#{routItems.routenArt}" exportable="false">
 
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
               </p:column>
 
 
@@ -680,7 +680,7 @@
           </f:facet>
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
           </f:facet>
 
           <f:facet name="complete">
@@ -691,7 +691,7 @@
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </p:dialog>
 
 

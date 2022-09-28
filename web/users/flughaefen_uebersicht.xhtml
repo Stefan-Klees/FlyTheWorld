@@ -128,19 +128,19 @@
 
 
               var airportIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
                 iconSize: [24, 24],
                 popupAnchor: [0, -10]
               });
 
               var paxIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_pax.svg',
                 iconSize: [38, 95],
                 popupAnchor: [0, -10]
               });
 
               var cargoIcon = L.icon({
-                iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+                iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_cargo.svg',
                 iconSize: [38, 95],
                 popupAnchor: [0, -10]
               });
@@ -165,43 +165,17 @@
 
         </p:layoutUnit>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <p:ajaxStatus style="display:block;margin-bottom:2em;height:64px;">
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/loadingPoints.gif" />
           </f:facet>
         </p:ajaxStatus>
 
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/loadingPoints.gif" style="height: 128px;" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/loadingPoints.gif" style="height: 128px;" />
         </p:dialog>
 
       </p:layout>

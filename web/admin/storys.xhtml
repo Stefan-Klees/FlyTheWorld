@@ -27,19 +27,19 @@
 
   <script>
     var airportIcon = L.icon({
-      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_flugzeugamairport.svg',
+      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_flugzeugamairport.svg',
       iconSize: [38, 95],
       popupAnchor: [0, -10]
     });
 
     var paxIcon = L.icon({
-      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg',
+      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_pax.svg',
       iconSize: [38, 95],
       popupAnchor: [0, -10]
     });
 
     var cargoIcon = L.icon({
-      iconUrl: 'http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg',
+      iconUrl: '#{configBean.domainURL}'+'/images/FTW/icons/icon_cargo.svg',
       iconSize: [38, 95],
       popupAnchor: [0, -10]
     });
@@ -389,7 +389,7 @@
 
 
 
-        <p:dialog id="dlg_CharterAgent" widgetVar="wdg_CharterAgent" header="Charter Agent" width="1300" height="800" closable="false" modal="true" style="background-image: URL('http://www.ftw-sim.de/images/FTW/images/ramp-manager.jpg');" >
+        <p:dialog id="dlg_CharterAgent" widgetVar="wdg_CharterAgent" header="Charter Agent" width="1300" height="800" closable="false" modal="true" style="background-image: URL('#{configBean.domainURL}/images/FTW/images/ramp-manager.jpg');" >
 
           <h:form id="frm_CharterAgent">
             <p:toolbar id="tlb_CharterAgent">
@@ -444,7 +444,7 @@
 
               <p:column headerText="Kurs" style="text-align: center;" sortBy="#{joblist.kurs}">
                 <h:outputText value="#{joblist.kurs}"/>
-                <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
+                <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{joblist.kurs}.png" />
 
               </p:column>
 
@@ -475,7 +475,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -486,7 +486,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
     </h:body>

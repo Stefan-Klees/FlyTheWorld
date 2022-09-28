@@ -84,7 +84,7 @@
                                  update="frm_PilotLog" rendered="#{not empty airline_pilotenBean.selectedPilot}" />                
 
                 <h:commandLink id="cmd_export">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
                   <p:dataExporter type="csv" target="pilotsTable" fileName="Pilotenuebersicht"  pageOnly="false" />
                   <p:tooltip for="cmd_export" value="Datenexport CSV"/>
                 </h:commandLink>
@@ -351,7 +351,7 @@
               <p:toolbar id="tlb_StatistikZeigen">
                 <p:toolbarGroup id="tbg_StatistikZeigen" align="left">
                   <h:commandLink id="cmd_export_StatistikZeigen">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}"/>
                     <p:dataExporter type="csv" target="pilotLogTbl_StatistikZeigen" fileName="Pilotenlog_Zeitraum"  pageOnly="false" />
                     <p:tooltip for="cmd_export_StatistikZeigen" value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_DatenexportCSV}"/>
                   </h:commandLink>
@@ -456,7 +456,7 @@
               <p:toolbarGroup id="tbg_PilotLog" align="left">
                 <p:commandButton title="#{sprache.Fluggesellschaften_Piloten_NeuerPilot_btn_exit}"  icon="fa fa-close" onclick="PF('wdg_PilotLog').hide()"/>
                 <h:commandLink id="cmd_export">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
                   <p:dataExporter type="csv" target="pilotLogTbl" fileName="Pilotenlog_#{pilotItems.callname}"  pageOnly="false" />
                   <p:tooltip for="cmd_export" value="#{sprache.Fluggesellschaften_Piloten_PilotVerwalten_btn_DatenexportCSV}"/>
                 </h:commandLink>
@@ -566,7 +566,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -577,7 +577,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

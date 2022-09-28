@@ -94,7 +94,7 @@
           <p:commandButton icon="fa fa-refresh" title="Refresh"  update="tbl_Auftraege"  action="#{airrouteBean.onChangeFilterAuftraege()}"/>
 
           <h:commandLink id="cmd_export">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_csv.svg" height="#{loginMB.iconSize}" style="vertical-align: bottom;"/>
             <p:dataExporter type="csv" target="tbl_Auftraege" fileName="FG-Auftragsuebersicht"  pageOnly="false" />
             <p:tooltip for="cmd_export" value="Datenexport CSV"/>
           </h:commandLink>
@@ -157,16 +157,16 @@
         </p:column>
 
         <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;"  width="30" sortBy="#{assignmentItems.routenArt}">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Pax" rendered="#{assignmentItems.routenArt==1}"/>
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{assignmentItems.routenArt==4}"/>
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{assignmentItems.routenArt==2}"/>
           <h:outputText value="TRF"    rendered="#{assignmentItems.routenArt==3}" />
 
         </p:column>
 
         <p:column width="55" style="text-align: right" >
           <f:facet name="header">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/pax.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
           </f:facet>
           <h:outputText value='#{assignmentItems.gewichtPax}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
             <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -176,7 +176,7 @@
 
         <p:column width="50" style="text-align: right" >
           <f:facet name="header">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/gepaeck.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/gepaeck.png" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
           </f:facet>
           <h:outputText value='#{assignmentItems.gepaeck}' rendered="#{assignmentItems.routenArt == 1 or assignmentItems.routenArt == 4}">
             <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -186,7 +186,7 @@
 
         <p:column width="80" style="text-align: right;" >
           <f:facet name="header">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/money.png"  height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/money.png"  height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
           </f:facet>
           <h:outputText value='#{assignmentItems.pay}'>
             <f:convertNumber pattern="#,##0 &euro;"/>
@@ -199,7 +199,7 @@
 
         <p:column headerText="#{sprache.Auftragsplanung_tbl_kurs}" width="60" style="text-align: center;" >
           <h:outputText value='#{assignmentItems.direct}'/>
-          <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
+          <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{assignmentItems.direct}.png" />
         </p:column>
 
         <p:column headerText="#{sprache.Auftragsplanung_tbl_laeuftAb}" width="130" style="text-align: center;" sortBy="#{assignmentItems.expires}" >

@@ -55,7 +55,7 @@
               <p:menuitem value="#{sprache.mnu_Einstellungen}" outcome="/users/einstellungen.xhtml" icon="fa fa-gears"/>
               <p:menuitem value="Mail (#{mailBean.getAnzahlUngeleseneMails()})" outcome="/users/mail.xhtml" icon="fa fa-envelope"/>
               <p:menuitem value="#{sprache.mnu_Abmelden}"  action="#{loginMB.logout()}" icon="fa fa-sign-out fa-lg"/>  
-              <p:menuitem value="#{sprache.mnu_FTWForum}" url="http://www.ftw-sim.de/forum/app.php/portal" target="_blank" icon="fa fa-info-circle"/>            
+              <p:menuitem value="#{sprache.mnu_FTWForum}" url="#{configBean.domainURL}/forum/app.php/portal" target="_blank" icon="fa fa-info-circle"/>            
             </p:submenu>
 
             <p:submenu label="#{sprache.mnu_Logbuecher}" >

@@ -168,7 +168,7 @@
               </p:panelGrid>
 
               <h:commandLink style="float: left">
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Bank_btn_exportNachCSV}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon-csv.png" height="64" title="#{sprache.Bank_btn_exportNachCSV}"/>
                 <p:dataExporter type="csv" target="bankingTable" fileName="Pilot-Banking"  pageOnly="false" />
               </h:commandLink>
             </p:panelGrid>  
@@ -330,7 +330,7 @@
         </f:facet>
 
         <f:facet name="start">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </f:facet>
 
         <f:facet name="complete">
@@ -341,7 +341,7 @@
       <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
       <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-        <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+        <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
       </p:dialog>
 
 

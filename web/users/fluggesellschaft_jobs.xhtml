@@ -258,10 +258,10 @@
                 </p:column>
 
                 <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{VerfuegbareItems.routenArt==1}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{VerfuegbareItems.routenArt==4}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.routenArt==2 and not (VerfuegbareItems.type==5)}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.type==5}"/>                
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{VerfuegbareItems.routenArt==1}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{VerfuegbareItems.routenArt==4}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.routenArt==2 and not (VerfuegbareItems.type==5)}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{VerfuegbareItems.type==5}"/>                
                   <h:outputText value="TRF" rendered="#{VerfuegbareItems.routenArt==3}" />
                 </p:column>
 
@@ -277,7 +277,7 @@
 
                 <p:column width="50" style="text-align: right" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
                   </f:facet>
                   <h:outputText value='#{VerfuegbareItems.gewichtPax}' rendered="#{VerfuegbareItems.routenArt == 1 or VerfuegbareItems.routenArt == 4 }">
                     <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -287,7 +287,7 @@
 
                 <p:column width="50" style="text-align: right" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
                   </f:facet>
                   <h:outputText value='#{VerfuegbareItems.gepaeck}' rendered="#{VerfuegbareItems.routenArt == 1 or VerfuegbareItems.routenArt == 4 }">
                     <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -297,7 +297,7 @@
 
                 <p:column width="60" style="text-align: right;" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
                   </f:facet>
                   <h:outputText id="payText" value='#{VerfuegbareItems.pay}'>
                     <f:convertNumber pattern="#,##0 &euro;"/>
@@ -355,7 +355,7 @@
 
                     <h:outputLabel value="#{sprache.Auftragsplanung_tbl_kurs}"/>
                     <h:outputText value='#{VerfuegbareItems.direct}'/>
-                    <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{VerfuegbareItems.direct}.png" />
+                    <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{VerfuegbareItems.direct}.png" />
 
                   </p:panelGrid>
                 </p:rowExpansion>
@@ -389,10 +389,10 @@
                 </p:column>
 
                 <p:column headerText="#{sprache.Auftragsplanung_tbl_ladungsArt}" style="text-align: left;" width="30">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{SelectierteItems.routenArt==1}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{SelectierteItems.routenArt==4}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.routenArt==2 and not (SelectierteItems.type==5)}"/>
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.type==5}"/>                
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Pax" rendered="#{SelectierteItems.routenArt==1}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="Bussiness-Class" rendered="#{SelectierteItems.routenArt==4}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.routenArt==2 and not (SelectierteItems.type==5)}"/>
+                  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/spritfass.png" height="#{loginMB.iconSize}" title="Cargo" rendered="#{SelectierteItems.type==5}"/>                
                   <h:outputText value="TRF" rendered="#{SelectierteItems.routenArt==3}" />
                 </p:column>
 
@@ -408,7 +408,7 @@
 
                 <p:column width="50" style="text-align: right" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_GewichtDerPassagiere} #{sprache.kg}"/>
                   </f:facet>
                   <h:outputText value='#{SelectierteItems.gewichtPax}' rendered="#{SelectierteItems.routenArt == 1 or SelectierteItems.routenArt == 4 }">
                     <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -418,7 +418,7 @@
 
                 <p:column width="50" style="text-align: right" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_gepaeck.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_gepaeck} #{sprache.kg}"/>
                   </f:facet>
                   <h:outputText value='#{SelectierteItems.gepaeck}' rendered="#{SelectierteItems.routenArt == 1 or SelectierteItems.routenArt == 4 }">
                     <f:convertNumber pattern="#,##0 #{sprache.kg}"/>
@@ -428,7 +428,7 @@
 
                 <p:column width="60" style="text-align: right;" >
                   <f:facet name="header">
-                    <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
+                    <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_money.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_tbl_betrag}"/>
                   </f:facet>
                   <h:outputText id="payText" value='#{SelectierteItems.pay}'>
                     <f:convertNumber pattern="#,##0 &euro;"/>
@@ -486,7 +486,7 @@
 
                     <h:outputLabel value="#{sprache.Auftragsplanung_tbl_kurs}"/>
                     <h:outputText value='#{SelectierteItems.direct}'/>
-                    <p:graphicImage height="#{loginMB.iconSize}" value="http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_#{SelectierteItems.direct}.png" />
+                    <p:graphicImage height="#{loginMB.iconSize}" value="#{configBean.domainURL}/images/FTW/planes_monochrom/plane_#{SelectierteItems.direct}.png" />
 
                   </p:panelGrid>
                 </p:rowExpansion>
@@ -730,7 +730,7 @@
           </f:facet>
 
           <f:facet name="start">
-            <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+            <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
           </f:facet>
 
           <f:facet name="complete">
@@ -741,7 +741,7 @@
         <p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
         <p:dialog widgetVar="statusDialog" modal="false" draggable="false" closable="false" resizable="false" showHeader="false">
-          <p:graphicImage value="http://www.ftw-sim.de/images/FTW/images/loadingbar.gif" />
+          <p:graphicImage value="#{configBean.domainURL}/images/FTW/images/loadingbar.gif" />
         </p:dialog>
 
       </p:layout>

@@ -131,9 +131,9 @@
               </p:column>
 
               <p:column width="10" style="text-align: right;" sortBy="#{routItems.routenArt}" exportable="false">
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
-                <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==2}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_pax.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere}" rendered="#{routItems.routenArt==1}"/>
+                <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/cargo.svg" height="#{loginMB.iconSize}" title="#{sprache.Fluggesellschaften_Routen_tbl_artDerRoutePassagiere} + #{sprache.Fluggesellschaften_Routen_tbl_artDerRouteCargo}" rendered="#{routItems.routenArt==3}"/>
               </p:column>
 
 
