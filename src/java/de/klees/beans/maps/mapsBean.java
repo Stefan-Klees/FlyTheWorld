@@ -513,43 +513,43 @@ public class mapsBean implements Serializable {
     //Kursermittlung
     Yaacarspositionen position = facadeSystem.readYAACARSLetztePosition(next.getIdyaacarskopf());
 
-    String Icon = " http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_" + 1 + ".png";
+    String Icon = " " + CONF.getDomainURL() + "/images/FTW/planes_monochrom/plane_" + 1 + ".png";
     if (position != null) {
-      Icon = " http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_" + position.getHeading() + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/planes_monochrom/plane_" + position.getHeading() + ".png";
     }
 
     if (lizenz.equals("MPL")) {
-      Icon = " http://www.ftw-sim.de/images/FTW/jets/plane_" + 1 + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + 1 + ".png";
       if (position != null) {
-        Icon = " http://www.ftw-sim.de/images/FTW/jets/plane_" + position.getHeading() + ".png";
+        Icon = " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + position.getHeading() + ".png";
       }
     }
 
     if (lizenz.equals("ATPL")) {
-      Icon = " http://www.ftw-sim.de/images/FTW/heavy/plane_" + 1 + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + 1 + ".png";
       if (position != null) {
-        Icon = " http://www.ftw-sim.de/images/FTW/heavy/plane_" + position.getHeading() + ".png";
+        Icon = " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + position.getHeading() + ".png";
       }
     }
 
     if (lizenz.equals("CPL") || lizenz.equals("PPL-A")) {
-      Icon = " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
       if (position != null) {
-        Icon = " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + position.getHeading() + ".png";
+        Icon = " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + position.getHeading() + ".png";
       }
     }
 
     if (art.equals("Hubschrauber")) {
-      Icon = " http://www.ftw-sim.de/images/FTW/helis/plane_" + 1 + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + 1 + ".png";
       if (position != null) {
-        Icon = " http://www.ftw-sim.de/images/FTW/helis/plane_" + position.getHeading() + ".png";
+        Icon = " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + position.getHeading() + ".png";
       }
     }
 
     if (art.equals("Geschäftsflugzeug")) {
-      Icon = " http://www.ftw-sim.de/images/FTW/bc/plane_" + 1 + ".png";
+      Icon = " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + 1 + ".png";
       if (position != null) {
-        Icon = " http://www.ftw-sim.de/images/FTW/bc/plane_" + position.getHeading() + ".png";
+        Icon = " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + position.getHeading() + ".png";
       }
     }
 
@@ -655,43 +655,43 @@ public class mapsBean implements Serializable {
           art = flugzeug.getFlugzeugArt();
         }
 
-        String Icon = " http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_" + 1 + ".png";
+        String Icon = " " + CONF.getDomainURL() + "/images/FTW/planes_monochrom/plane_" + 1 + ".png";
         if (position != null) {
-          Icon = " http://www.ftw-sim.de/images/FTW/planes_monochrom/plane_" + position.getHeading() + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/planes_monochrom/plane_" + position.getHeading() + ".png";
         }
 
         if (lizenz.equals("MPL")) {
-          Icon = " http://www.ftw-sim.de/images/FTW/jets/plane_" + 1 + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + 1 + ".png";
           if (position != null) {
-            Icon = " http://www.ftw-sim.de/images/FTW/jets/plane_" + position.getHeading() + ".png";
+            Icon = " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + position.getHeading() + ".png";
           }
         }
 
         if (lizenz.equals("ATPL")) {
-          Icon = " http://www.ftw-sim.de/images/FTW/heavy/plane_" + 1 + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + 1 + ".png";
           if (position != null) {
-            Icon = " http://www.ftw-sim.de/images/FTW/heavy/plane_" + position.getHeading() + ".png";
+            Icon = " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + position.getHeading() + ".png";
           }
         }
 
         if (lizenz.equals("CPL") || lizenz.equals("PPL-A")) {
-          Icon = " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
           if (position != null) {
-            Icon = " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + position.getHeading() + ".png";
+            Icon = " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + position.getHeading() + ".png";
           }
         }
 
         if (art.equals("Hubschrauber")) {
-          Icon = " http://www.ftw-sim.de/images/FTW/helis/plane_" + 1 + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + 1 + ".png";
           if (position != null) {
-            Icon = " http://www.ftw-sim.de/images/FTW/helis/plane_" + position.getHeading() + ".png";
+            Icon = " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + position.getHeading() + ".png";
           }
         }
 
         if (art.equals("Geschäftsflugzeug")) {
-          Icon = " http://www.ftw-sim.de/images/FTW/bc/plane_" + 1 + ".png";
+          Icon = " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + 1 + ".png";
           if (position != null) {
-            Icon = " http://www.ftw-sim.de/images/FTW/bc/plane_" + position.getHeading() + ".png";
+            Icon = " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + position.getHeading() + ".png";
           }
         }
 

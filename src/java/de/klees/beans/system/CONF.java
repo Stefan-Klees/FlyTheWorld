@@ -46,6 +46,17 @@ public class CONF {
 
   private static ResourceBundle messages;
 
+  
+  
+  public static String getDomainURL() {
+    return "https://www.street68.de";
+  }
+  
+  public static String getLocalWWWDir(){
+    return "/var/www/www.street68.de/web";
+  }
+  
+  
   /**
    *
    * @param vonLongitude

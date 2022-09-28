@@ -130,7 +130,7 @@ public class configBean implements Serializable {
   }
 
   public String getWeiterleitung() {
-    return "<meta  http-equiv = 'refresh' content = '0; URL=www.ftw-sim.de' >";
+    return "<meta  http-equiv = 'refresh' content = '0; URL=" + getDomainURL() + "' >";
   }
 
   public String getUpdateText() {
@@ -146,7 +146,7 @@ public class configBean implements Serializable {
   }
 
   public String getDomainURL() {
-    return "https://www.street68.de";
+    return CONF.getDomainURL();
   }
 
   public String getWiKi(){

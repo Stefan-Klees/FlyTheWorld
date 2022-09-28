@@ -2902,12 +2902,11 @@ public class flugzeugeMietKaufBean implements Serializable {
       try {
         BufferedImage image;
         image = ImageIO.read(event.getFile().getInputstream());
-        //String Datei = "/var/www/www.ftw-sim.de/web/images/FTW/usergrafiken/" + currentFlugzeug.getIdMietKauf() + "-" + currentFlugzeug.getType() + ".jpg";
-        
-        String Datei = "/var/www/www.street68.de/web/images/FTW/usergrafiken/" + currentFlugzeug.getIdMietKauf() + "-" + currentFlugzeug.getType() + ".jpg";
+
+        String Datei = CONF.getLocalWWWDir() + "/images/FTW/usergrafiken/" + currentFlugzeug.getIdMietKauf() + "-" + currentFlugzeug.getType() + ".jpg";
         ImageIO.write(image, "jpg", new File(Datei));
 
-        frmEigenesBild = "http://www.ftw-sim.de/images/FTW/usergrafiken/" + currentFlugzeug.getIdMietKauf() + "-" + currentFlugzeug.getType() + ".jpg";
+        frmEigenesBild = CONF.getDomainURL()+ "/images/FTW/usergrafiken/" + currentFlugzeug.getIdMietKauf() + "-" + currentFlugzeug.getType() + ".jpg";
         onSaveFlugzeug();
 
       } catch (IOException e) {

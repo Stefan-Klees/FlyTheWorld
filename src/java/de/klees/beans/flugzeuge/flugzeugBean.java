@@ -834,7 +834,7 @@ public class flugzeugBean implements Serializable {
 
   //Symbole
   public void onSymbolURL() {
-    frmsymbolUrl = "http://www.ftw-sim.de/images/FTW/Flugzeugsymbole/";
+    frmsymbolUrl = CONF.getDomainURL()+ "/images/FTW/Flugzeugsymbole/";
   }
 
   public void onSaveSymbol() {

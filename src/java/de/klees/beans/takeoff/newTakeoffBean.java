@@ -16,8 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package de.klees.beans.takeoff;
 
 import de.klees.beans.system.CONF;
@@ -324,8 +322,8 @@ public class newTakeoffBean implements Serializable {
     // sind Aufträge vorhanden
     // Flag dient nur zum aktivieren von Buttons
     try {
-      if (!facadeTakeOff.findByMyFlight(UserID,StartICAO).isEmpty()) {
-        StartICAO = facadeTakeOff.findByMyFlight(UserID,StartICAO).get(0).getLocationIcao();
+      if (!facadeTakeOff.findByMyFlight(UserID, StartICAO).isEmpty()) {
+        StartICAO = facadeTakeOff.findByMyFlight(UserID, StartICAO).get(0).getLocationIcao();
         airportData = readAirportData(StartICAO);
         AirportName = airportData.getName();
         istEinAuftragVorhanden = true;
@@ -363,7 +361,7 @@ public class newTakeoffBean implements Serializable {
 
     if (yaacarsFlight != null) {
       if (yaacarsFlight.getMissionsart() == 1 || yaacarsFlight.getMissionsart() == 2) {
-        assignmentList = facadeTakeOff.findByMyFlight(UserID,StartICAO);
+        assignmentList = facadeTakeOff.findByMyFlight(UserID, StartICAO);
         flugFortsetzung = true;
         isAcasFlightExist = true;
         acarsFlugInUse = false;
@@ -838,7 +836,7 @@ public class newTakeoffBean implements Serializable {
       return true;
     }
 
-    if (UserLizenz.equals("MPL") && (FlugzeugLizenz.equals("PPL-A") || FlugzeugLizenz.equals("MPL") || FlugzeugLizenz.equals("CPL") )) {
+    if (UserLizenz.equals("MPL") && (FlugzeugLizenz.equals("PPL-A") || FlugzeugLizenz.equals("MPL") || FlugzeugLizenz.equals("CPL"))) {
       return true;
     }
 
@@ -1412,7 +1410,7 @@ public class newTakeoffBean implements Serializable {
     int BestandJETA = 0;
 
     TankstellenName = "";
-    TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+    TankstellenGrafik = CONF.getDomainURL() + "/images/FTW/images/tankstelle.png";
     TankstelleSumme = 0.0;
 
     TankenFreigeben = false;
@@ -1442,10 +1440,10 @@ public class newTakeoffBean implements Serializable {
 
       if (fboobjekt.getGrafikLink() != null) {
         if (TankstellenGrafik.equals("")) {
-          TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+          TankstellenGrafik = CONF.getDomainURL() + "/images/FTW/images/tankstelle.png";
         }
       } else {
-        TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+        TankstellenGrafik = CONF.getDomainURL() + "/images/FTW/images/tankstelle.png";
       }
 
       if (getTankstelleTreibstoffArt() == 1) {
@@ -2095,7 +2093,7 @@ public class newTakeoffBean implements Serializable {
     if (!AbbruchWegenDoppel) {
       NewMessage("Cancel of the flight running");
       AbbruchWegenDoppel = true;
-      assignmentList = facadeTakeOff.findByMyFlight(UserID,StartICAO);
+      assignmentList = facadeTakeOff.findByMyFlight(UserID, StartICAO);
       onRefreshSite();
       onStartTheFlight();
       onCancelFlight();
@@ -2492,7 +2490,6 @@ public class newTakeoffBean implements Serializable {
             BoniBonusSystem = BonusUeberBonussystemDerFluggesellschaft(airlinePilot.getIdflugesellschaft());
           } else {
             // Hinzugefügt am 19.05.2019
-            // http://www.ftw-sim.de/forum/viewtopic.php?p=12755#p12755
             // Wenn kein Pilot der Airline dann ist es wieder ein gemischterJob
             gemischterJob = true;
           }
@@ -2652,11 +2649,10 @@ public class newTakeoffBean implements Serializable {
             AirlineJob = false;
           }
         }
-        
+
         System.out.println("de.klees.beans.takeoff.newTakeoffBean.FlugKostenBerechnung() " + WertStandardJob);
-        System.out.println("de.klees.beans.takeoff.newTakeoffBean.FlugKostenBerechnung() "  + AirlineJob);        
-        
-        
+        System.out.println("de.klees.beans.takeoff.newTakeoffBean.FlugKostenBerechnung() " + AirlineJob);
+
         // *******************************************************
         if (AirlineJob) {
           setWertProvision(0.0);
@@ -2769,27 +2765,27 @@ public class newTakeoffBean implements Serializable {
 
     try {
       if (rentedAircraft.getFlugzeugArt().equals("Hubschrauber")) {
-        return " http://www.ftw-sim.de/images/FTW/helis/plane_" + 1 + ".png";
+        return " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + 1 + ".png";
       }
 
       if (rentedAircraft.getFlugzeugArt().equals("Geschäftsflugzeug")) {
-        return " http://www.ftw-sim.de/images/FTW/bc/plane_" + 1 + ".png";
+        return " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + 1 + ".png";
       }
 
       if (rentedAircraft.getLizenz().equals("MPL")) {
-        return " http://www.ftw-sim.de/images/FTW/jets/plane_" + 1 + ".png";
+        return " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + 1 + ".png";
       }
 
       if (rentedAircraft.getLizenz().equals("ATPL")) {
-        return " http://www.ftw-sim.de/images/FTW/heavy/plane_" + 1 + ".png";
+        return " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + 1 + ".png";
       }
 
       if (rentedAircraft.getLizenz().equals("CPL") || rentedAircraft.getLizenz().equals("PPL-A")) {
-        return " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
+        return " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
       }
 
     } catch (NullPointerException e) {
-      return " http://www.ftw-sim.de/images/FTW/planes/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/planes/plane_" + 1 + ".png";
     }
 
     return "";
@@ -3940,7 +3936,7 @@ public class newTakeoffBean implements Serializable {
     /*
     *************** Aufträge zurücksetzen 
      */
-    List<Assignement> assilist = facadeTakeOff.findByMyFlight(SupportFreigabeFlug.getUserid(),StartICAO);
+    List<Assignement> assilist = facadeTakeOff.findByMyFlight(SupportFreigabeFlug.getUserid(), StartICAO);
     for (Assignement assi : assilist) {
       facadeTakeOff.onAssignmentFromHold(assi.getIdassignement());
     }

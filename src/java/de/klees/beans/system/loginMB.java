@@ -16,8 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package de.klees.beans.system;
 
 import de.klees.beans.user.UserFacade;
@@ -159,7 +157,7 @@ public class loginMB implements Serializable {
 //        locale = FacesContext.getCurrentInstance().getExternalContext().getRequestLocale();
 //    }
   public List<WartungsTabelle> getWartungsMeldungen() {
-    
+
     return facadeUser.readWartungsTabelle();
   }
 
@@ -205,25 +203,20 @@ public class loginMB implements Serializable {
     return messages.getString(key);
   }
 
-  public String login()  {
+  public String login() {
 
     FacesContext fc = FacesContext.getCurrentInstance();
     HttpServletRequest request = (HttpServletRequest) fc.getExternalContext().getRequest();
 
     try {
 
-
       System.out.println("de.klees.beans.system.loginMB.login() " + password);
       System.out.println("de.klees.beans.system.loginMB.login() " + request.getQueryString());
-      
-      
-      
+
       request.login(username, password);
 
-
       System.out.println("IP-Adresse: " + request.getRemoteAddr() + " " + username);
-      
-      
+
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ip-Adresse", request.getRemoteAddr());
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("user-agent", request.getHeader("user-agent"));
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("session-id", fc.getExternalContext().getSessionId(false));
@@ -232,8 +225,6 @@ public class loginMB implements Serializable {
 
       Benutzer userdaten = getUserdaten();
 
-      
-      
       setTheme(userdaten.getTheme());
       setRolle(userdaten.getRolle());
       setIconSize(userdaten.getIconSize());
@@ -249,8 +240,6 @@ public class loginMB implements Serializable {
       LastLoging();
 
       RangAbzeichen();
-      
-      
 
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("Rangabzeichen", RangAbzeichenURL);
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("Rang", Rang);
@@ -391,7 +380,7 @@ public class loginMB implements Serializable {
       int flugzeit = CurrentUser.getFlighttime() / 60;
 
       Rang = "Second Officer";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/secondofficer.png";
+      RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/secondofficer.png";
       Lizenz = "PPL-A";
 
       if (flugzeit >= 100) {
@@ -428,47 +417,47 @@ public class loginMB implements Serializable {
       if (flugzeitFG < 100) {
         Rang = "Second Officer";
         if (CurrentUser.getRolle().equals("Administratoren")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/secondofficer_admin.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/secondofficer_admin.png";
         }
 
       } else if (flugzeitFG >= 100 && flugzeitFG < 250) {
         Rang = "First Officer";
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/firstofficer.png";
+        RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/firstofficer.png";
         if (CurrentUser.getRolle().equals("Administratoren")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/firstofficer_admin.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/firstofficer_admin.png";
         }
         if (CurrentUser.getRolle().equals("DOB")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/firstofficer_mod.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/firstofficer_mod.png";
         }
 
       } else if (flugzeitFG >= 250 && flugzeitFG < 500) {
         Rang = "Senior First Officer";
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer.png";
+        RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorfirstofficer.png";
         if (CurrentUser.getRolle().equals("Administratoren")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer_admin.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorfirstofficer_admin.png";
         }
         if (CurrentUser.getRolle().equals("DOB")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer_mod.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorfirstofficer_mod.png";
         }
 
       } else if (flugzeitFG >= 500 && flugzeitFG < 750) {
         Rang = "Captain";
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain.png";
+        RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/captain.png";
         if (CurrentUser.getRolle().equals("Administratoren")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain_admin.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/captain_admin.png";
         }
         if (CurrentUser.getRolle().equals("DOB")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain_mod.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/captain_mod.png";
         }
 
       } else if (flugzeitFG >= 750) {
         Rang = "Senior Captain";
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain.png";
+        RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorcaptain.png";
         if (CurrentUser.getRolle().equals("Administratoren")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain_admin.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorcaptain_admin.png";
         }
         if (CurrentUser.getRolle().equals("DOB")) {
-          RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain_mod.png";
+          RangAbzeichenURL = CONF.getDomainURL() + "/images/FTW/icons/rangabzeichen/seniorcaptain_mod.png";
         }
       }
     }

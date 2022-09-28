@@ -19,6 +19,7 @@
 
 package de.klees.beans.fbo;
 
+import de.klees.beans.system.CONF;
 import de.klees.beans.system.loginMB;
 import de.klees.data.Airport;
 import de.klees.data.Bank;
@@ -369,7 +370,7 @@ public class fboObjektBean implements Serializable {
       newMiete.setMahnStufe(0);
 
       if (currentFboObjekt.getTankstelle()) {
-        newMiete.setGrafikLink("http://www.ftw-sim.de/images/FTW/images/tankstelle.png");
+        newMiete.setGrafikLink(CONF.getDomainURL()+ "/images/FTW/images/tankstelle.png");
       } else {
         newMiete.setGrafikLink("");
       }

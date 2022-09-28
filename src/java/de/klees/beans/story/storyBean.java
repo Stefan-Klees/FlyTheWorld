@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.klees.beans.story;
 
+import de.klees.beans.system.CONF;
 import de.klees.data.Airport;
 import de.klees.data.Story;
 import java.io.Serializable;
@@ -247,7 +247,7 @@ public class storyBean implements Serializable {
   public String getTemplate() {
     return "<table cellpadding='0' cellspacing='0' align='left'>\n"
             + "<tr>\n"
-            + "<td><img src='http://www.ftw-sim.de/images/FTW/golden-job.png'></td>\n"
+            + "<td><img src='" + CONF.getDomainURL() + "/images/FTW/golden-job.png'></td>\n"
             + "<td>Hier der Text</td>\n"
             + "</tr>\n"
             + "</table>\n"

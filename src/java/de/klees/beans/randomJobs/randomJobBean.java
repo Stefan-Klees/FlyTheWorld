@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.klees.beans.randomJobs;
 
 import de.klees.beans.assignement.AgentJobList;
@@ -134,7 +133,7 @@ public class randomJobBean implements Serializable {
 
         // Active = 0 Aktiver Auftrag, 1 = Auftrag ist in der Wartehalle
         RD.setActive(0);
-        RD.setAirlineLogo("http://www.ftw-sim.de/images/FTW/golden-job.png");
+        RD.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/golden-job.png");
         RD.setAmmount(rdMenge);
         RD.setBonusclosed(0.0);
         RD.setBonusoeffentlich(0.0);
@@ -332,7 +331,6 @@ public class randomJobBean implements Serializable {
         String Lizenz = Stammflugzeug.getLizenz();
         String FlzArt = Stammflugzeug.getFlugzeugArt();
         int idFlugzeug = meinFlugzeug.getIdMietKauf();
-        
 
         // Fuer Hubschrauber gibt es noch keine extra Storys
         if (FlzArt.equals("Hubschrauber")) {
@@ -519,7 +517,7 @@ public class randomJobBean implements Serializable {
                 AgentJobEintrag.setKlasse(airp.getKlasse());
                 AgentJobEintrag.setCargo(0);
                 AgentJobEintrag.setCharterKurzbezeichnung(st.getBezeichnung());
-                
+
                 //Eintraege für das Klassensystem bei den Flugzeugen
                 //09.02.2021
                 AgentJobEintrag.setIdFlugzeug(idFlugzeug);
@@ -936,7 +934,7 @@ public class randomJobBean implements Serializable {
       Assignement newAssignment = new Assignement();
       // Active = 0 Aktiver Auftrag, 1 = Auftrag ist in der Wartehalle
       newAssignment.setActive(0);
-      newAssignment.setAirlineLogo("http://www.ftw-sim.de/images/FTW/golden-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/golden-job.png");
 
       // Pax oder Cargo Menge eintragen
       if (selectedAgentJob.getPax() == 0) {
@@ -974,7 +972,6 @@ public class randomJobBean implements Serializable {
       newAssignment.setIdRoute(-1);
       newAssignment.setLizenz(selectedAgentJob.getLizenz());
       newAssignment.setIdaircraft(selectedAgentJob.getIdFlugzeug());
-      
 
       newAssignment.setIdowner(UserID);
       newAssignment.setIsBusinessClass(0);

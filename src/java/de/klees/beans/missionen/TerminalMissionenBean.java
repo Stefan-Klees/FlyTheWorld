@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.klees.beans.missionen;
 
 import de.klees.beans.system.CONF;
@@ -117,7 +116,7 @@ public class TerminalMissionenBean implements Serializable {
     PaxeOnBoard = 0;
     CargoOnBoard = 0;
     timerIntervall = 10;
-    IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/helis/plane_" + FlugKurs + ".png";
+    IconFuerAircraft = CONF.getDomainURL() + "/images/FTW/helis/plane_" + FlugKurs + ".png";
   }
 
   @EJB
@@ -235,23 +234,23 @@ public class TerminalMissionenBean implements Serializable {
   public String getFlugLogo() {
 
     if (missionsFlugzeug.getFlugzeugArt().equals("Hubschrauber")) {
-      return " http://www.ftw-sim.de/images/FTW/helis/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/helis/plane_" + 1 + ".png";
     }
 
     if (missionsFlugzeug.getFlugzeugArt().equals("Geschäftsflugzeug")) {
-      return " http://www.ftw-sim.de/images/FTW/bc/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/bc/plane_" + 1 + ".png";
     }
 
     if (missionsFlugzeug.getLizenz().equals("MPL")) {
-      return " http://www.ftw-sim.de/images/FTW/jets/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/jets/plane_" + 1 + ".png";
     }
 
     if (missionsFlugzeug.getLizenz().equals("ATPL")) {
-      return " http://www.ftw-sim.de/images/FTW/heavy/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/heavy/plane_" + 1 + ".png";
     }
 
     if (missionsFlugzeug.getLizenz().equals("CPL") || missionsFlugzeug.getLizenz().equals("PPL-A")) {
-      return " http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
+      return " " + CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + 1 + ".png";
     }
 
     return "";
@@ -643,9 +642,9 @@ public class TerminalMissionenBean implements Serializable {
       aktuellerStandort = letzteYaacarsPosition.getLatitude() + ", " + letzteYaacarsPosition.getLongitude();
 
       if (missionsFlugzeug.getFlugzeugArt().equals("Hubschrauber")) {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/helis/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL() + "/images/FTW/helis/plane_" + FlugKurs + ".png";
       } else {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
       }
 
       Geschwindigkeit = letzteYaacarsPosition.getTas();
@@ -838,9 +837,9 @@ public class TerminalMissionenBean implements Serializable {
       }
 
       if (missionsFlugzeug.getFlugzeugArt().equals("Hubschrauber")) {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/helis/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL() + "/images/FTW/helis/plane_" + FlugKurs + ".png";
       } else {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL() + "/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
       }
 
     } else {
@@ -951,7 +950,7 @@ public class TerminalMissionenBean implements Serializable {
     TankBisFuellstandKG = 0;
     aktuelleTankfuellung = missionsFlugzeug.getAktuelleTankfuellung();
     maxTankkapazitaet = missionsFlugzeug.getTreibstoffkapazitaet();
-    TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+    TankstellenGrafik = CONF.getDomainURL() + "/images/FTW/images/tankstelle.png";
     berechneTankfuellung();
 
   }

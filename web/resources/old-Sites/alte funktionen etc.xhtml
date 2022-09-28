@@ -2,7 +2,7 @@
 
 
 <p:commandLink id="cha" oncomplete="PF('wdg_Story').show();"  action="#{randomJobBean.onAuftragAblehnen()}" update="id_Story frm_Story frm_daten" disabled="#{not randomJobBean.istAllesKlarFuerJob}">
-                  <p:graphicImage value="http://www.ftw-sim.de/images/FTW/icons/icon_charterauftrag.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_CharterAuftrag_btn_CharterAuftragAnfordern}" 
+  <p:graphicImage value="#{configBean.domainURL}/images/FTW/icons/icon_charterauftrag.svg" height="#{loginMB.iconSize}" title="#{sprache.Auftragsplanung_CharterAuftrag_btn_CharterAuftragAnfordern}" 
                                   style="vertical-align: bottom;"/>
                 </p:commandLink>
 

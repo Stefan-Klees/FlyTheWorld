@@ -19,6 +19,7 @@
 
 package de.klees.beans.news;
 
+import de.klees.beans.system.CONF;
 import de.klees.beans.system.loginMB;
 import de.klees.data.News;
 import java.io.File;
@@ -110,7 +111,7 @@ public class newsBean implements Serializable {
   @SuppressWarnings("unchecked")
   public Collection<File> getPdfs() {
     Collection<File> dateien = new ArrayList<>();
-    scannFiles(new File("/var/www/www.ftw-sim.de/web/images/FTW/herald/."), dateien);
+    scannFiles(new File(CONF.getLocalWWWDir() + "/images/FTW/herald/."), dateien);
     Collections.sort((List) dateien);
     return dateien;
 }

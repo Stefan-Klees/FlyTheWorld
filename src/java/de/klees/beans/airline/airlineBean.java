@@ -19,6 +19,7 @@
 package de.klees.beans.airline;
 
 import de.klees.beans.system.CONF;
+import de.klees.beans.system.configBean;
 import de.klees.beans.system.loginMB;
 import de.klees.data.Bank;
 import de.klees.data.FlugesellschaftPiloten;
@@ -120,7 +121,9 @@ public class airlineBean implements Serializable {
     UserID = (int) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("UserID");
     ManagerID = (int) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("ManagerID");
 
-    AirlineLogo = "http://www.ftw-sim.de/images/FTW/fg-logos/logona.png";
+    
+    
+    AirlineLogo = CONF.getDomainURL()+ "/images/FTW/fg-logos/logona.png";
   }
 
   public List<Fluggesellschaft> getAirlines() {
@@ -612,10 +615,10 @@ public class airlineBean implements Serializable {
         try {
           BufferedImage image;
           image = ImageIO.read(event.getFile().getInputstream());
-          String Datei = "/var/www/www.ftw-sim.de/web/images/FTW/usergrafiken/" + currentAirline.getIdFluggesellschaft() + "-" + currentAirline.getName() + "." + Endung;
+          String Datei = CONF.getLocalWWWDir() +  "/images/FTW/usergrafiken/" + currentAirline.getIdFluggesellschaft() + "-" + currentAirline.getName() + "." + Endung;
           ImageIO.write(image, Endung, new File(Datei));
 
-          frmAirlineLogo = "http://www.ftw-sim.de/images/FTW/usergrafiken/" + currentAirline.getIdFluggesellschaft() + "-" + currentAirline.getName() + "." + Endung;
+          frmAirlineLogo = CONF.getDomainURL()+ "/images/FTW/usergrafiken/" + currentAirline.getIdFluggesellschaft() + "-" + currentAirline.getName() + "." + Endung;
 
           saveAirline();
 

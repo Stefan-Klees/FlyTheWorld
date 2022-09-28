@@ -19,6 +19,7 @@
 
 package de.klees.beans.user;
 
+import de.klees.beans.system.CONF;
 import de.klees.beans.system.loginMB;
 import de.klees.data.Bank;
 import de.klees.beans.system.ReportList;
@@ -134,51 +135,51 @@ public class userBean implements Serializable {
 
     if (flugzeit < 100) {
       Rang = "Second Officer";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/secondofficer.png";
+      RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/secondofficer.png";
 
       if (currentUser.getRolle().equals("Administratoren")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/secondofficer_admin.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/secondofficer_admin.png";
       }
 
     } else if (flugzeit >= 100 && flugzeit < 250) {
       Rang = "First Officer";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/firstofficer.png";
+      RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/firstofficer.png";
 
       if (currentUser.getRolle().equals("Administratoren")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/firstofficer_admin.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/firstofficer_admin.png";
       }
 
     } else if (flugzeit >= 250 && flugzeit < 500) {
       Rang = "Senior First Officer";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer.png";
+      RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorfirstofficer.png";
 
       if (currentUser.getRolle().equals("Administratoren")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer_admin.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorfirstofficer_admin.png";
       }
       if (currentUser.getRolle().equals("DOB")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorfirstofficer_mod.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorfirstofficer_mod.png";
       }
 
     } else if (flugzeit >= 500 && flugzeit < 750) {
       Rang = "Captain";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain.png";
+      RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/captain.png";
 
       if (currentUser.getRolle().equals("Administratoren")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain_admin.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/captain_admin.png";
       }
       if (currentUser.getRolle().equals("DOB")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/captain_mod.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/captain_mod.png";
       }
 
     } else if (flugzeit >= 750) {
       Rang = "Senior Captain";
-      RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain.png";
+      RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorcaptain.png";
 
       if (currentUser.getRolle().equals("Administratoren")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain_admin.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorcaptain_admin.png";
       }
       if (currentUser.getRolle().equals("DOB")) {
-        RangAbzeichenURL = "http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/seniorcaptain_mod.png";
+        RangAbzeichenURL = CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/seniorcaptain_mod.png";
       }
 
     }
@@ -266,7 +267,7 @@ public class userBean implements Serializable {
 
     if (currentUser != null) {
       if (currentUser.getBanner().equals("")) {
-        currentUser.setBanner("http://www.ftw-sim.de/images/FTW/banner.png");
+        currentUser.setBanner(CONF.getDomainURL()+ "/images/FTW/banner.png");
       }
       userFacade.edit(currentUser);
       NewMessage("FTW - User gespeichert    " + currentUser.getName1());
@@ -384,7 +385,7 @@ public class userBean implements Serializable {
       newUser.setGesperrt(false);
       newUser.setOnline(false);
       newUser.setBanlists("");
-      newUser.setBanner("http://www.ftw-sim.de/images/FTW/banner.png");
+      newUser.setBanner(CONF.getDomainURL()+ "/images/FTW/banner.png");
       newUser.setCreated(c.getTime());
       newUser.setDateformat("dd.MM.yyyy");
       newUser.setEmail(UserEmailNeu);
@@ -397,7 +398,7 @@ public class userBean implements Serializable {
       newUser.setStandort("");
       newUser.setZeitZone("Europe/Berlin");
       newUser.setSprache(UserLanguage);
-      newUser.setRangabzeichen("http://www.ftw-sim.de/images/FTW/icons/rangabzeichen/secondofficer.png");
+      newUser.setRangabzeichen(CONF.getDomainURL()+ "/images/FTW/icons/rangabzeichen/secondofficer.png");
       newUser.setFlightcargo(0);
       newUser.setFlightmiles(0);
       newUser.setFlightpaxes(0);
@@ -601,9 +602,9 @@ public class userBean implements Serializable {
       try {
         BufferedImage image;
         image = ImageIO.read(event.getFile().getInputstream());
-        String Datei = "/var/www/www.ftw-sim.de/web/images/FTW/banner/banner(" + currentUser.getName1() + ")-" + currentUser.getIdUser() + ".png";
+        String Datei = CONF.getLocalWWWDir() +  "/images/FTW/banner/banner(" + currentUser.getName1() + ")-" + currentUser.getIdUser() + ".png";
         ImageIO.write(image, "png", new File(Datei));
-        currentUser.setBanner("http://www.ftw-sim.de/images/FTW/banner/banner(" + currentUser.getName1() + ")-" + currentUser.getIdUser() + ".png");
+        currentUser.setBanner(CONF.getDomainURL()+ "/images/FTW/banner/banner(" + currentUser.getName1() + ")-" + currentUser.getIdUser() + ".png");
         saveUser();
       } catch (IOException e) {
         System.out.println("de.klees.beans.system.loginMB.onBannerUpload() " + e.getMessage());

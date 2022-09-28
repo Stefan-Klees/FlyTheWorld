@@ -1014,7 +1014,7 @@ public class assignementBean implements Serializable {
 
       Assignement newAssignment = new Assignement();
       newAssignment.setActive(0);
-      newAssignment.setAirlineLogo("http://www.ftw-sim.de/images/FTW/agent-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/agent-job.png");
       // Pax oder Cargo Menge eintragen
       if (selectedAgentJob.getPax() == 0) {
         newAssignment.setAmmount(selectedAgentJob.getCargo());
@@ -1118,7 +1118,7 @@ public class assignementBean implements Serializable {
 
     Assignement newAssignment = new Assignement();
     newAssignment.setActive(0);
-    newAssignment.setAirlineLogo("http://www.ftw-sim.de/images/FTW/agent-job-cargo.png");
+    newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/agent-job-cargo.png");
 
     //Von der ausgerechneten Menge per Zufall mehr als 50% auswählen
     if (Menge / 2 > 1) {
@@ -2686,7 +2686,7 @@ public class assignementBean implements Serializable {
       Assignement newAssignment = new Assignement();
 
       newAssignment.setActive(1);
-      newAssignment.setAirlineLogo("http://www.ftw-sim.de/images/FTW/ftw-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/ftw-job.png");
 
       if (RoutenArt == 1 && zaehlerPax <= minAuftraege) {
         zaehlerPax = zaehlerPax + Menge;
@@ -2825,7 +2825,7 @@ public class assignementBean implements Serializable {
       Assignement newAssignment = new Assignement();
 
       newAssignment.setActive(1);
-      newAssignment.setAirlineLogo("http://www.ftw-sim.de/images/FTW/ftw-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/ftw-job.png");
 
       if (RoutenArt == 1) {
         zaehlerPax = zaehlerPax + Menge;

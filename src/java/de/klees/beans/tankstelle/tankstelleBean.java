@@ -19,6 +19,7 @@
 
 package de.klees.beans.tankstelle;
 
+import de.klees.beans.system.CONF;
 import de.klees.beans.system.loginMB;
 import de.klees.beans.takeoff.TakeoffFacade;
 import de.klees.data.Bank;
@@ -343,7 +344,7 @@ public class tankstelleBean implements Serializable {
     int BestandJETA = 0;
 
     TankstellenName = "";
-    TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+    TankstellenGrafik = CONF.getDomainURL()+ "/images/FTW/images/tankstelle.png";
     TankstelleSumme = 0.0;
 
     TankenFreigeben = false;
@@ -373,10 +374,10 @@ public class tankstelleBean implements Serializable {
 
       if (fboobjekt.getGrafikLink() != null) {
         if (TankstellenGrafik.equals("")) {
-          TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+          TankstellenGrafik = CONF.getDomainURL()+ "/images/FTW/images/tankstelle.png";
         }
       } else {
-        TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+        TankstellenGrafik = CONF.getDomainURL()+ "/images/FTW/images/tankstelle.png";
       }
 
       if (getTankstelleTreibstoffArt() == 1) {

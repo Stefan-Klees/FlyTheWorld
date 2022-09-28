@@ -144,7 +144,7 @@ public class NewTerminalLuftrettung implements Serializable {
     Zoom = 10;
     txtEinsatzMeldung = "Warte auf Einsatz....";
     FlugKurs = 0;
-    IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/helis/plane_" + FlugKurs + ".png";
+    IconFuerAircraft = CONF.getDomainURL()+ "/images/FTW/helis/plane_" + FlugKurs + ".png";
 
     UserID = (int) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("UserID");
   }
@@ -303,7 +303,7 @@ public class NewTerminalLuftrettung implements Serializable {
       onEinsatzDaten();
 
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("Flight-ON", "true");
-      FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("FlightLogo", "http://www.ftw-sim.de/images/FTW/helis/plane_" + 1 + ".png");
+      FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("FlightLogo", CONF.getDomainURL()+ "/images/FTW/helis/plane_" + 1 + ".png");
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("FlugzeugType", "Air-Rescue \n" + MeinGemietetesFlugzeug.getType() );
 
     }
@@ -546,12 +546,12 @@ public class NewTerminalLuftrettung implements Serializable {
 
     try {
       if (MeinGemietetesFlugzeug.getFlugzeugArt().equals("Hubschrauber")) {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/helis/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL()+ "/images/FTW/helis/plane_" + FlugKurs + ".png";
       } else {
-        IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
+        IconFuerAircraft = CONF.getDomainURL()+ "/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
       }
     } catch (NullPointerException e) {
-      IconFuerAircraft = "http://www.ftw-sim.de/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
+      IconFuerAircraft = CONF.getDomainURL()+ "/images/FTW/kleinflugzeug/plane_" + FlugKurs + ".png";
     }
 
   }
@@ -886,7 +886,7 @@ public class NewTerminalLuftrettung implements Serializable {
     TankBisFuellstandKG = 0;
     aktuelleTankfuellung = MeinGemietetesFlugzeug.getAktuelleTankfuellung();
     maxTankkapazitaet = MeinGemietetesFlugzeug.getTreibstoffkapazitaet();
-    TankstellenGrafik = "http://www.ftw-sim.de/images/FTW/images/tankstelle.png";
+    TankstellenGrafik = CONF.getDomainURL()+ "/images/FTW/images/tankstelle.png";
 
     MeinGemietetesFlugzeug(idFlugzeug);
 
