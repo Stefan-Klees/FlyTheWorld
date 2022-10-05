@@ -50,6 +50,7 @@ public class configBean implements Serializable {
   private int userid;
 
   public configBean() {
+    
   }
 
   @EJB

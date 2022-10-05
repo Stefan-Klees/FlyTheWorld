@@ -210,12 +210,7 @@ public class loginMB implements Serializable {
 
     try {
 
-      System.out.println("de.klees.beans.system.loginMB.login() " + password);
-      System.out.println("de.klees.beans.system.loginMB.login() " + request.getQueryString());
-
       request.login(username, password);
-
-      System.out.println("IP-Adresse: " + request.getRemoteAddr() + " " + username);
 
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("ip-Adresse", request.getRemoteAddr());
       FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("user-agent", request.getHeader("user-agent"));

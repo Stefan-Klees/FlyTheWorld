@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<ftw-settings>
+ 
+      <DomainURL>https://www.street68.de</DomainURL>
+      <LocalWWWDir>/var/www/www.street68.de/web</LocalWWWDir>  
+	
+</ftw-settings>

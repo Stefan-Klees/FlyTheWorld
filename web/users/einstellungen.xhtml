@@ -63,9 +63,7 @@
                 <p:commandButton id="dummy" style="display: none;"/>
                 <p:commandButton type="button" icon="fa fa-refresh" update="frm_einstellungen" />
                 <p:commandButton type="button" value="#{sprache.Benutzer_Einstellungen_btn_PasswortAendern}" disabled="#{loginMB.demoUser}" onclick="PF('dlg_passwort').show()" icon="ui-icon-key" />
-                <p:commandButton value="#{sprache.Benutzer_Einstellungen_btn_Speichern}" action="#{userBean.saveUserSettings()}" icon="ui-icon-disk"  >
-                  <f:setPropertyActionListener target="#{loginMB.tabellenzeilen}" value="#{userBean.selectedUser.tabellenzeilen}"/>
-                </p:commandButton>
+                <p:commandButton value="#{sprache.Benutzer_Einstellungen_btn_Speichern}" action="#{userBean.saveUserSettings()}" icon="ui-icon-disk"  />
                 <p:commandButton type="button" value="Upload Banner Template" disabled="#{loginMB.demoUser}" onclick="PF('wdg_banner').show()" icon="fa fa-upload" title="Bannervorlage hochladen Max. 150 KB"/>
               </f:facet>
             </p:toolbar>
@@ -157,9 +155,6 @@
                 <f:selectItem itemLabel="UI Lightness" itemValue="ui-lightness"/>
                 <f:selectItem itemLabel="Vader" itemValue="vader"/>
               </p:selectOneMenu>
-
-              <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_StandardTabellenZeilen}" />
-              <h:inputText value="#{userBean.selectedUser.tabellenzeilen}"   maxlength="8" size="5"/>
 
               <p:outputLabel value="#{sprache.Benutzer_Einstellungen_lbl_Icongroesse}" />
               <p:selectOneMenu value="#{userBean.selectedUser.iconSize}" style="width:150px" disabled="false">

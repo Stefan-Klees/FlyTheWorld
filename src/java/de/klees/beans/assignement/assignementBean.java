@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.klees.beans.assignement;
 
 import de.klees.beans.system.CONF;
@@ -165,8 +164,6 @@ public class assignementBean implements Serializable {
   int minCargo;
 
   int ErzeugteJobsImDurchlauf;
-
-  String MaxZeilen;
 
   Feinabstimmung fa;
 
@@ -759,7 +756,7 @@ public class assignementBean implements Serializable {
           minEntfernung = 50;
           maxEnfernung = maxReichweite;
           BezahlungPilot = 7000;
-          maxKlasse = 7;
+          maxKlasse = 8;
         } else if (maxPax >= 20 && maxPax < 50) {
           minEntfernung = 70;
           maxEnfernung = maxReichweite;
@@ -899,6 +896,13 @@ public class assignementBean implements Serializable {
             MaxZufall = 20;
           }
 
+          // Flughäfen aus Dispatching hinzufügen (04.10.2022 Stefan Klees)
+          List<ViewAirportAnflugZiele> AnflugZiele = facadeAssignment.holeAnflugziele(abflug.getIdairport());
+
+          for (ViewAirportAnflugZiele ziele : AnflugZiele) {
+            flughaefen.add(facadeAssignment.getAirportByIcao(ziele.getIcao()));
+          }
+
           for (Airport airp : flughaefen) {
 
             if (CONF.zufallszahl(1, MaxZufall) == 1) {
@@ -1014,7 +1018,7 @@ public class assignementBean implements Serializable {
 
       Assignement newAssignment = new Assignement();
       newAssignment.setActive(0);
-      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/agent-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/agent-job.png");
       // Pax oder Cargo Menge eintragen
       if (selectedAgentJob.getPax() == 0) {
         newAssignment.setAmmount(selectedAgentJob.getCargo());
@@ -1118,7 +1122,7 @@ public class assignementBean implements Serializable {
 
     Assignement newAssignment = new Assignement();
     newAssignment.setActive(0);
-    newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/agent-job-cargo.png");
+    newAssignment.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/agent-job-cargo.png");
 
     //Von der ausgerechneten Menge per Zufall mehr als 50% auswählen
     if (Menge / 2 > 1) {
@@ -2686,7 +2690,7 @@ public class assignementBean implements Serializable {
       Assignement newAssignment = new Assignement();
 
       newAssignment.setActive(1);
-      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/ftw-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/ftw-job.png");
 
       if (RoutenArt == 1 && zaehlerPax <= minAuftraege) {
         zaehlerPax = zaehlerPax + Menge;
@@ -2825,7 +2829,7 @@ public class assignementBean implements Serializable {
       Assignement newAssignment = new Assignement();
 
       newAssignment.setActive(1);
-      newAssignment.setAirlineLogo(CONF.getDomainURL()+ "/images/FTW/ftw-job.png");
+      newAssignment.setAirlineLogo(CONF.getDomainURL() + "/images/FTW/ftw-job.png");
 
       if (RoutenArt == 1) {
         zaehlerPax = zaehlerPax + Menge;
@@ -3833,17 +3837,6 @@ public class assignementBean implements Serializable {
     this.VisuellAuftragDialog = VisuellAuftragDialog;
   }
 
-  public String getMaxZeilen() {
-    try {
-      return CONF.getCookie("AuftragsplanungMaxZeilen").getValue();
-    } catch (NullPointerException e) {
-      return "20";
-    }
-  }
-
-  public void setMaxZeilen(String MaxZeilen) {
-    this.MaxZeilen = MaxZeilen;
-  }
 
   private void keineFlughaefenKlasse9Gefunden() {
 

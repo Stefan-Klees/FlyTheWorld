@@ -16,18 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package de.klees.beans.system;
 
+import java.io.File;
+import java.io.IOException;
 import static java.lang.Math.acos;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import java.util.Random;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -41,22 +52,75 @@ public class CONF {
   public static boolean RandomJob = false;                  // 
 
   private static boolean resBundleLoaded = false;
+  private static boolean xmlLoaded = false;
 
   private static String originUser;
+  private static String domainURL;
+  private static String localWWWDir;
 
   private static ResourceBundle messages;
 
-  
-  
+  private static final String xmlFile = "ftw-config.xml";
+
+  public CONF() {
+
+    System.out.println("de.klees.beans.system.CONF.<init>()");
+  }
+
+  private static void configLesen() throws ParserConfigurationException {
+
+    if (!xmlLoaded) {
+
+      DocumentBuilderFactory docbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilder dbuilder = docbf.newDocumentBuilder();
+      try {
+
+        Document doc = dbuilder.parse(new File(xmlFile));
+
+        doc.getDocumentElement().normalize();
+
+        NodeList nodelist = doc.getElementsByTagName("ftw-settings");
+
+        for (int temp = 0; temp < nodelist.getLength(); temp++) {
+          Node node = nodelist.item(temp);
+          if (node.getNodeType() == Node.ELEMENT_NODE) {
+            Element element = (Element) node;
+
+            domainURL = element.getElementsByTagName("DomainURL").item(0).getTextContent();
+            localWWWDir = element.getElementsByTagName("LocalWWWDir").item(0).getTextContent();
+            
+            System.out.println("de.klees.beans.system.CONF.configLesen()");
+            
+            //ftw-config.xml nach /opt/glassfish4/glassfish/domains/DomainName/config/ kopieren
+          }
+        }
+
+      } catch (IOException ex) {
+        System.out.println("Fehler ftw-config.xml");
+        System.out.println(ex.getMessage());
+      } catch (SAXException ex) {
+        System.out.println("Fehler ftw-config.xml");
+        System.out.println(ex.getMessage());
+      }
+
+    }
+  }
+
   public static String getDomainURL() {
-    return "https://www.street68.de";
+    try {
+      configLesen();
+      xmlLoaded = true;
+    } catch (ParserConfigurationException ex) {
+      Logger.getLogger(CONF.class.getName()).log(Level.SEVERE, null, ex);
+    }
+
+    return domainURL;
   }
-  
-  public static String getLocalWWWDir(){
-    return "/var/www/www.street68.de/web";
+
+  public static String getLocalWWWDir() {
+    return localWWWDir;
   }
-  
-  
+
   /**
    *
    * @param vonLongitude
@@ -123,55 +187,6 @@ public class CONF {
     Clear = Clear.replaceAll("meta", "");
 
     return Clear;
-  }
-
-  public static void setCookie(String name, String value, int expiry) {
-
-    FacesContext facesContext = FacesContext.getCurrentInstance();
-
-    HttpServletRequest request = (HttpServletRequest) facesContext.getExternalContext().getRequest();
-    Cookie cookie = null;
-
-    Cookie[] userCookies = request.getCookies();
-    if (userCookies != null && userCookies.length > 0) {
-      for (int i = 0; i < userCookies.length; i++) {
-        if (userCookies[i].getName().equals(name)) {
-          cookie = userCookies[i];
-          break;
-        }
-      }
-    }
-
-    if (cookie != null) {
-      cookie.setValue(value);
-    } else {
-      cookie = new Cookie(name, value);
-      cookie.setPath(request.getContextPath());
-    }
-
-    cookie.setMaxAge(expiry);
-
-    HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
-    response.addCookie(cookie);
-  }
-
-  public static Cookie getCookie(String name) {
-
-    FacesContext facesContext = FacesContext.getCurrentInstance();
-
-    HttpServletRequest request = (HttpServletRequest) facesContext.getExternalContext().getRequest();
-    Cookie cookie = null;
-
-    Cookie[] userCookies = request.getCookies();
-    if (userCookies != null && userCookies.length > 0) {
-      for (int i = 0; i < userCookies.length; i++) {
-        if (userCookies[i].getName().equals(name)) {
-          cookie = userCookies[i];
-          return cookie;
-        }
-      }
-    }
-    return null;
   }
 
   public static boolean isResBundleLoaded() {
@@ -313,7 +328,7 @@ public class CONF {
         return 0;
     }
   }
-  
+
   public static int getMaxKapazitaetCargoAirport(int Klasse) {
     switch (Klasse) {
       case 1:
@@ -342,7 +357,7 @@ public class CONF {
         return 0;
     }
   }
-  
+
   public static int getMaxKapazitaetPaxAirport(int Klasse) {
     switch (Klasse) {
       case 1:
