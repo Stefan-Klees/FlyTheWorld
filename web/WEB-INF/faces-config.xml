@@ -42,11 +42,6 @@
     <managed-bean-scope>view</managed-bean-scope>
   </managed-bean>
   <managed-bean>
-    <managed-bean-name>importFlughaefenAusFSX</managed-bean-name>
-    <managed-bean-class>de.klees.beans.system.ImportFlughaefenAusFSX</managed-bean-class>
-    <managed-bean-scope>view</managed-bean-scope>
-  </managed-bean>
-  <managed-bean>
     <managed-bean-name>bankingBean</managed-bean-name>
     <managed-bean-class>de.klees.beans.banking.bankingBean</managed-bean-class>
     <managed-bean-scope>view</managed-bean-scope>

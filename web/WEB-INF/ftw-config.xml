@@ -4,6 +4,22 @@
 <ftw-settings>
  
       <DomainURL>https://www.street68.de</DomainURL>
-      <LocalWWWDir>/var/www/www.street68.de/web</LocalWWWDir>  
-	
+      <LocalWWWDir>/var/www/www.street68.de/web</LocalWWWDir>
+      <WebsiteLink>https://www.street68.de</WebsiteLink>
+      <urlPilotenHandbuch>https://www.street68.de</urlPilotenHandbuch>
+      <urlPilotenHandbuchEN>https://www.street68.de</urlPilotenHandbuchEN>
+      <urlFluggesellschaftHandbuch>https://www.street68.de</urlFluggesellschaftHandbuch>
+      <urlFluggesellschaftHandbuchEN>https://www.street68.de</urlFluggesellschaftHandbuchEN>
+      <urlWiKi>https://www.street68.de</urlWiKi>
+      <urlWikiRouten>https://www.street68.de</urlWikiRouten>
+      <urlWikiAirline>https://www.street68.de</urlWikiAirline>
+      <urlWikiFBO>https://www.street68.de</urlWikiFBO>
+      <urlWikiBlacklist>https://www.street68.de</urlWikiBlacklist>
+      <urlForumLink>https://www.street68.de</urlForumLink>
+      <urlDonationLink>https://www.street68.de</urlDonationLink>
+      <urlDiscordLink>https://www.street68.de</urlDiscordLink>
+      <urlYaacars>https://www.street68.de</urlYaacars>
+      
+
+
 </ftw-settings>

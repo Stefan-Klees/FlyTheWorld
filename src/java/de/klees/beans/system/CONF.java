@@ -55,16 +55,31 @@ public class CONF {
   private static boolean xmlLoaded = false;
 
   private static String originUser;
+
   private static String domainURL;
+  private static String websiteLink;
   private static String localWWWDir;
+  private static String urlPilotenHandbuch;
+  private static String urlPilotenHandbuchEN;
+  private static String urlFluggesellschaftHandbuch;
+  private static String urlFluggesellschaftHandbuchEN;
+  private static String urlWiKi;
+  // Hilfe Links
+  private static String urlWikiRouten;
+  private static String urlWikiAirline;
+  private static String urlWikiFBO;
+  private static String urlWikiBlacklist;
+  
+  private static String urlForumLink;
+  private static String urlDonationLink;
+  private static String urlDiscordLink;
+  private static String urlYaacars;
 
   private static ResourceBundle messages;
 
   private static final String xmlFile = "ftw-config.xml";
 
   public CONF() {
-
-    System.out.println("de.klees.beans.system.CONF.<init>()");
   }
 
   private static void configLesen() throws ParserConfigurationException {
@@ -88,17 +103,29 @@ public class CONF {
 
             domainURL = element.getElementsByTagName("DomainURL").item(0).getTextContent();
             localWWWDir = element.getElementsByTagName("LocalWWWDir").item(0).getTextContent();
-            
-            System.out.println("de.klees.beans.system.CONF.configLesen()");
-            
+            websiteLink = element.getElementsByTagName("WebsiteLink").item(0).getTextContent();
+            urlPilotenHandbuch = element.getElementsByTagName("urlPilotenHandbuch").item(0).getTextContent();
+            urlPilotenHandbuchEN = element.getElementsByTagName("urlPilotenHandbuchEN").item(0).getTextContent();
+            urlFluggesellschaftHandbuch = element.getElementsByTagName("urlFluggesellschaftHandbuch").item(0).getTextContent();
+            urlFluggesellschaftHandbuchEN = element.getElementsByTagName("urlFluggesellschaftHandbuchEN").item(0).getTextContent();
+            urlWiKi = element.getElementsByTagName("urlWiKi").item(0).getTextContent();
+            urlWikiRouten = element.getElementsByTagName("urlWikiRouten").item(0).getTextContent();
+            urlWikiAirline = element.getElementsByTagName("urlWikiAirline").item(0).getTextContent();
+            urlWikiFBO = element.getElementsByTagName("urlWikiFBO").item(0).getTextContent();
+            urlWikiBlacklist = element.getElementsByTagName("urlWikiBlacklist").item(0).getTextContent();
+            urlForumLink = element.getElementsByTagName("urlForumLink").item(0).getTextContent();
+            urlDonationLink = element.getElementsByTagName("urlDonationLink").item(0).getTextContent();
+            urlDiscordLink = element.getElementsByTagName("urlDiscordLink").item(0).getTextContent();
+            urlYaacars = element.getElementsByTagName("urlYaacars").item(0).getTextContent();
+
+
+            System.out.println("de.klees.beans.system.CONF.configLesen() - erfolgreich");
+
             //ftw-config.xml nach /opt/glassfish4/glassfish/domains/DomainName/config/ kopieren
           }
         }
 
-      } catch (IOException ex) {
-        System.out.println("Fehler ftw-config.xml");
-        System.out.println(ex.getMessage());
-      } catch (SAXException ex) {
+      } catch (IOException | SAXException ex) {
         System.out.println("Fehler ftw-config.xml");
         System.out.println(ex.getMessage());
       }
@@ -121,45 +148,66 @@ public class CONF {
     return localWWWDir;
   }
 
-  /**
-   *
-   * @param vonLongitude
-   * @param vonLatitude
-   * @param nachLongitude
-   * @param nachLatitude
-   * @return Ergebnis 0 = Entfernung, Ergebnis 1 = kurs
-   *
-   */
-  public static int[] DistanzBerechnung(double vonLongitude, double vonLatitude, double nachLongitude, double nachLatitude) {
-
-    double vonLati = Math.toRadians(vonLatitude);
-    double vonLong = Math.toRadians(vonLongitude);
-    double nachLati = Math.toRadians(nachLatitude);
-    double nachLong = Math.toRadians(nachLongitude);
-
-    double sin_vonLati = Math.sin(vonLati);
-    double sin_nachLati = Math.sin(nachLati);
-    double cos_vonLati = Math.cos(vonLati);
-    double cos_nachLati = Math.cos(nachLati);
-
-    double Entfernung_Radian = Math.acos(sin_vonLati * sin_nachLati + cos_vonLati * cos_nachLati * Math.cos(nachLong - vonLong));
-
-    Double ZielKurs = Math.acos((sin_nachLati - sin_vonLati * Math.cos(Entfernung_Radian)) / (cos_vonLati * Math.sin(Entfernung_Radian)));
-    ZielKurs = Math.toDegrees(ZielKurs);
-
-    double dist = 6378.137 * acos(sin(vonLati) * sin(nachLati) + cos(vonLati) * cos(nachLati) * cos(nachLong - vonLong));
-
-    if (Math.sin(nachLong - vonLong) < 0.0) {
-      ZielKurs = 360 - ZielKurs;
-    }
-
-    int Ergebnis[] = new int[2];
-    Ergebnis[0] = (int) Math.round(dist * 0.53995680345);
-    Ergebnis[1] = (int) Math.round(ZielKurs);
-
-    return Ergebnis;
+  public static String getWebsiteLink() {
+    return websiteLink;
   }
 
+  public static String getUrlPilotenHandbuch() {
+    return urlPilotenHandbuch;
+  }
+
+  public static String getUrlPilotenHandbuchEN() {
+    return urlPilotenHandbuchEN;
+  }
+
+  public static String getUrlFluggesellschaftHandbuch() {
+    return urlFluggesellschaftHandbuch;
+  }
+
+  public static String getUrlFluggesellschaftHandbuchEN() {
+    return urlFluggesellschaftHandbuchEN;
+  }
+
+  public static String getUrlWiKi() {
+    return urlWiKi;
+  }
+
+  public static String getUrlWikiRouten() {
+    return urlWikiRouten;
+  }
+
+  public static String getUrlWikiAirline() {
+    return urlWikiAirline;
+  }
+
+  public static String getUrlWikiFBO() {
+    return urlWikiFBO;
+  }
+
+  public static String getUrlWikiBlacklist() {
+    return urlWikiBlacklist;
+  }
+
+  public static String getUrlForumLink() {
+    return urlForumLink;
+  }
+
+  public static String getUrlDonationLink() {
+    return urlDonationLink;
+  }
+
+  public static String getUrlDiscordLink() {
+    return urlDiscordLink;
+  }
+
+  public static String getUrlYaacars() {
+    return urlYaacars;
+  }
+
+  
+  
+  
+  
   /**
    * Zufallszahl von "min"(einschliesslich) bis "max"(einschliesslich) Beispiel:zufallszahl(4,10); Moegliche
    * Zufallszahlen 4,5,6,7,8,9,10
@@ -593,6 +641,45 @@ public class CONF {
         break;
     }
     return 0.0;
+  }
+
+  /**
+   *
+   * @param vonLongitude
+   * @param vonLatitude
+   * @param nachLongitude
+   * @param nachLatitude
+   * @return Ergebnis 0 = Entfernung, Ergebnis 1 = kurs
+   *
+   */
+  public static int[] DistanzBerechnung(double vonLongitude, double vonLatitude, double nachLongitude, double nachLatitude) {
+
+    double vonLati = Math.toRadians(vonLatitude);
+    double vonLong = Math.toRadians(vonLongitude);
+    double nachLati = Math.toRadians(nachLatitude);
+    double nachLong = Math.toRadians(nachLongitude);
+
+    double sin_vonLati = Math.sin(vonLati);
+    double sin_nachLati = Math.sin(nachLati);
+    double cos_vonLati = Math.cos(vonLati);
+    double cos_nachLati = Math.cos(nachLati);
+
+    double Entfernung_Radian = Math.acos(sin_vonLati * sin_nachLati + cos_vonLati * cos_nachLati * Math.cos(nachLong - vonLong));
+
+    Double ZielKurs = Math.acos((sin_nachLati - sin_vonLati * Math.cos(Entfernung_Radian)) / (cos_vonLati * Math.sin(Entfernung_Radian)));
+    ZielKurs = Math.toDegrees(ZielKurs);
+
+    double dist = 6378.137 * acos(sin(vonLati) * sin(nachLati) + cos(vonLati) * cos(nachLati) * cos(nachLong - vonLong));
+
+    if (Math.sin(nachLong - vonLong) < 0.0) {
+      ZielKurs = 360 - ZielKurs;
+    }
+
+    int Ergebnis[] = new int[2];
+    Ergebnis[0] = (int) Math.round(dist * 0.53995680345);
+    Ergebnis[1] = (int) Math.round(ZielKurs);
+
+    return Ergebnis;
   }
 
 }

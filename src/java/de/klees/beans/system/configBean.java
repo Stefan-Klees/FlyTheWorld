@@ -123,13 +123,17 @@ public class configBean implements Serializable {
 
 
   public String getForumLink() {
-    return getDomainURL();
+    return CONF.getUrlForumLink();
   }
 
   public String getDonationLink() {
-     return getDomainURL();
+     return CONF.getUrlDonationLink();
   }
 
+  public String getDiscordLink(){
+    return CONF.getUrlDiscordLink();
+  }
+  
   public String getWeiterleitung() {
     return "<meta  http-equiv = 'refresh' content = '0; URL=" + getDomainURL() + "' >";
   }
@@ -143,7 +147,7 @@ public class configBean implements Serializable {
   }
 
   public String getWebsiteLink() {
-    return getDomainURL();
+    return CONF.getWebsiteLink();
   }
 
   public String getDomainURL() {
@@ -151,44 +155,43 @@ public class configBean implements Serializable {
   }
 
   public String getWiKi(){
-    return getDomainURL();
+    return CONF.getUrlWiKi();
   }
   
   public String getWikiRouten() {
-    //return "https://openair-alliance.eu/ftw/doc/doku.php?id=routensystem";
-    return getDomainURL();
+    return CONF.getUrlWikiRouten();
   }
 
   public String getWikiAirline() {
-    //return "https://openair-alliance.eu/ftw/doc/doku.php?id=routensystem";
-    return getDomainURL();
+    return CONF.getUrlWikiAirline();
   }
 
   public String getWikiFBO() {
-    //return "https://openair-alliance.eu/ftw/doc/doku.php?id=fbos";
-    return getDomainURL();
+    return CONF.getUrlWikiFBO();
   }
 
   public String getWikiBlacklist() {
-    //return "https://openair-alliance.eu/ftw/doc/doku.php?id=blacklist";
-    return getDomainURL();
+    return CONF.getUrlWikiBlacklist();
   }
 
   public String getPilotenHandbuch(){
-    return getDomainURL();
+    return CONF.getUrlPilotenHandbuch();
   }
   public String getPilotenHandbuchEN(){
-    return getDomainURL();
+    return CONF.getUrlPilotenHandbuchEN();
   }
   
   public String getFluggesellschaftHandbuch(){
-    return getDomainURL();
+    return CONF.getUrlFluggesellschaftHandbuch();
   }
 
   public String getFluggesellschaftHandbuchEN(){
-    return getDomainURL();
+    return CONF.getUrlFluggesellschaftHandbuchEN();
   }
   
+  public String getUrlYaacars(){
+    return CONF.getUrlYaacars();
+  }
   
   
   

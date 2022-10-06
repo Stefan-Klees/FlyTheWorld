@@ -7,6 +7,8 @@
       xmlns:p="http://primefaces.org/ui">
 
 
+
+
   <!--
    Fly the World
    Wirtschaftsymulation für Flugsimulatoren
@@ -28,12 +30,12 @@
   -->
 
 
-  <p:dialog id="dlg_about" widgetVar="wdg_about" header="About FTW" width="700" height="600" closable="true">
+  <p:dialog id="dlg_about" widgetVar="wdg_about" header="About FTW" width="700" height="800" closable="true">
     <h:form id="frm_about">
 
       <div align="center">
         <p style="font-size:1.5em ">Fly the World,  Wirtschaftsymulation für Flugsimulatoren</p>
-        <p style="font-size:1.5em ">Copyright (C) 2016 Stefan Klees</p>
+        <p style="font-size:1.5em ">Copyright (C) 2016 - 2022 Stefan Klees</p>
         <p style="font-size:1.2em ">stefan.klees@gmail.com</p>
 
         <p>This program is free software: you can redistribute it and/or modify<br></br>
@@ -50,168 +52,49 @@
           along with this program.  If not, see <a href="http://www.gnu.org/licenses/" target="_blank" >http://www.gnu.org/licenses/</a>.</p> 
       </div>
 
-      <!--
-            <div align="center">
-              <table border="0" width="80%">
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Organisation</h2></td>
-                </tr>
-                <tr>
-                  <td>Entwickler, Gründer und Chef von FTW</td>
-                  <td>Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td>Stellvertreter</td>
-                  <td>Toffi (Peter)</td>
-                </tr>
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>MOD Team</h2></td>
-                </tr>
-                <tr>
-                  <td>Chef Aircraft</td>
-                  <td>Toffi (Peter)</td>
-                </tr>
-                <tr>
-                  <td>Stellvertreter Chef Aircraft</td>
-                  <td>DAV (Dawid)</td>
-                </tr>
-                <tr>
-                  <td>Chef Airports</td>
-                  <td>DocBrown (Marcel)</td>
-                </tr>
-                <tr>
-                  <td>YAACARS Tracking-Client</td>
-                  <td>Teddii (Markus)</td>
-                </tr>
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Chef Forum</h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Toffi (Peter)</td>
-                </tr>
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Chef Discord</h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Toffi (Peter)</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Support </h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Gonzo</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Old_Crashpilot</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >HoroX</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Chris86</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Übersetzungen (GUI)</h2></td>
-                </tr>
-                <tr>
-                  <td>Deutsch</td>
-                  <td>Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td>Englisch</td>
-                  <td>DocBrown (Marcel)</td>
-                </tr>
-                <tr>
-                  <td>Tschechisch</td>
-                  <td>Orl_cz</td>
-                </tr>
-                <tr>
-                  <td>Russisch</td>
-                  <td>TEKiJIA (Eugene)</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Übersetzungen (Handbücher)</h2></td>
-                </tr>
-                <tr>
-                  <td>Deutsch</td>
-                  <td>Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td>Englisch Wiki</td>
-                  <td>Gonzo</td>
-                </tr>
-                <tr>
-                  <td>Tschechisch</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Russisch</td>
-                  <td></td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Luftrettung</h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Teddii (Markus)</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Missionen</h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Teddii (Markus)</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Team Charter</h2></td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Stefan Klees</td>
-                </tr>
-                <tr>
-                  <td colspan="2" align="center" >Teddii (Markus)</td>
-                </tr>
-      
-                <tr>
-                  <td colspan="2" height="50" align="center" valign="middle"><h2>Eingesetzte API's</h2></td>
-                </tr>
-                <td>Primefaces</td>
-                <td><a href="https://www.primefaces.org" target="_blank" title="Primefaces.org">Primefaces.org</a></td>
-      
-              </table>
-              <br></br><br></br><br></br>
-            </div>
-      -->
 
-      <div>
-        <table>
+      <div align="center">
+        <table border="0" width="95%">
 
           <tr>
-            
+            <td colspan="2" height="50" align="center" valign="middle"><h2>Übersetzungen (GUI)</h2></td>
           </tr>
-          
           <tr>
-            <td colspan="2" height="50" align="center" valign="middle"><h2>Source-Code</h2></td>
+            <td>Deutsch</td>
+            <td>Stefan Klees</td>
+          </tr>
+          <tr>
+            <td>Englisch</td>
+            <td>DocBrown</td>
+          </tr>
+          <tr>
+            <td>Tschechisch</td>
+            <td>Orl_cz</td>
+          </tr>
+          <tr>
+            <td>Russisch</td>
+            <td>TEKiJIA</td>
+          </tr>
+
+          <tr>
+            <td colspan="2" height="50" align="center" valign="middle"><h2>Sourcecode</h2></td>
           </tr>
           <td>Fly the world</td>
           <td><a href="https://github.com/Stefan-Klees/FlyTheWorld" target="_blank" title="Fly the world auf GitHub">GitHub</a></td>
-          <td><img src="https://www.gnu.org/graphics/gplv3-127x51.png" height="50"/></td>
           
+
           <tr>
-            <td colspan="2" height="50" align="center" valign="middle"><h2>Eingesetzte API's</h2></td>
+            <td colspan="2" height="50" align="center" valign="middle"><h2>Opensource API's / Programms</h2></td>
           </tr>
           <td>Primefaces</td>
-          <td><a href="https://www.primefaces.org" target="_blank" title="Primefaces.org">Primefaces.org</a></td>
+          <td><a href="https://www.primefaces.org" target="_blank" title="Primefaces.org">Primefaces (C) PrimeTek</a></td>
+          <tr>
+            <td>Leaflet</td>
+            <td><a href="https://github.com/Leaflet/Leaflet" target="_blank" title="Leaflet">Leaflet - interactive maps (C) Volodymyr Agafonkin</a></td>
+          </tr>
+
+          
+          
         </table>
       </div>
 
